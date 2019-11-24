@@ -24,8 +24,10 @@ public class newTeleop extends LinearOpMode {
     DcMotor motorRightBack;
     DcMotor motorLeftBack;
     DcMotor lift;
-    Servo grab;
+    Servo grab_back;
+    Servo grab_front;
     CRServo extend;
+
 
     BNO055IMU imu, imu1;
     Orientation angles, angles1;
@@ -63,7 +65,9 @@ public class newTeleop extends LinearOpMode {
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD); // changed for 2020 config
         //        extend.setDirection(CRServo.Direction.REVERSE);
-        grab = hardwareMap.servo.get("grab");
+        grab_front = hardwareMap.servo.get("grab_front");
+        grab_back = hardwareMap.servo.get("grab_back");
+
         extend = hardwareMap.crservo.get("extend");
 
         strafing = false;
@@ -218,15 +222,29 @@ public class newTeleop extends LinearOpMode {
                 extend.setPower(-1);
             }
 
-            if (gamepad2.dpad_up){
+            if (gamepad2.right_bumper) {
 
-                grab.setPosition(1);
+                grab_back.setPosition(0);
+                grab_front.setPosition(0.5);
+
             }
 
-            if (gamepad2.dpad_down){
+            if (gamepad2.left_bumper) {
 
-                grab.setPosition(0);
+                grab_back.setPosition(0);
+                grab_front.setPosition(0);
+
             }
+
+//            if (gamepad2.dpad_up){
+//
+//                grab.setPosition(1);
+//            }
+//
+//            if (gamepad2.dpad_down){
+//
+//                grab.setPosition(0);
+//            }
 
             if (gamepad2.x) {
 
@@ -245,7 +263,7 @@ public class newTeleop extends LinearOpMode {
                 lift.setMode(STOP_AND_RESET_ENCODER);
                 lift.setMode(RUN_WITHOUT_ENCODER);
                 lift.setDirection(DcMotorSimple.Direction.FORWARD);
-                while (Math.abs(lift.getCurrentPosition()) < Math.abs(1*1120))
+                while (Math.abs(lift.getCurrentPosition()) < Math.abs(1*288))
                 {
                     lift.setPower(1.0);
                 }
@@ -262,7 +280,7 @@ public class newTeleop extends LinearOpMode {
 //            grabServo.setPosition(1);
 //        }
 //
-//        if (gamepad2.x) {
+//     z       if (gamepad2.x) {
 //            telemetry.addData("grab position a", grabServo.getPosition() );
 //            grabServo.setPosition(0);
 //        }
