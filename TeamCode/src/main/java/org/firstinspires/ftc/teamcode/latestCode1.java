@@ -5,7 +5,6 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -58,8 +57,6 @@ public class latestCode1 extends LinearOpMode {
 
     Servo grabServo;
     Servo grabBase;
-    Servo grab;
-    CRServo extend;
 
     double grabpos;
 
@@ -78,9 +75,6 @@ public class latestCode1 extends LinearOpMode {
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F, 0F, 0F};
 
-    float y = 0;
-
-
     // values is a reference to the hsvValues array.
     final float values[] = hsvValues;
 
@@ -91,9 +85,9 @@ public class latestCode1 extends LinearOpMode {
     final double TICKS_PER_INCH_STRAFE = 200;
     final double TICKS_PER_INCH_STRAIGHT = 132.8;
 
-    int pixyCounter;
-    boolean isPixyObjectSeen;
-    boolean pixyContinue = true;
+//    int pixyCounter;
+//    boolean isPixyObjectSeen;
+//    boolean pixyContinue = true;
 
 
     float power = 0;
@@ -101,6 +95,8 @@ public class latestCode1 extends LinearOpMode {
     boolean strafing;
     boolean initDone = false;
     boolean vuInitDone = false;
+    float y = 0;
+    float x = 0;
 
 
     I2cDeviceSynch pixy;
@@ -188,24 +184,24 @@ public class latestCode1 extends LinearOpMode {
             }
 
             initDone = true;
-            pixy = hardwareMap.i2cDeviceSynch.get("pixy");
-
-
-            //setting Pixy's I2C Address
-            pixy.setI2cAddress(I2cAddr.create7bit(0x54));
-
-            I2cDeviceSynch.ReadWindow readWindow = new I2cDeviceSynch.ReadWindow(1, 26,
-                    I2cDeviceSynch.ReadMode.REPEAT);
-            pixy.setReadWindow(readWindow);
-
-            //required to "turn on" the device
-            pixy.engage();
+//            pixy = hardwareMap.i2cDeviceSynch.get("pixy");
+//
+//
+//            //setting Pixy's I2C Address
+//            pixy.setI2cAddress(I2cAddr.create7bit(0x54));
+//
+//            I2cDeviceSynch.ReadWindow readWindow = new I2cDeviceSynch.ReadWindow(1, 26,
+//                    I2cDeviceSynch.ReadMode.REPEAT);
+//            pixy.setReadWindow(readWindow);
+//
+//            //required to "turn on" the device
+//            pixy.engage();
 
 
             //initDone = true;
             telemetry.addData("Init: Thread done ", "");
 
-            while (pixyContinue && !isStopRequested()) {
+            while (!isStopRequested()) {
                  /*
 Bytes    16-bit word    Description
         ----------------------------------------------------------------
@@ -236,54 +232,54 @@ Bytes    16-bit word    Description
 //                pixy.write8(4,1);
 //                pixy.write8(5,1);
 
-                byte b0 = pixy.read8(0);
-                telemetry.addData("Byte 0", b0);
-                byte b1 = pixy.read8(1);
-                telemetry.addData("Byte 1", b1);
-                byte b2 = pixy.read8(2);
-                telemetry.addData("Byte 2", b2);
-                byte b3 = pixy.read8(3);
-                telemetry.addData("Byte 3", b3);
-                byte b4 = pixy.read8(4);
-                telemetry.addData("Byte 4", b4);
-                byte b5 = pixy.read8(5);
-                telemetry.addData("Byte 5", b5);
-                byte b6 = pixy.read8(6);
-                telemetry.addData("Byte 6", b6);
-                telemetry.update();
-                if (b0 != 0) {
-                    if (pixyCounter < 10)
-                        pixyCounter += 4;
+//                byte b0 = pixy.read8(0);
+//                telemetry.addData("Byte 0", b0);
+//                byte b1 = pixy.read8(1);
+//                telemetry.addData("Byte 1", b1);
+//                byte b2 = pixy.read8(2);
+//                telemetry.addData("Byte 2", b2);
+//                byte b3 = pixy.read8(3);
+//                telemetry.addData("Byte 3", b3);
+//                byte b4 = pixy.read8(4);
+//                telemetry.addData("Byte 4", b4);
+//                byte b5 = pixy.read8(5);
+//                telemetry.addData("Byte 5", b5);
+//                byte b6 = pixy.read8(6);
+//                telemetry.addData("Byte 6", b6);
+//                telemetry.update();
+//                if (b0 != 0) {
+//                    if (pixyCounter < 10)
+//                        pixyCounter += 4;
+//
+//                } else {
+//                    if (pixyCounter > 1)
+//                        pixyCounter--;
+//
+//                }
+//
+//                if (pixyCounter > 1) {
+//                    isPixyObjectSeen = true;
+//                } else {
+//                    isPixyObjectSeen = false;
+//                }
 
-                } else {
-                    if (pixyCounter > 1)
-                        pixyCounter--;
 
-                }
-
-                if (pixyCounter > 1) {
-                    isPixyObjectSeen = true;
-                } else {
-                    isPixyObjectSeen = false;
-                }
-
-
-                byte b = pixy.read8(7);
+//                byte b = pixy.read8(7);
 //                telemetry.addData("Byte 7", b);
-                b = pixy.read8(8);
-//                telemetry.addData("Byte 8", pixy.read8(8));
-                b = pixy.read8(9);
-//                telemetry.addData("Byte 9", pixy.read8(9));
-                b = pixy.read8(10);
-//                telemetry.addData("Byte 10", pixy.read8(10));
-                b = pixy.read8(11);
-//                telemetry.addData("Byte 11", pixy.read8(11));
-                b = pixy.read8(12);
-//                telemetry.addData("Byte 12", pixy.read8(12));
-                b = pixy.read8(13);
-//                telemetry.addData("Byte 13", pixy.read8(13));
-                //  telemetry.addData("Byte 14", pixy.read8(14));
-                //  telemetry.addData("Byte 15", pixy.read8(15));
+//                b = pixy.read8(8);
+////                telemetry.addData("Byte 8", pixy.read8(8));
+//                b = pixy.read8(9);
+////                telemetry.addData("Byte 9", pixy.read8(9));
+//                b = pixy.read8(10);
+////                telemetry.addData("Byte 10", pixy.read8(10));
+//                b = pixy.read8(11);
+////                telemetry.addData("Byte 11", pixy.read8(11));
+//                b = pixy.read8(12);
+////                telemetry.addData("Byte 12", pixy.read8(12));
+//                b = pixy.read8(13);
+////                telemetry.addData("Byte 13", pixy.read8(13));
+//                //  telemetry.addData("Byte 14", pixy.read8(14));
+//                //  telemetry.addData("Byte 15", pixy.read8(15));
                 //  telemetry.addData("Byte 16", pixy.read8(16));
                 //  telemetry.addData("Byte 17", pixy.read8(17));
                 //telemetry.addData("Byte 18", pixy.read8(18));
@@ -321,7 +317,7 @@ Bytes    16-bit word    Description
         motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
 
-        lift = hardwareMap.dcMotor.get("lift");
+//        lift = hardwareMap.dcMotor.get("lift");
 //        lift.setDirection(DcMotorSimple.Direction.FORWARD);
 //        lift.setMode(RUN_WITHOUT_ENCODER);
 
@@ -334,11 +330,6 @@ Bytes    16-bit word    Description
         armBottom.setMode(RUN_WITHOUT_ENCODER);
         grabServo = hardwareMap.servo.get("grab_servo");
         grabBase = hardwareMap.servo.get("grab_base");
-        grab = hardwareMap.servo.get("grab");
-        extend = hardwareMap.crservo.get("extend");
-
-
-
 
 
         grabpos = 0.5;
@@ -1038,37 +1029,32 @@ Bytes    16-bit word    Description
         strafe_inch(1,1,30);
     }
 
-    public void grabSkyStone(){
-        grab.setPosition(1);
-        extend.setPower(1);
-        grab.setPosition(0);
-    }
-
 
     @Override
     public void runOpMode() {
-        pixyCounter = 0;
-        isPixyObjectSeen = false;
+//        pixyCounter = 0;
+//        isPixyObjectSeen = false;
 
         initFn();
 
-        waitForStart();
 
-       //neel_test webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+       // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
         /**
          * We also indicate which camera on the RC we wish to use.
          */
-       //neel_test parameters.cameraName = webcamName;
+       // parameters.cameraName = webcamName;
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
@@ -1183,6 +1169,9 @@ Bytes    16-bit word    Description
         }
 
         targetsSkyStone.activate();
+
+        waitForStart();
+
         firstStep();
         boolean blockSeen = false;
 
@@ -1208,11 +1197,8 @@ Bytes    16-bit word    Description
                     break;
                 }
             }
-            if(targetVisible) {
-                blockSeen = true;
-                telemetry.addData("reached here", "yes");
-                break;
-            }
+
+
             // Provide feedback as to where the robot is located (if we know).
             if (targetVisible) {
                 // express position (translation) of robot in inches.
@@ -1223,11 +1209,17 @@ Bytes    16-bit word    Description
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
                 y = translation.get(1);
+                x = translation.get(0);
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 center(translation.get(0)/mmPerInch, translation.get(1)/mmPerInch, rotation.thirdAngle);
-            } else {
+                blockSeen = true;
+                telemetry.addData("reached here", "yes");
+                break;
+            }
+            else {
                 telemetry.addData("Visible Target", "none");
             }
+
             telemetry.update();
 
         }
@@ -1235,18 +1227,34 @@ Bytes    16-bit word    Description
             boolean leftBlock = false;
             boolean centerBlock = false;
             boolean rightBlock = false;
-            if(y>20){
+            //
+
+            if(y>6){
                  rightBlock = true;
-                 strafe_inch(0.8,1,8);
+                 telemetry.addData("right", "right right iq " + y);
+                 strafe_inch(0.8,1,y/2.54);
+                 if(x>9) {
+                     straight_inch(0.8, 1, (x / 2.54) - 3);
+                 }
             }
-            else if(y<20){
-                leftBlock = true;
-                strafe(0.8,-1,8);
+            else if(y<6 && y>0){
+                centerBlock = true;
+                telemetry.addData("center", "center center iq" + y);
+                if(x > 9) {
+                    straight_inch(0.8, 1, (x / 2.54) - 3);
+                }
+
             }
             else{
-                centerBlock = true;
+                leftBlock = true;
+                telemetry.addData("left", "left left iq" + y);
+                y = y* -1;
+                strafe_inch(0.8,-1,y/2.54);
+                if(x>9) {
+                    straight_inch(0.8, 1, (x / 2.54) - 3);
+                }
             }
-            straight_inch(0.8, 1, 18);
+
         }
     }
 
