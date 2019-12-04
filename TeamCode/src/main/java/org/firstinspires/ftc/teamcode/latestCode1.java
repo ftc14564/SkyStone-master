@@ -44,6 +44,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 
+
 @Autonomous(name = "latestCode1")
 public class latestCode1 extends LinearOpMode {
 
@@ -54,6 +55,14 @@ public class latestCode1 extends LinearOpMode {
     DcMotor armBottom;
     DcMotor armTop;
     DcMotor lift;
+
+    int testTop;
+    int testFront;
+    int testBack;
+
+    Servo testTopp;
+    Servo testFrontt;
+    Servo testBackk;
 
     Servo grabServo;
     Servo grabBase;
@@ -597,6 +606,28 @@ Bytes    16-bit word    Description
         if(y>0){
             dummyStraight(0.75,1,Math.abs(y)-6);
         }
+    }
+
+    public void dummyState1Grab(){
+        testFront = 90;
+        testBack = 90;
+        testTop = 0;
+        //testFrontt.SetPosition
+    }
+    public void dummyState2Open(){
+        testFront = 180;
+        testBack = 90;
+        testTop = 0;
+    }
+    public void dummyState3TurnedGrab(){
+        testFront = 90;
+        testBack = 90;
+        testTop = 90;
+    }
+    public void dummyState4Folded(){
+        testFront = 10;
+        testBack = 10;
+        testTop = 0;
     }
     public void SlowerRotate(double power, int direction, double angle) {
 
@@ -1232,7 +1263,10 @@ Bytes    16-bit word    Description
             if(y>6){
                  rightBlock = true;
                  telemetry.addData("right", "right right iq " + y);
+                 telemetry.update();
                  strafe_inch(0.8,1,y/2.54);
+                telemetry.addData("right", "right right iq " + y);
+                telemetry.update();
                  if(x>9) {
                      straight_inch(0.8, 1, (x / 2.54) - 3);
                  }
@@ -1255,7 +1289,10 @@ Bytes    16-bit word    Description
                 }
             }
 
+
+
         }
+
     }
 
 
