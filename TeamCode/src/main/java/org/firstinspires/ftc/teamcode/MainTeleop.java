@@ -129,7 +129,7 @@ public class MainTeleop extends LinearOpMode {
         grabServo = hardwareMap.servo.get("grab_servo");
         grabBase = hardwareMap.servo.get("grab_base");
 
-        power_multiplier = 1;
+        power_multiplier = 0.5;
 
 
 

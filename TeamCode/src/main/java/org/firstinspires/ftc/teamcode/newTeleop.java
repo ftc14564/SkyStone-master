@@ -42,6 +42,11 @@ public class newTeleop extends LinearOpMode {
 
     double angleToTurn;
 
+    private static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
+    private static final double LIFT_NON_SLIP_POWER = 0.2;
+
+
+
     private static final float mmPerInch        = 25.4f;
     private static final float mmFTCFieldWidth  = (12*6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
     private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
@@ -52,6 +57,8 @@ public class newTeleop extends LinearOpMode {
 
         lift = hardwareMap.dcMotor.get("lift");
         lift_assist = hardwareMap.dcMotor.get("lift_assist");
+        lift.setMode(STOP_AND_RESET_ENCODER);
+
 
 
 
@@ -116,6 +123,31 @@ public class newTeleop extends LinearOpMode {
 
     public String formatDegrees(double degrees){
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
+    public void liftInch(double inches) {
+
+        lift.setMode(RUN_WITHOUT_ENCODER);
+        lift.setDirection(DcMotorSimple.Direction.FORWARD);
+        double ticks = inches * REV_CORE_HEX_TICKS_PER_INCH;
+
+        if ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))) {
+            while (Math.abs(lift.getCurrentPosition()) < Math.abs(ticks)) {
+                lift.setPower(1.0);
+                lift_assist.setPower(1.0);
+            }
+        } else {
+            while (Math.abs(lift.getCurrentPosition()) > Math.abs(ticks)) {
+                lift.setPower(-1.0);
+                lift_assist.setPower(-1.0);
+            }
+        }
+
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setPower(LIFT_NON_SLIP_POWER);
+        lift_assist.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift_assist.setPower(LIFT_NON_SLIP_POWER);
+
     }
 
     @Override
@@ -250,13 +282,27 @@ public class newTeleop extends LinearOpMode {
                 turn.setPosition(0);
             }
 
-            if (gamepad1.y) {               //GRABBED POSITION
+            if (gamepad2.dpad_up) {               //GRABBED POSITION
                 grab_front.setPosition(0.4); //More than 90 degrees to add pressure
                 grab_back.setPosition(1);
             }
-            if (gamepad1.x) {               //OPEN FOR COLLECTION POSITION
+            if (gamepad2.dpad_down) {               //OPEN FOR COLLECTION POSITION
                 grab_front.setPosition(1);
                 grab_back.setPosition(1);
+            }
+
+            if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
+                grab_front.setPosition(1);           //AND LIFT TO NOT HIT BLOCK
+                grab_back.setPosition(0.5);
+                lift.setMode(STOP_AND_RESET_ENCODER);
+                lift.setMode(RUN_WITHOUT_ENCODER);
+                lift.setDirection(DcMotorSimple.Direction.FORWARD);
+                while (Math.abs(lift.getCurrentPosition()) < Math.abs((0.5*288)))
+                {
+                    lift.setPower(1.0);
+                }
+                lift.setPower(0);
+
             }
 
             if (gamepad2.right_bumper) {
@@ -289,25 +335,45 @@ public class newTeleop extends LinearOpMode {
 
             if (gamepad2.x) {
 
-                lift.setMode(STOP_AND_RESET_ENCODER);
                 lift.setMode(RUN_WITHOUT_ENCODER);
                 lift.setDirection(DcMotorSimple.Direction.FORWARD);
-                while (Math.abs(lift.getCurrentPosition()) < Math.abs(1*288))
+                while (Math.abs(lift.getCurrentPosition()) < Math.abs(259.2)) //NUMBER OF TICKS FOR HEIGHT OF ONE BLOCK
                 {
                     lift.setPower(-1.0);
+                    lift_assist.setPower(-1.0);
                 }
-                lift.setPower(0);
+                lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                lift.setPower(0.2);
+                lift_assist.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                lift_assist.setPower(0.2);
 
             }
             if (gamepad2.y) {
 
+                lift.setMode(RUN_WITHOUT_ENCODER);
+                lift.setDirection(DcMotorSimple.Direction.FORWARD);
+                while (Math.abs(lift.getCurrentPosition()) < Math.abs(259.2))
+                {
+                    lift.setPower(1.0);
+                    lift_assist.setPower(1.0);
+
+                }
+                lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                lift.setPower(0.2);
+                lift_assist.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                lift_assist.setPower(0.2);
+
+            }
+            if (gamepad2.b) {
+
                 lift.setMode(STOP_AND_RESET_ENCODER);
                 lift.setMode(RUN_WITHOUT_ENCODER);
                 lift.setDirection(DcMotorSimple.Direction.FORWARD);
-                while (Math.abs(lift.getCurrentPosition()) < Math.abs(1*288))
+                while (Math.abs(lift.getCurrentPosition()) > 10)
                 {
                     lift.setPower(1.0);
                 }
+                lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 lift.setPower(0);
 
             }
