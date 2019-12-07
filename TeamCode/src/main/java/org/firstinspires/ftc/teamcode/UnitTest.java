@@ -24,7 +24,7 @@ double TICKS_PER_INCH_STRAFE = 126.00;
 
     public void straight(double power, int direction, double distance) {
 
-        power /= 3;
+        power /= 1;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
