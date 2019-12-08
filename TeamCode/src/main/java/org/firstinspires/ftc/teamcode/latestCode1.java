@@ -52,22 +52,11 @@ public class latestCode1 extends LinearOpMode {
     DcMotor motorRightBack;
     DcMotor motorLeftFront;
     DcMotor motorLeftBack;
-    DcMotor armBottom;
-    DcMotor armTop;
+//    DcMotor armBottom;
+//    DcMotor armTop;
     DcMotor lift;
 
-    int testTop;
-    int testFront;
-    int testBack;
-
-    Servo testTopp;
-    Servo testFrontt;
-    Servo testBackk;
-
-    Servo grabServo;
-    Servo grabBase;
-
-    double grabpos;
+boolean testMode = false;
 
     private DistanceSensor sensorRange_rf;
     private DistanceSensor sensorRange_rb;
@@ -91,24 +80,16 @@ public class latestCode1 extends LinearOpMode {
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 200;
-    final double TICKS_PER_INCH_STRAIGHT = 132.8;
-
-//    int pixyCounter;
-//    boolean isPixyObjectSeen;
-//    boolean pixyContinue = true;
-
+    final double TICKS_PER_INCH_STRAFE = 126.00;
+    final double TICKS_PER_INCH_STRAIGHT = 89.1;
 
     float power = 0;
     float track = 0;
     boolean strafing;
     boolean initDone = false;
     boolean vuInitDone = false;
-    float y = 0;
-    float x = 0;
-
-
-    I2cDeviceSynch pixy;
+    double y = 0;
+    double x = 0;
 
     BNO055IMU imu;
     Orientation angles;
@@ -193,112 +174,12 @@ public class latestCode1 extends LinearOpMode {
             }
 
             initDone = true;
-//            pixy = hardwareMap.i2cDeviceSynch.get("pixy");
-//
-//
-//            //setting Pixy's I2C Address
-//            pixy.setI2cAddress(I2cAddr.create7bit(0x54));
-//
-//            I2cDeviceSynch.ReadWindow readWindow = new I2cDeviceSynch.ReadWindow(1, 26,
-//                    I2cDeviceSynch.ReadMode.REPEAT);
-//            pixy.setReadWindow(readWindow);
-//
-//            //required to "turn on" the device
-//            pixy.engage();
-
-
-            //initDone = true;
+            initDone = true;
             telemetry.addData("Init: Thread done ", "");
 
             while (!isStopRequested()) {
-                 /*
-Bytes    16-bit word    Description
-        ----------------------------------------------------------------
-        0, 1     y              sync: 0xaa55=normal object, 0xaa56=color code object
-        2, 3     y              checksum (sum of all 16-bit words 2-6, that is, bytes 4-13)
-        4, 5     y              signature number
-        6, 7     y              x center of object
-        8, 9     y              y center of object
-        10, 11   y              width of object
-        12, 13   y              height of object
-        */
 
-                //  int pixy_x;
-
-                //  pixy_x = (int) pixy.read8(6);
-                //  pixy_x = pixy_x << 8;
-                //  pixy_x = (pixy_x & (0xff00) )| (int) pixy.read8(7);
-
-                // int pixy_x = ((pixy.read8(4) & 0xff) << 8) | (pixy.read8(5) & 0xff);
-                // telemetry.addData("Pixy_x", pixy_x);
-                // https://docs.pixycam.com/wiki/doku.php?id=wiki:v2:protocol_reference
-                //getBlocks
-
-//                pixy.write8(0,173);
-//                pixy.write8(1,193);
-//                pixy.write8(2,32);
-//                pixy.write8(3,2);
-//                pixy.write8(4,1);
-//                pixy.write8(5,1);
-
-//                byte b0 = pixy.read8(0);
-//                telemetry.addData("Byte 0", b0);
-//                byte b1 = pixy.read8(1);
-//                telemetry.addData("Byte 1", b1);
-//                byte b2 = pixy.read8(2);
-//                telemetry.addData("Byte 2", b2);
-//                byte b3 = pixy.read8(3);
-//                telemetry.addData("Byte 3", b3);
-//                byte b4 = pixy.read8(4);
-//                telemetry.addData("Byte 4", b4);
-//                byte b5 = pixy.read8(5);
-//                telemetry.addData("Byte 5", b5);
-//                byte b6 = pixy.read8(6);
-//                telemetry.addData("Byte 6", b6);
-//                telemetry.update();
-//                if (b0 != 0) {
-//                    if (pixyCounter < 10)
-//                        pixyCounter += 4;
-//
-//                } else {
-//                    if (pixyCounter > 1)
-//                        pixyCounter--;
-//
-//                }
-//
-//                if (pixyCounter > 1) {
-//                    isPixyObjectSeen = true;
-//                } else {
-//                    isPixyObjectSeen = false;
-//                }
-
-
-//                byte b = pixy.read8(7);
-//                telemetry.addData("Byte 7", b);
-//                b = pixy.read8(8);
-////                telemetry.addData("Byte 8", pixy.read8(8));
-//                b = pixy.read8(9);
-////                telemetry.addData("Byte 9", pixy.read8(9));
-//                b = pixy.read8(10);
-////                telemetry.addData("Byte 10", pixy.read8(10));
-//                b = pixy.read8(11);
-////                telemetry.addData("Byte 11", pixy.read8(11));
-//                b = pixy.read8(12);
-////                telemetry.addData("Byte 12", pixy.read8(12));
-//                b = pixy.read8(13);
-////                telemetry.addData("Byte 13", pixy.read8(13));
-//                //  telemetry.addData("Byte 14", pixy.read8(14));
-//                //  telemetry.addData("Byte 15", pixy.read8(15));
-                //  telemetry.addData("Byte 16", pixy.read8(16));
-                //  telemetry.addData("Byte 17", pixy.read8(17));
-                //telemetry.addData("Byte 18", pixy.read8(18));
-                //telemetry.addData("Byte 19", pixy.read8(19));
-                //telemetry.addData("Byte 20", pixy.read8(20));
-                //telemetry.addData("Byte 21", pixy.read8(21));
-                // telemetry.addData("pixyCounter", pixyCounter);
-                // telemetry.update();
                 sleep(20);
-
 
             }
 
@@ -326,22 +207,10 @@ Bytes    16-bit word    Description
         motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
 
-//        lift = hardwareMap.dcMotor.get("lift");
-//        lift.setDirection(DcMotorSimple.Direction.FORWARD);
-//        lift.setMode(RUN_WITHOUT_ENCODER);
 
 
-        armBottom = hardwareMap.dcMotor.get("armBottom");
-        armTop = hardwareMap.dcMotor.get("armTop");
-        armBottom.setDirection(DcMotorSimple.Direction.REVERSE);
-        armTop.setDirection(DcMotorSimple.Direction.REVERSE);
-        armTop.setMode(RUN_WITHOUT_ENCODER);
-        armBottom.setMode(RUN_WITHOUT_ENCODER);
-        grabServo = hardwareMap.servo.get("grab_servo");
-        grabBase = hardwareMap.servo.get("grab_base");
 
-
-        grabpos = 0.5;
+        //grabpos = 0.5;
 
 
         double driveSpeed = 0;
@@ -350,16 +219,16 @@ Bytes    16-bit word    Description
         motorRightBack.setPower(driveSpeed);
         motorRightFront.setPower(driveSpeed);
 
-        grabServo.setPosition(grabpos);
+//        grabServo.setPosition(grabpos);
 
-        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
-        distanceSensor_rf = (Rev2mDistanceSensor) sensorRange_rf;
-        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
-        distanceSensor_rb = (Rev2mDistanceSensor) sensorRange_rb;
-        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lf");
-        distanceSensor_lf = (Rev2mDistanceSensor) sensorRange_lf;
-        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
-        distanceSensor_lb = (Rev2mDistanceSensor) sensorRange_lb;
+//        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
+//        distanceSensor_rf = (Rev2mDistanceSensor) sensorRange_rf;
+//        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
+//        distanceSensor_rb = (Rev2mDistanceSensor) sensorRange_rb;
+//        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lf");
+//        distanceSensor_lf = (Rev2mDistanceSensor) sensorRange_lf;
+//        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
+//        distanceSensor_lb = (Rev2mDistanceSensor) sensorRange_lb;
 
         new Thread(new InitThread_Depot()).start();
     }
@@ -463,8 +332,6 @@ Bytes    16-bit word    Description
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         robotError = targetAngle - angles.firstAngle;
-        //telemetry.addData("Zvalue","%5.2f",gyro.getIntegratedZValue());
-        //telemetry.update();
 
         while (robotError > 180) robotError -= 360;
 
@@ -528,10 +395,6 @@ Bytes    16-bit word    Description
             telemetry.update();
             //sleep(150);
             while (opModeIsActive() && !isStopRequested() && (Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle))))) < angle)) {
-                //counter++;
-                /*if(System.currentTimeMillis()-startTime > 29500 ){
-                    break;
-                }*/
                 telemetry.update();
                 telemetry.addData("turning (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
                 telemetry.update();
@@ -608,27 +471,27 @@ Bytes    16-bit word    Description
         }
     }
 
-    public void dummyState1Grab(){
-        testFront = 90;
-        testBack = 90;
-        testTop = 0;
-        //testFrontt.SetPosition
-    }
-    public void dummyState2Open(){
-        testFront = 180;
-        testBack = 90;
-        testTop = 0;
-    }
-    public void dummyState3TurnedGrab(){
-        testFront = 90;
-        testBack = 90;
-        testTop = 90;
-    }
-    public void dummyState4Folded(){
-        testFront = 10;
-        testBack = 10;
-        testTop = 0;
-    }
+//    public void dummyState1Grab(){
+//        testFront = 90;
+//        testBack = 90;
+//        testTop = 0;
+//        //testFrontt.SetPosition
+//    }
+//    public void dummyState2Open(){
+//        testFront = 180;
+//        testBack = 90;
+//        testTop = 0;
+//    }
+//    public void dummyState3TurnedGrab(){
+//        testFront = 90;
+//        testBack = 90;
+//        testTop = 90;
+//    }
+//    public void dummyState4Folded(){
+//        testFront = 10;
+//        testBack = 10;
+//        testTop = 0;
+//    }
     public void SlowerRotate(double power, int direction, double angle) {
 
         //angle -=angle*.35;
@@ -735,9 +598,9 @@ Bytes    16-bit word    Description
     }
 
     public void straight(double power, int direction, double distance) {
-
-        distance /= 2.25;
-        power /= 1;
+//
+//        distance /= 2.25;
+//        power /= 1;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
@@ -773,38 +636,39 @@ Bytes    16-bit word    Description
         telemetry.update();
 
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorLeftBack.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
+        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance))){
+//                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance)))
+
 
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
             telemetry.addData("Position", motorLeftFront.getCurrentPosition());
             telemetry.update();
-            if (Math.abs(motorLeftFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
+            if (Math.abs(motorRightFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
 
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .7 * power);
                 motorRightBack.setPower(direction * .7 * power);
                 motorRightFront.setPower(direction * .7 * power);
                 motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .7 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .7 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .7 * power);
                 motorRightBack.setPower(direction * .7 * power);
                 motorRightFront.setPower(direction * .7 * power);
                 motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .5 * power);
                 motorRightBack.setPower(direction * .5 * power);
                 motorRightFront.setPower(direction * .5 * power);
@@ -845,8 +709,8 @@ Bytes    16-bit word    Description
      */
     public void strafe(double power, int direction, double distance) {
 
-        distance /= 2.25;
-        power /= 1.5;
+//        distance /= 2.25;
+//        power /= 1.5;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
@@ -871,38 +735,38 @@ Bytes    16-bit word    Description
         motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorLeftBack.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
+        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance))){
+//                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
 
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
             telemetry.addData("Position", motorLeftFront.getCurrentPosition());
             telemetry.update();
-            if (Math.abs(motorLeftFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
+            if (Math.abs(motorRightFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
 
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .85 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .85 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .8 * power);
                 motorRightBack.setPower(direction * .8 * power);
                 motorRightFront.setPower(direction * .8 * power);
                 motorLeftBack.setPower(direction * .8 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .7 * power);
                 motorRightBack.setPower(direction * .7 * power);
                 motorRightFront.setPower(direction * .7 * power);
                 motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .95 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .95 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .6 * power);
                 motorRightBack.setPower(direction * .6 * power);
                 motorRightFront.setPower(direction * .6 * power);
@@ -933,25 +797,6 @@ Bytes    16-bit word    Description
 
     }
 
-    public void depositMarker() {
-        try {
-//            turnBottomArm(0.9, -1, 600);
-//            turnTopArm(0.9, 1, 600);
-//
-//            grabBase.setPosition(0.2);
-//            sleep(1000);
-//            grabBase.setPosition(0.7);
-//            turnTopArm(0.6, -1, 500);
-//            turnBottomArm(0.6, 1, 500);
-
-            grabServo.setPosition(1);
-            sleep(1000);
-            grabServo.setPosition(0.5);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void makeParallelLeft() {
         double sensor_gap = 24;
@@ -1057,19 +902,16 @@ Bytes    16-bit word    Description
     public void firstStep(){
         straight_inch(0.5,1,16);
         //Direction - +1 is LEFT LEFT LEFT LEFT LEFT
-        strafe_inch(1,1,30);
+        strafe_inch(1,1,12);
     }
 
 
     @Override
     public void runOpMode() {
-//        pixyCounter = 0;
-//        isPixyObjectSeen = false;
 
         initFn();
 
-
-       // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
@@ -1081,7 +923,7 @@ Bytes    16-bit word    Description
         /**
          * We also indicate which camera on the RC we wish to use.
          */
-       // parameters.cameraName = webcamName;
+        // parameters.cameraName = webcamName;
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
@@ -1203,7 +1045,8 @@ Bytes    16-bit word    Description
 
         waitForStart();
 
-        firstStep();
+        if(!testMode)
+            firstStep();
         boolean blockSeen = false;
 
         int i = 0;
@@ -1239,184 +1082,53 @@ Bytes    16-bit word    Description
 
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-                y = translation.get(1);
-                x = translation.get(0);
+                y = (translation.get(1))/mmPerInch;
+                x = (translation.get(0))/mmPerInch;
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-                center(translation.get(0)/mmPerInch, translation.get(1)/mmPerInch, rotation.thirdAngle);
-                blockSeen = true;
-                telemetry.addData("reached here", "yes");
-                break;
-            }
-            else {
+                center(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
+                if(!testMode) {
+                    blockSeen = true;
+                    telemetry.addData("reached here", "yes");
+                    break;
+                }
+            } else {
                 telemetry.addData("Visible Target", "none");
             }
 
             telemetry.update();
 
         }
-        if(blockSeen){
+        if (blockSeen) {
             boolean leftBlock = false;
             boolean centerBlock = false;
             boolean rightBlock = false;
             //
 
-            if(y>6){
-                 rightBlock = true;
-                 telemetry.addData("right", "right right iq " + y);
-                 telemetry.update();
-                 strafe_inch(0.8,1,y/2.54);
+            if (y > -3.5) {
+                rightBlock = true;
                 telemetry.addData("right", "right right iq " + y);
                 telemetry.update();
-                 if(x>9) {
-                     straight_inch(0.8, 1, (x / 2.54) - 3);
-                 }
-            }
-            else if(y<6 && y>0){
+                strafe_inch(0.8, 1, Math.abs(y + (3.5)));
+                telemetry.addData("right", "right right iq " + y);
+                telemetry.update();
+
+            } else if (y < -3.5) {
                 centerBlock = true;
+                strafe_inch(0.8, -1, Math.abs(y + 3.5));
                 telemetry.addData("center", "center center iq" + y);
-                if(x > 9) {
-                    straight_inch(0.8, 1, (x / 2.54) - 3);
-                }
-
-            }
-            else{
-                leftBlock = true;
-                telemetry.addData("left", "left left iq" + y);
-                y = y* -1;
-                strafe_inch(0.8,-1,y/2.54);
-                if(x>9) {
-                    straight_inch(0.8, 1, (x / 2.54) - 3);
-                }
             }
 
+            if (x < 0) {
+                straight_inch(0.8, 1, Math.abs(x));
+            }
+
+            }
 
 
         }
 
     }
 
-
-
-
-        public void turnTopArm_E ( int degrees){
-
-            int ticks = 1440 * degrees / (360 * 4);
-            armTop.setMode(RUN_USING_ENCODER);
-            armTop.setMode(STOP_AND_RESET_ENCODER);
-            armTop.setMode(RUN_TO_POSITION);
-            armTop.setTargetPosition(10);
-            armTop.setPower(0.6);
-            //while (armTop.getCurrentPosition()<ticks)
-            sleep(1);
-            armTop.setMode(RUN_WITHOUT_ENCODER);
-
-
-        }
-
-        public void turnBottomArm_E ( int degrees){
-
-            int ticks = 3 * 1440 * degrees / (360 * 4);
-            armBottom.setMode(RUN_USING_ENCODER);
-            armBottom.setMode(STOP_AND_RESET_ENCODER);
-            armBottom.setMode(RUN_TO_POSITION);
-            armBottom.setTargetPosition(10);
-            armBottom.setPower(0.6);
-            //while(armBottom.getCurrentPosition()<ticks)
-            sleep(1);
-            armBottom.setMode(RUN_WITHOUT_ENCODER);
-        }
-
-        public void turnBottomArm ( double power, int direction, double distance){
-
-            armBottom.setMode(STOP_AND_RESET_ENCODER);
-
-
-            telemetry.addData("turnBottomArm", "In straight()");
-            telemetry.update();
-
-
-            armBottom.setMode(RUN_WITHOUT_ENCODER);
-            armBottom.setDirection(DcMotorSimple.Direction.REVERSE);
-
-            int count = 0;
-            while (Math.abs(armBottom.getCurrentPosition()) < Math.abs(distance)
-                    && count++ < 50 && opModeIsActive() && !isStopRequested()) {
-
-                telemetry.addData("armBottom Position", armBottom.getCurrentPosition());
-                telemetry.update();
-                armBottom.setPower(direction * .4 * power);
-
-                if (Math.abs(armBottom.getCurrentPosition()) < .05 * Math.abs(distance)) {
-                    armBottom.setPower(direction * power);
-                } else if (Math.abs(armBottom.getCurrentPosition()) < .5 * Math.abs(distance)) {
-                    armBottom.setPower(direction * .8 * power);
-
-                } else if (Math.abs(armBottom.getCurrentPosition()) < .6 * Math.abs(distance)) {
-                    armBottom.setPower(direction * .6 * power);
-                } else if (Math.abs(armBottom.getCurrentPosition()) < .9 * Math.abs(distance)) {
-                    armBottom.setPower(direction * .5 * power);
-
-                } else {
-                    armBottom.setPower(direction * .2 * power);
-                }
-            }
-            armBottom.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            armBottom.setPower(0);
-
-            //stopRobot and change modes back to normal
-            armBottom.setMode(STOP_AND_RESET_ENCODER);
-
-            // sleep(100);
-
-
-        }
-        public void turnTopArm ( double power, int direction, double distance){
-
-            armTop.setMode(STOP_AND_RESET_ENCODER);
-
-
-            telemetry.addData("armTop", "In straight()");
-            telemetry.update();
-
-
-            armTop.setMode(RUN_WITHOUT_ENCODER);
-            armTop.setDirection(DcMotorSimple.Direction.REVERSE);
-
-            int count = 0;
-            while (Math.abs(armTop.getCurrentPosition()) < Math.abs(distance)
-                    && count++ < 30 && opModeIsActive() && !isStopRequested()) {
-
-                telemetry.addData("armTop Position", armTop.getCurrentPosition());
-                telemetry.update();
-                armTop.setPower(direction * .4 * power);
-
-                if (Math.abs(armTop.getCurrentPosition()) < .4 * Math.abs(distance)) {
-                    armTop.setPower(direction * power);
-                } else if (Math.abs(armTop.getCurrentPosition()) < .8 * Math.abs(distance)) {
-                    armTop.setPower(direction * .8 * power);
-
-                } else if (Math.abs(armTop.getCurrentPosition()) < .85 * Math.abs(distance)) {
-                    armTop.setPower(direction * .7 * power);
-                } else if (Math.abs(armTop.getCurrentPosition()) < .9 * Math.abs(distance)) {
-                    armTop.setPower(direction * .5 * power);
-
-                } else {
-                    armTop.setPower(direction * .4 * power);
-                }
-            }
-            armTop.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            armTop.setPower(0.2);
-
-            //stopRobot and change modes back to normal
-            armTop.setMode(STOP_AND_RESET_ENCODER);
-
-            //    sleep(100);
-
-
-        }
-
-
-    }
 
 
 

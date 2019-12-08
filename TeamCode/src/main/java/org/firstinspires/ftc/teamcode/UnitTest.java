@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Locale;
@@ -19,12 +17,12 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 
 @TeleOp (name = "UnitTest")
 public class UnitTest extends newTeleop {
-double TICKS_PER_INCH_STRAIGHT = 89.1;
-double TICKS_PER_INCH_STRAFE = 126.00;
+final double TICKS_PER_INCH_STRAIGHT = 89.1;
+final double TICKS_PER_INCH_STRAFE = 126.00;
 
     public void straight(double power, int direction, double distance) {
 
-        power /= 1;
+        power /= 3;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
@@ -55,51 +53,60 @@ double TICKS_PER_INCH_STRAFE = 126.00;
         telemetry.update();
 
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorLeftBack.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
-                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
+        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)))
+//                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
+//                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance)))
+                {
 
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
-            telemetry.addData("Encoder value", motorLeftFront.getCurrentPosition());
+            telemetry.addData("Encoder LeftFront", motorLeftFront.getCurrentPosition());
+            telemetry.addData("Encoder RightFront", motorRightFront.getCurrentPosition());
+            telemetry.addData("Encoder LeftBack", motorLeftBack.getCurrentPosition());
+            telemetry.addData("Encoder RightBack", motorRightBack .getCurrentPosition());
+
+
+
             telemetry.addData("Position", motorLeftFront.getCurrentPosition());
             telemetry.update();
-            if (Math.abs(motorLeftFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
+            if (Math.abs(motorRightFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
 
-                motorLeftFront.setPower(direction * power);
-                motorRightBack.setPower(direction * power);
-                motorRightFront.setPower(direction * power);
-                motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .7 * power);
-                motorRightBack.setPower(direction * .7 * power);
-                motorRightFront.setPower(direction * .7 * power);
-                motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .7 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * power);
-                motorRightBack.setPower(direction * power);
-                motorRightFront.setPower(direction * power);
-                motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .7 * power);
-                motorRightBack.setPower(direction * .7 * power);
-                motorRightFront.setPower(direction * .7 * power);
-                motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .5 * power);
-                motorRightBack.setPower(direction * .5 * power);
-                motorRightFront.setPower(direction * .5 * power);
-                motorLeftBack.setPower(direction * .5 * power);
+                motorLeftFront.setPower(direction * .3 * power);
+                motorRightBack.setPower(direction * .3 * power);
+                motorRightFront.setPower(direction * .3 * power);
+                motorLeftBack.setPower(direction * .3 * power);
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
+                motorLeftFront.setPower(direction * .6 * power);
+                motorRightBack.setPower(direction * .6 * power);
+                motorRightFront.setPower(direction * .6 * power);
+                motorLeftBack.setPower(direction * .6 * power);
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .3 * Math.abs(distance)) {
+                motorLeftFront.setPower(direction * 0.9 * power);
+                motorRightBack.setPower(direction * 0.9 * power);
+                motorRightFront.setPower(direction * 0.9 * power);
+                motorLeftBack.setPower(direction * 0.9 * power);
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .7 * Math.abs(distance)) {
+                motorLeftFront.setPower(direction * .6 * power);
+                motorRightBack.setPower(direction * .6 * power);
+                motorRightFront.setPower(direction * .6 * power);
+                motorLeftBack.setPower(direction * .6 * power);
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
+                motorLeftFront.setPower(direction * .3 * power);
+                motorRightBack.setPower(direction * .3 * power);
+                motorRightFront.setPower(direction * .3 * power);
+                motorLeftBack.setPower(direction * .3 * power);
             } else {
-                motorLeftFront.setPower(direction * .4 * power);
-                motorRightBack.setPower(direction * .4 * power);
-                motorRightFront.setPower(direction * .4 * power);
-                motorLeftBack.setPower(direction * .4 * power);
+                motorLeftFront.setPower(direction * .2 * power);
+                motorRightBack.setPower(direction * .2 * power);
+                motorRightFront.setPower(direction * .2 * power);
+                motorLeftBack.setPower(direction * .2 * power);
             }
         }
         stopWheels();
+
+
 
         //stopRobot and change modes back to normal
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
@@ -112,11 +119,10 @@ double TICKS_PER_INCH_STRAFE = 126.00;
 //
 
     }
-
     public void strafe(double power, int direction, double distance) {
 
-        distance /= 2.25;
-        power /= 1.5;
+        //distance /= 2.25;
+        //power /= 1.5;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
@@ -141,7 +147,7 @@ double TICKS_PER_INCH_STRAFE = 126.00;
         motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorLeftBack.getCurrentPosition()) < Math.abs(distance)
+        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
                 && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
                 && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
                 && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
@@ -149,7 +155,7 @@ double TICKS_PER_INCH_STRAFE = 126.00;
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
-            telemetry.addData("Position", motorLeftFront.getCurrentPosition());
+            telemetry.addData("Position", motorRightFront.getCurrentPosition());
             telemetry.update();
             if (Math.abs(motorLeftFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
 
@@ -157,22 +163,22 @@ double TICKS_PER_INCH_STRAFE = 126.00;
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .85 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .85 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .8 * power);
                 motorRightBack.setPower(direction * .8 * power);
                 motorRightFront.setPower(direction * .8 * power);
                 motorLeftBack.setPower(direction * .8 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .7 * power);
                 motorRightBack.setPower(direction * .7 * power);
                 motorRightFront.setPower(direction * .7 * power);
                 motorLeftBack.setPower(direction * .7 * power);
-            } else if (Math.abs(motorLeftFront.getCurrentPosition()) < .95 * Math.abs(distance)) {
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .95 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .6 * power);
                 motorRightBack.setPower(direction * .6 * power);
                 motorRightFront.setPower(direction * .6 * power);
@@ -202,16 +208,15 @@ double TICKS_PER_INCH_STRAFE = 126.00;
         // sleep(200);
 
     }
-
-    public void straight_inch(double power, int direction, double distance){
-        double ticks = distance* TICKS_PER_INCH_STRAIGHT;
-        straight(power, direction, ticks);
-    }
     public void strafe_inch(double power, int direction, double distance){
         double ticks = distance* TICKS_PER_INCH_STRAFE;
         strafe(power, direction, ticks);
     }
+    public void straight_inch(double power, int direction, double distance){
+        double ticks = distance* TICKS_PER_INCH_STRAIGHT;
 
+        straight(power, direction, ticks);
+    }
     @Override
     public void runOpMode() {
 
@@ -233,11 +238,35 @@ double TICKS_PER_INCH_STRAFE = 126.00;
                 liftInch(11);
             }
 
-            if(gamepad1.right_bumper){
-            straight_inch(1,1,12);
-            }
-            if(gamepad1.left_bumper){
+//            if(gamepad1.right_bumper){
+//            straight_inch(0.4,1,6);
+//            }
+//            if(gamepad1.left_bumper){
+//                straight_inch(0.4,-1,6);
+//            }
+//            if(gamepad1.dpad_up){
+//                straight_inch(0.6,1,12);
+//            }
+//            if(gamepad1.dpad_down){
+//                straight_inch(0.6,-1,12);
+//            }
+//            if(gamepad1.dpad_right){
+//                straight_inch(0.6,1,24);
+//            }
+//            if(gamepad1.dpad_left){
+//                straight_inch(0.6,-1,24);
+//            }
+            if(gamepad1.dpad_down){
                 strafe_inch(1,1,12);
+            }
+            if(gamepad1.dpad_up){
+                strafe_inch(1,1,24);
+            }
+            if(gamepad1.dpad_right){
+                strafe_inch(1,-1,12);
+            }
+            if(gamepad1.dpad_left){
+                strafe_inch(1,-1,24);
             }
         }
 
