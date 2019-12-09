@@ -16,8 +16,8 @@ import java.util.Locale;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 
-@TeleOp (name = "newTeleop")
-public class newTeleop extends LinearOpMode {
+@TeleOp (name = "Teleop202")
+public class Teleop2020 extends LinearOpMode {
 
     DcMotor motorRightFront;
     DcMotor motorLeftFront;
@@ -32,6 +32,7 @@ public class newTeleop extends LinearOpMode {
     Servo tray;
 
 
+
     BNO055IMU imu, imu1;
     Orientation angles, angles1;
 
@@ -40,20 +41,20 @@ public class newTeleop extends LinearOpMode {
     boolean strafing;
     boolean initDone=false;
     double power_multiplier;
-
+    double armPosition;
     double angleToTurn;
     double liftPosition;
-
+    boolean extended = false;
     private static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
     private static final double LIFT_NON_SLIP_POWER = 0.2;
-
+    private static final double ARM_INCH_TO_TIME_MS = 200;
 
 
     private static final float mmPerInch        = 25.4f;
     private static final float mmFTCFieldWidth  = (12*6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
     private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
-    public void initFn() {
+    public void teleopInitFn() {
 
         telemetry.addData("Init: start ","");
 
@@ -82,7 +83,7 @@ public class newTeleop extends LinearOpMode {
         grab_back = hardwareMap.servo.get("grab_back");
         turn = hardwareMap.servo.get("turn");
         tray = hardwareMap.servo.get("tray");
-
+        armPosition = 0;
 
         //grab_front.setPosition(0.1);
         //grab_back.setPosition(0.1);
@@ -154,14 +155,48 @@ public class newTeleop extends LinearOpMode {
 
     }
 
+    public void setArmPosition_startPosition(){
+
+    }
+    public void armExtended(double inches){
+        long currentTime = System.currentTimeMillis();
+        double targetTime = Math.abs(inches) * ARM_INCH_TO_TIME_MS + currentTime;
+        while(currentTime < targetTime ){
+            currentTime = System.currentTimeMillis();
+            if(inches == Math.abs(inches)){
+                extend.setPosition(0);
+
+            }
+            else{
+                extend.setPosition(1);
+            }
+
+        }
+        extend.setPosition(0.5);
+        if(inches == Math.abs(inches)){
+            armPosition+=inches;
+        }
+        else{
+            armPosition-=inches;
+        }
+        extended = true;
+    }
+    public void grabCollection(){
+        if(extended) {
+            grab_front.setPosition(1);
+            grab_back.setPosition(1);
+        }
+    }
+    public void closeGrabber(){
+        grab_front.setPosition(0.4);
+        grab_back.setPosition(1);
+    }
+
     @Override
     public void runOpMode() {
 
 
-        initFn();
-
-
-
+        teleopInitFn();
 
         waitForStart();
 
@@ -178,10 +213,10 @@ public class newTeleop extends LinearOpMode {
 
             if (Math.abs(sideways) > 0.1) {
                 //strafe
-                motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);  //changed for strafe
-                motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
-                motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD); //changed for strafe
+                motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);  //default
+                motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //ƒchanged for strafe
+                motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //changed for strafe
 
                 motorRightFront.setPower(-1*sideways*power_multiplier);
                 motorRightBack.setPower(-1*sideways*power_multiplier);
@@ -201,7 +236,7 @@ public class newTeleop extends LinearOpMode {
                 motorLeftBack.setPower(forward*power_multiplier);
             }
             else
-            if (gamepad1.right_bumper && Math.abs(forward) < 0.1) {
+            if (gamepad1.right_bumper && Math.abs(forward) > 0.1) {
                 //left turn
                 motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
                 motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
@@ -239,7 +274,11 @@ public class newTeleop extends LinearOpMode {
                 motorLeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 motorLeftBack.setPower(0);
             }
-
+            if(gamepad1.right_trigger > 0 ){
+                power_multiplier = 1 - (gamepad1.right_trigger*2/3);
+                //Subtract from 1 to make the trigger give a reduction in power
+                //Multiply by 2/3 to not completely reduce the power
+            }
             if (gamepad1.b) {
                 if (power_multiplier == 1)
                     power_multiplier = 0.5;

@@ -45,16 +45,10 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 
 
 
-@Autonomous(name = "latestCode1")
-public class latestCode1 extends LinearOpMode {
+@Autonomous(name = "Autonomous2020")
+public class Autonomous2020 extends Teleop2020  {
 
-    DcMotor motorRightFront;
-    DcMotor motorRightBack;
-    DcMotor motorLeftFront;
-    DcMotor motorLeftBack;
-//    DcMotor armBottom;
-//    DcMotor armTop;
-    DcMotor lift;
+
 
 boolean testMode = false;
 
@@ -191,44 +185,13 @@ boolean testMode = false;
 
 
     public void initFn() {
-
+        teleopInitFn();
         telemetry.addData("Init: start ", "");
 
-        motorRightFront = hardwareMap.dcMotor.get("right_front");
-        motorRightBack = hardwareMap.dcMotor.get("right_back");
-        motorLeftFront = hardwareMap.dcMotor.get("left_front");
-        motorLeftBack = hardwareMap.dcMotor.get("left_back");
-        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+
         strafing = false;
 
-        motorRightFront.setMode(RUN_WITHOUT_ENCODER);
-        motorRightBack.setMode(RUN_WITHOUT_ENCODER);
-        motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
-        motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
-
-
-
-
-        //grabpos = 0.5;
-
-
         double driveSpeed = 0;
-        motorLeftBack.setPower(driveSpeed);
-        motorLeftFront.setPower(driveSpeed);
-        motorRightBack.setPower(driveSpeed);
-        motorRightFront.setPower(driveSpeed);
-
-//        grabServo.setPosition(grabpos);
-
-//        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
-//        distanceSensor_rf = (Rev2mDistanceSensor) sensorRange_rf;
-//        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
-//        distanceSensor_rb = (Rev2mDistanceSensor) sensorRange_rb;
-//        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lf");
-//        distanceSensor_lf = (Rev2mDistanceSensor) sensorRange_lf;
-//        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
-//        distanceSensor_lb = (Rev2mDistanceSensor) sensorRange_lb;
 
         new Thread(new InitThread_Depot()).start();
     }
@@ -1121,13 +1084,16 @@ boolean testMode = false;
             if (x < 0) {
                 straight_inch(0.8, 1, Math.abs(x));
             }
-
+            armExtended(10);
+            grabCollection();
+            closeGrabber();
+            }
             }
 
 
         }
 
-    }
+
 
 
 
