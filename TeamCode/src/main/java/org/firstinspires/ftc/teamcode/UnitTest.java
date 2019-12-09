@@ -34,12 +34,13 @@ final double TICKS_PER_INCH_STRAFE = 126.00;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            if (gamepad1.a) {
+            if (gamepad2.x) {
                 armExtended(10);
                 grabCollection();
                 straight_inch(1, 1, 10);
                 closeGrabber();
             }
+
             if (gamepad1.x) {
                 liftInch(5.5);
             }
@@ -47,24 +48,25 @@ final double TICKS_PER_INCH_STRAFE = 126.00;
                 liftInch(11);
             }
 
-//            if(gamepad1.right_bumper){
-//            straight_inch(0.4,1,6);
-//            }
-//            if(gamepad1.left_bumper){
-//                straight_inch(0.4,-1,6);
-//            }
-//            if(gamepad1.dpad_up){
-//                straight_inch(0.6,1,12);
-//            }
-//            if(gamepad1.dpad_down){
-//                straight_inch(0.6,-1,12);
-//            }
-//            if(gamepad1.dpad_right){
-//                straight_inch(0.6,1,24);
-//            }
-//            if(gamepad1.dpad_left){
-//                straight_inch(0.6,-1,24);
-//            }
+            if(gamepad2.right_bumper){
+            straight_inch(0.4,1,6);
+            }
+            if(gamepad2.left_bumper){
+                straight_inch(0.4,-1,6);
+            }
+            if(gamepad2.dpad_up){
+                straight_inch(0.6,1,12);
+            }
+            if(gamepad2.dpad_down){
+                straight_inch(0.6,-1,12);
+            }
+            if(gamepad2.dpad_right){
+                straight_inch(0.6,1,24);
+            }
+            if(gamepad2.dpad_left){
+                straight_inch(0.6,-1,24);
+            }
+            
             if(gamepad1.dpad_down){
                 strafe_inch(1,1,12);
             }
