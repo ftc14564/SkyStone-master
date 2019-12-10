@@ -287,13 +287,13 @@ public class Teleop2020 extends LinearOpMode {
                 sleep(200);
             }
             if(gamepad2.left_stick_y > 0.1) {
-                lift.setPower(-0.5);
-                lift_assist.setPower(-0.5);
+                lift.setPower(-1);
+                lift_assist.setPower(-1);
 
             }
             else if(gamepad2.left_stick_y < -0.1){
-                lift.setPower(0.5);
-                lift_assist.setPower(0.5);
+                lift.setPower(1);
+                lift_assist.setPower(1);
 
             }
             else{

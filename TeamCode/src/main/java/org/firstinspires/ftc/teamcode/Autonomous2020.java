@@ -4,13 +4,9 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -33,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
-import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
@@ -128,6 +122,8 @@ boolean testMode = false;
     private float phoneXRotate = 0;
     private float phoneYRotate = 0;
     private float phoneZRotate = 0;
+    boolean red = false;
+    boolean blue = false;
 
 
     /**
@@ -862,10 +858,14 @@ boolean testMode = false;
             strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
         }
     }
-    public void firstStep(){
+    public void firstStepBlue(){
         straight_inch(0.5,1,16);
         //Direction - +1 is LEFT LEFT LEFT LEFT LEFT
         strafe_inch(1,1,12);
+    }
+    public void firstStepRed(){
+        straight(0.5,1,16);
+        strafe_inch(1,-1,12);
     }
 
 
@@ -1009,7 +1009,7 @@ boolean testMode = false;
         waitForStart();
 
         if(!testMode)
-            firstStep();
+            firstStepBlue();
         boolean blockSeen = false;
 
         int i = 0;
@@ -1084,8 +1084,10 @@ boolean testMode = false;
             if (x < 0) {
                 straight_inch(0.8, 1, Math.abs(x));
             }
+
             armExtended(10);
             grabCollection();
+            straight_inch(1, 1, 10);
             closeGrabber();
             }
             }
