@@ -557,7 +557,7 @@ boolean testMode = false;
     }
 
     public void straight(double power, int direction, double distance) {
-//
+
 //        distance /= 2.25;
 //        power /= 1;
 
@@ -613,25 +613,25 @@ boolean testMode = false;
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .7 * power);
-                motorRightBack.setPower(direction * .7 * power);
-                motorRightFront.setPower(direction * .7 * power);
-                motorLeftBack.setPower(direction * .7 * power);
+                motorLeftFront.setPower(direction * .9 * power);
+                motorRightBack.setPower(direction * .9 * power);
+                motorRightFront.setPower(direction * .9 * power);
+                motorLeftBack.setPower(direction * .9 * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .7 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * power);
                 motorRightBack.setPower(direction * power);
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .7 * power);
-                motorRightBack.setPower(direction * .7 * power);
-                motorRightFront.setPower(direction * .7 * power);
-                motorLeftBack.setPower(direction * .7 * power);
+                motorLeftFront.setPower(direction * .6 * power);
+                motorRightBack.setPower(direction * .6 * power);
+                motorRightFront.setPower(direction * .6 * power);
+                motorLeftBack.setPower(direction * .6 * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .5 * power);
-                motorRightBack.setPower(direction * .5 * power);
-                motorRightFront.setPower(direction * .5 * power);
-                motorLeftBack.setPower(direction * .5 * power);
+                motorLeftFront.setPower(direction * .3 * power);
+                motorRightBack.setPower(direction * .3 * power);
+                motorRightFront.setPower(direction * .3 * power);
+                motorLeftBack.setPower(direction * .3 * power);
             } else {
                 motorLeftFront.setPower(direction * .4 * power);
                 motorRightBack.setPower(direction * .4 * power);
@@ -654,6 +654,7 @@ boolean testMode = false;
 
     }
     public void straight_inch(double power, int direction, double distance){
+
         double ticks = distance* TICKS_PER_INCH_STRAIGHT;
         straight(power, direction, ticks);
     }
@@ -859,13 +860,13 @@ boolean testMode = false;
         }
     }
     public void firstStepBlue(){
-        straight_inch(0.5,1,16);
+        straight_inch(0.5,1, 9);
         //Direction - +1 is LEFT LEFT LEFT LEFT LEFT
-        strafe_inch(1,1,12);
+       // strafe_inch(1,1,12);
     }
     public void firstStepRed(){
-        straight(0.5,1,16);
-        strafe_inch(1,-1,12);
+        straight(0.5,1,9);
+        //strafe_inch(1,-1,12);
     }
 
 
@@ -1012,7 +1013,9 @@ boolean testMode = false;
             firstStepBlue();
         boolean blockSeen = false;
 
+
         int i = 0;
+        int strafeCount = 0;
         while (!isStopRequested()) {
             //START
             i++;
@@ -1055,42 +1058,80 @@ boolean testMode = false;
                     break;
                 }
             } else {
+                strafeCount++;
                 telemetry.addData("Visible Target", "none");
+                strafe_inch(0.8,-1,8);
+                if(strafeCount > 1)
+                    break;
+                sleep(1000);
             }
 
             telemetry.update();
 
         }
+        boolean leftBlock = false;
+        boolean centerBlock = false;
+        boolean rightBlock = false;
         if (blockSeen) {
-            boolean leftBlock = false;
-            boolean centerBlock = false;
-            boolean rightBlock = false;
+
             //
 
-            if (y > -3.5) {
-                rightBlock = true;
+            if (y < 0) {
+                leftBlock = true;
                 telemetry.addData("right", "right right iq " + y);
                 telemetry.update();
-                strafe_inch(0.8, 1, Math.abs(y + (3.5)));
+                strafe_inch(0.8,1,(Math.abs(-11-y)));
+//                if(y<-3.5) {
+//                    strafe_inch(0.8, -1, Math.abs(y + (3.5)));
+//                }
+//                else if(y >-3.5){
+//                    strafe_inch(0.8,1,Math.abs(y+3.5));
+//                }
                 telemetry.addData("right", "right right iq " + y);
                 telemetry.update();
 
-            } else if (y < -3.5) {
+            } else if (y > 0) {
                 centerBlock = true;
-                strafe_inch(0.8, -1, Math.abs(y + 3.5));
+//                strafe_inch(0.8, 1, 8);
+                if(y<11){
+                    strafe_inch(0.8,1,(11-y));
+                }
+                else{
+                    strafe_inch(0.8,-1,Math.abs(11-y));
+                }
+                strafe_inch(0.8,1,(y+11));
                 telemetry.addData("center", "center center iq" + y);
+                if(y<-3.5) {
+                    strafe_inch(0.8, -1, Math.abs(y + (3.5)));
+                }
+                else if(y >-3.5){
+                    strafe_inch(0.8,1,Math.abs(y+3.5));
+                }
             }
+        }
 
-            if (x < 0) {
-                straight_inch(0.8, 1, Math.abs(x));
-            }
 
-            armExtended(10);
-            grabCollection();
-            straight_inch(1, 1, 10);
-            closeGrabber();
-            }
-            }
+
+//            armExtended(10);
+//            grabCollection();
+//            if (x < 0) {
+//                straight_inch(0.8, 1, Math.abs(x));
+//            }
+//            straight_inch(1, 1, 5);
+//            closeGrabber();
+//            liftInch(0.5);
+//            straight_inch(1, -1, 10);
+//            strafe_inch(1, 1, 10);
+        straight_inch(0.6, 1, 18);
+        sleep(700);
+        tray_left.setPosition(0);
+        tray_right.setPosition(0);
+        sleep(1000);
+        straight_inch(0.6, -1, 18);
+
+    }
+
+
 
 
         }

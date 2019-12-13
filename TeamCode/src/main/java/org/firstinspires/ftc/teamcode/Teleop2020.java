@@ -16,7 +16,7 @@ import java.util.Locale;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 
-@TeleOp (name = "Teleop202")
+@TeleOp (name = "Teleop2020")
 public class Teleop2020 extends LinearOpMode {
 
     DcMotor motorRightFront;
@@ -29,7 +29,9 @@ public class Teleop2020 extends LinearOpMode {
     Servo grab_front;
     Servo extend;
     Servo turn;
-    Servo tray;
+    Servo tray_right;
+    Servo tray_left;
+
 
 
 
@@ -82,7 +84,8 @@ public class Teleop2020 extends LinearOpMode {
         grab_front = hardwareMap.servo.get("grab_front");
         grab_back = hardwareMap.servo.get("grab_back");
         turn = hardwareMap.servo.get("turn");
-        tray = hardwareMap.servo.get("tray");
+        tray_right = hardwareMap.servo.get("tray_right");
+        tray_left = hardwareMap.servo.get("tray_left");
         armPosition = 0;
 
         //grab_front.setPosition(0.1);
@@ -97,7 +100,7 @@ public class Teleop2020 extends LinearOpMode {
         motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
 
-        power_multiplier = 1;
+        power_multiplier = 0.8;
 
 
 
@@ -137,12 +140,12 @@ public class Teleop2020 extends LinearOpMode {
         double ticks = inches * REV_CORE_HEX_TICKS_PER_INCH;
 
         if ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))) {
-            while (Math.abs(lift.getCurrentPosition()) < Math.abs(ticks)) {
+            while ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))&& !isStopRequested()) {
                 lift.setPower(1.0);
                 lift_assist.setPower(1.0);
             }
         } else {
-            while (Math.abs(lift.getCurrentPosition()) > Math.abs(ticks)) {
+            while ((Math.abs(lift.getCurrentPosition()) > Math.abs(ticks)) && !isStopRequested()) {
                 lift.setPower(-1.0);
                 lift_assist.setPower(-1.0);
             }
@@ -161,7 +164,7 @@ public class Teleop2020 extends LinearOpMode {
     public void armExtended(double inches){
         long currentTime = System.currentTimeMillis();
         double targetTime = Math.abs(inches) * ARM_INCH_TO_TIME_MS + currentTime;
-        while(currentTime < targetTime ){
+        while((currentTime < targetTime ) && !isStopRequested()){
             currentTime = System.currentTimeMillis();
             if(inches == Math.abs(inches)){
                 extend.setPosition(0);
@@ -286,12 +289,12 @@ public class Teleop2020 extends LinearOpMode {
                     power_multiplier = 1;
                 sleep(200);
             }
-            if(gamepad2.left_stick_y > 0.1) {
+            if(lift.getCurrentPosition()>= 0 && gamepad2.left_stick_y > 0.1) {
                 lift.setPower(-1);
                 lift_assist.setPower(-1);
 
             }
-            else if(gamepad2.left_stick_y < -0.1){
+            else if( gamepad2.left_stick_y < -0.1){
                 lift.setPower(1);
                 lift_assist.setPower(1);
 
@@ -345,7 +348,7 @@ public class Teleop2020 extends LinearOpMode {
                 lift.setMode(STOP_AND_RESET_ENCODER);
                 lift.setMode(RUN_WITHOUT_ENCODER);
                 lift.setDirection(DcMotorSimple.Direction.FORWARD);
-                while (Math.abs(lift.getCurrentPosition()) < Math.abs((0.5*288)))
+                while ((Math.abs(lift.getCurrentPosition()) < Math.abs((0.5*288))) && !isStopRequested())
                 {
                     lift.setPower(1.0);
                 }
@@ -381,11 +384,23 @@ public class Teleop2020 extends LinearOpMode {
 //                grab.setPosition(0);
 //            }
 
-            if (gamepad1.dpad_down){
-                tray.setPosition(0);
+            if (gamepad1.dpad_down){        //Both Down
+                tray_left.setPosition(0);
+                tray_right.setPosition(1);
+
             }
-            if (gamepad1.dpad_up){
-                tray.setPosition(1);
+            if (gamepad1.dpad_up) {     //Both Up
+                tray_left.setPosition(0.9); //0.9 because servo strains at position 1
+                tray_right.setPosition(0);
+            }
+            if (gamepad1.right_trigger > 0.1){ //Only Right down
+                tray_left.setPosition(0.9); //0.9 because servo strains at position 1
+                tray_right.setPosition(1);
+
+            }
+            if (gamepad1.left_trigger > 0.1) { //Only Left down
+                tray_left.setPosition(0);
+                tray_right.setPosition(0);
             }
 
             if (gamepad2.x) {
@@ -426,6 +441,7 @@ public class Teleop2020 extends LinearOpMode {
         motorRightBack.setPower(0);
         motorRightFront.setPower(0);
         lift.setPower(0);
+        telemetry.addData("lift encoder value", lift.getCurrentPosition());
 
 
     }
