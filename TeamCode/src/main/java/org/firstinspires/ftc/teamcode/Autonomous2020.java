@@ -44,7 +44,6 @@ public class Autonomous2020 extends Teleop2020  {
 
 
 
-boolean testMode = false;
 
     private DistanceSensor sensorRange_rf;
     private DistanceSensor sensorRange_rb;
@@ -78,6 +77,9 @@ boolean testMode = false;
     boolean vuInitDone = false;
     double y = 0;
     double x = 0;
+
+    double where_x = 0;
+    double where_y = 0;
 
     BNO055IMU imu;
     Orientation angles;
@@ -131,6 +133,22 @@ boolean testMode = false;
      * Detection engine.
      */
     private TFObjectDetector tfod;
+
+
+    int cameraMonitorViewId;
+    VuforiaLocalizer.Parameters vu_parameters;
+
+    VuforiaTrackables targetsSkyStone ;
+    VuforiaTrackable stoneTarget ;
+
+    OpenGLMatrix robotFromCamera ;
+
+    // Next, translate the camera lens to where it is on the robot.
+    // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
+    final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
+    final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
+    final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+
 
 
     class InitThread_Depot implements Runnable {
@@ -190,6 +208,134 @@ boolean testMode = false;
         double driveSpeed = 0;
 
         new Thread(new InitThread_Depot()).start();
+
+        // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        vu_parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        vu_parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+
+        vu_parameters.vuforiaLicenseKey = VUFORIA_KEY;
+
+        /**
+         * We also indicate which camera on the RC we wish to use.
+         */
+        // parameters.cameraName = webcamName;
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(vu_parameters);
+
+
+        // Load the data sets for the trackable objects. These particular data
+        // sets are stored in the 'assets' part of our application.
+        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+        stoneTarget = targetsSkyStone.get(0);
+        stoneTarget.setName("Stone Target");
+//        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
+//        blueRearBridge.setName("Blue Rear Bridge");
+//        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
+//        redRearBridge.setName("Red Rear Bridge");
+//        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
+//        redFrontBridge.setName("Red Front Bridge");
+//        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
+//        blueFrontBridge.setName("Blue Front Bridge");
+//        VuforiaTrackable red1 = targetsSkyStone.get(5);
+//        red1.setName("Red Perimeter 1");
+//        VuforiaTrackable red2 = targetsSkyStone.get(6);
+//        red2.setName("Red Perimeter 2");
+//        VuforiaTrackable front1 = targetsSkyStone.get(7);
+//        front1.setName("Front Perimeter 1");
+//        VuforiaTrackable front2 = targetsSkyStone.get(8);
+//        front2.setName("Front Perimeter 2");
+//        VuforiaTrackable blue1 = targetsSkyStone.get(9);
+//        blue1.setName("Blue Perimeter 1");
+//        VuforiaTrackable blue2 = targetsSkyStone.get(10);
+//        blue2.setName("Blue Perimeter 2");
+//        VuforiaTrackable rear1 = targetsSkyStone.get(11);
+//        rear1.setName("Rear Perimeter 1");
+//        VuforiaTrackable rear2 = targetsSkyStone.get(12);
+//        rear2.setName("Rear Perimeter 2");
+
+        // For convenience, gather together all the trackable objects in one easily-iterable collection */
+        allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables.addAll(targetsSkyStone);
+        stoneTarget.setLocation(OpenGLMatrix
+                .translation(0, 0, stoneZ)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+
+        //Set the position of the bridge support targets with relation to origin (center of field)
+//        blueFrontBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
+//
+//        blueRearBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
+//
+//        redFrontBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, -bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
+//
+//        redRearBridge.setLocation(OpenGLMatrix
+//                .translation(bridgeX, -bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
+//
+//        //Set the position of the perimeter targets with relation to origin (center of field)
+//        red1.setLocation(OpenGLMatrix
+//                .translation(quadField, -halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
+//
+//        red2.setLocation(OpenGLMatrix
+//                .translation(-quadField, -halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
+//
+//        front1.setLocation(OpenGLMatrix
+//                .translation(-halfField, -quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
+//
+//        front2.setLocation(OpenGLMatrix
+//                .translation(-halfField, quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
+//
+//        blue1.setLocation(OpenGLMatrix
+//                .translation(-quadField, halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
+//
+//        blue2.setLocation(OpenGLMatrix
+//                .translation(quadField, halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
+//
+//        rear1.setLocation(OpenGLMatrix
+//                .translation(halfField, quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+//
+//        rear2.setLocation(OpenGLMatrix
+//                .translation(halfField, -quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+        if (CAMERA_CHOICE == BACK) {
+            phoneYRotate = -90;
+        } else {
+            phoneYRotate = 90;
+        }
+
+        // Rotate the phone vertical about the X axis if it's in portrait mode
+        if (PHONE_IS_PORTRAIT) {
+            phoneXRotate = 90;
+        }
+
+
+        robotFromCamera = OpenGLMatrix
+                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
+
+        /**  Let all the trackable listeners know where the phone is.  */
+        for (VuforiaTrackable trackable : allTrackables) {
+            ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
+        }
+
+        targetsSkyStone.activate();
+
     }
 
 
@@ -556,11 +702,23 @@ boolean testMode = false;
 
     }
 
+    public void EncoderStraight(double dist){
+        EncoderMoveDist(1, dist,false);
+    }
+
+    public void EncoderStrafe(double dist){
+        EncoderMoveDist(1, dist,true);
+    }
 
     double P_FWD_COEFF = -0.005;
     double FWD_THRESHOLD = 1;
 
-    public void EncodeFwdDist(double speed, double distance, Boolean strafe) {
+    public void EncoderMoveDist(double speed, double distance, Boolean strafe) {
+
+        if(!strafe)
+            where_x += distance;
+        else
+            where_y += distance;
 
         distance *= -1;
 
@@ -995,161 +1153,15 @@ boolean testMode = false;
             strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
         }
     }
-    public void firstStepBlue(){
-        straight_inch(0.5,1, 12);
-        //Direction - +1 is LEFT LEFT LEFT LEFT LEFT
-       // strafe_inch(1,1,12);
-    }
-    public void firstStepRed(){
-        straight(0.5,1,12);
-        //strafe_inch(1,-1,12);
-    }
 
 
     @Override
     public void runOpMode() {
+        runAutonomous(true);
+    }
 
-        initFn();
-
-        // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-
-        /**
-         * We also indicate which camera on the RC we wish to use.
-         */
-        // parameters.cameraName = webcamName;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
-        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
-        stoneTarget.setName("Stone Target");
-//        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
-//        blueRearBridge.setName("Blue Rear Bridge");
-//        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
-//        redRearBridge.setName("Red Rear Bridge");
-//        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
-//        redFrontBridge.setName("Red Front Bridge");
-//        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
-//        blueFrontBridge.setName("Blue Front Bridge");
-//        VuforiaTrackable red1 = targetsSkyStone.get(5);
-//        red1.setName("Red Perimeter 1");
-//        VuforiaTrackable red2 = targetsSkyStone.get(6);
-//        red2.setName("Red Perimeter 2");
-//        VuforiaTrackable front1 = targetsSkyStone.get(7);
-//        front1.setName("Front Perimeter 1");
-//        VuforiaTrackable front2 = targetsSkyStone.get(8);
-//        front2.setName("Front Perimeter 2");
-//        VuforiaTrackable blue1 = targetsSkyStone.get(9);
-//        blue1.setName("Blue Perimeter 1");
-//        VuforiaTrackable blue2 = targetsSkyStone.get(10);
-//        blue2.setName("Blue Perimeter 2");
-//        VuforiaTrackable rear1 = targetsSkyStone.get(11);
-//        rear1.setName("Rear Perimeter 1");
-//        VuforiaTrackable rear2 = targetsSkyStone.get(12);
-//        rear2.setName("Rear Perimeter 2");
-
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsSkyStone);
-        stoneTarget.setLocation(OpenGLMatrix
-                .translation(0, 0, stoneZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-
-        //Set the position of the bridge support targets with relation to origin (center of field)
-//        blueFrontBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
-//
-//        blueRearBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
-//
-//        redFrontBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, -bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
-//
-//        redRearBridge.setLocation(OpenGLMatrix
-//                .translation(bridgeX, -bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
-//
-//        //Set the position of the perimeter targets with relation to origin (center of field)
-//        red1.setLocation(OpenGLMatrix
-//                .translation(quadField, -halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-//
-//        red2.setLocation(OpenGLMatrix
-//                .translation(-quadField, -halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-//
-//        front1.setLocation(OpenGLMatrix
-//                .translation(-halfField, -quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-//
-//        front2.setLocation(OpenGLMatrix
-//                .translation(-halfField, quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-//
-//        blue1.setLocation(OpenGLMatrix
-//                .translation(-quadField, halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-//
-//        blue2.setLocation(OpenGLMatrix
-//                .translation(quadField, halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-//
-//        rear1.setLocation(OpenGLMatrix
-//                .translation(halfField, quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-//
-//        rear2.setLocation(OpenGLMatrix
-//                .translation(halfField, -quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-        if (CAMERA_CHOICE == BACK) {
-            phoneYRotate = -90;
-        } else {
-            phoneYRotate = 90;
-        }
-
-        // Rotate the phone vertical about the X axis if it's in portrait mode
-        if (PHONE_IS_PORTRAIT) {
-            phoneXRotate = 90;
-        }
-
-        // Next, translate the camera lens to where it is on the robot.
-        // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
-        final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
-
-        OpenGLMatrix robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
-
-        /**  Let all the trackable listeners know where the phone is.  */
-        for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
-        }
-
-        targetsSkyStone.activate();
-
-        waitForStart();
-
-        if(!testMode) {
-            firstStepBlue();
-        }
+    Boolean vuFindBlock(Boolean isBlueSide) {
         boolean blockSeen = false;
-
 
         int i = 0;
         int strafeCount = 0;
@@ -1193,18 +1205,24 @@ boolean testMode = false;
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 center(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
 
-                    blockSeen = true;
-                    telemetry.addData("reached here", "yes");
-                    break;
+                blockSeen = true;
+                telemetry.addData("reached here", "yes");
+                break;
 
             }
             else if (retryCount < 10) {
                 retryCount++;
+                continue;
             }
             else {
                 strafeCount++;
                 telemetry.addData("Visible Target", "none");
-                strafe_inch(0.8,-1,8);
+                if(isBlueSide){
+                    EncoderStrafe(8);
+                }else{
+                    EncoderStrafe(-8);
+                }
+
                 retryCount=0;
                 if(strafeCount > 1)
                     break;
@@ -1214,82 +1232,92 @@ boolean testMode = false;
             telemetry.update();
 
         }
-        boolean leftBlock = false;
-        boolean centerBlock = false;
-        boolean rightBlock = false;
-        double distanceFromTrayLeft = y + 11.5;
-        if (blockSeen && !testMode) {
-            System.out.println(" NEEL TESTTTTT    " + y);
-            System.out.print("DISTANCEEEEE STRAFFEEE   " + y) ;
-            if(distanceFromTrayLeft < 0){
-                strafe_inch(0.8,-1, distanceFromTrayLeft);
-            }
-            else{
-                strafe_inch(0.8,1,distanceFromTrayLeft);
-            }
-            //
 
-//            if (y < 0) {
-//                leftBlock = true;
-//                telemetry.addData("y value", "negative y value" + y);
-//                System.out.println("HIGH IQ NEEL     "+ y);
-//                telemetry.update();
-//                if(y > -11 && !testMode){
-//                    strafe_inch(0.8,1,Math.abs(y+11));
-//                }
-//                else{
-//                    strafe_inch(0.8,1,(Math.abs(y+11)));
-//                }
-//
-//            } else if (y > 0 && !testMode) {
-//                centerBlock = true;
-////                strafe_inch(0.8, 1, 8);
-//                strafe_inch(0.8,1,(Math.abs(y+11)));
-////                if(y<11){
-////                    strafe_inch(0.8,1,(11-y));
-////                }
-////                else{
-////                    strafe_inch(0.8,-1,Math.abs(11-y));
-////                }
-////                strafe_inch(0.8,1,(y+11));
-//                telemetry.addData("y valueeee", "postive y value" + y);
-//                telemetry.update();
-//                System.out.println("HIGH IQ NEEL     "+ y);
-//
-//            }
+        return blockSeen;
+    }
+
+    public void grabAndDropBlock(Boolean isBlueSide) {
+
+        EncoderStraight(18);
+        sleep(700);
+        tray_left.setPosition(0);
+        sleep(600);
+
+        //step back
+        EncoderStraight(-18);
+
+        //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
+        //take to drop zone ( 2 tiles away towards the bridge )
+        double dropDist = 0;
+        if(isBlueSide){
+            dropDist = -1*(where_y) - 48;
         }
-        else{
-            strafe_inch(0.8,-1,8);
+        else {
+            dropDist = -1* (where_y) + 48;
+        }
+        EncoderStrafe(dropDist);
+
+        //drop the block
+        tray_left.setPosition(0.8);
+    }
+
+    public void runAutonomous(Boolean isBlueSide) {
+
+        initFn();
+
+
+        waitForStart();
+
+        EncoderStraight(12);
+
+        Boolean blockSeen = vuFindBlock(isBlueSide);
+
+        if (blockSeen) {
+            double distanceFromLeftHook = y + 11;
+            EncoderStrafe (distanceFromLeftHook);
         }
 
+        //grab a block (even if it's a random one)
+        grabAndDropBlock(isBlueSide);
 
 
-//            armExtended(10);
-//            grabCollection();
-//            if (x < 0) {
-//                straight_inch(0.8, 1, Math.abs(x));
-//            }
-//            straight_inch(1, 1, 5);
-//            closeGrabber();
-//            liftInch(0.5);
-//            straight_inch(1, -1, 10);
-//            strafe_inch(1, 1, 10);
-        if(!testMode) {
-            straight_inch(0.6, 1, 18);
-            sleep(700);
-            tray_left.setPosition(0);
-            tray_right.setPosition(0);
-            sleep(1000);
-            straight_inch(0.6, -1, 18);
-            strafe_inch(0.8,1,36);
+        //return for second
+        double returnDist = 0;
+        if(isBlueSide){
+            returnDist = 24 + 48;
         }
+        else {
+            returnDist = -24 - 48;
+        }
+        EncoderStrafe(returnDist);
+
+        //see second one ?
+        blockSeen = vuFindBlock(isBlueSide);
+
+        if (blockSeen) {
+            double distanceFromLeftHook = y + 11;
+            EncoderStrafe (distanceFromLeftHook);
+        }
+
+        //grab a block (even if it's a random one)
+        grabAndDropBlock(isBlueSide);
+
+        //park (1 tile back towards the bridge)
+        double parkDist = 0;
+        if(isBlueSide){
+            parkDist = 24;
+        }
+        else {
+            parkDist = -24;
+        }
+        EncoderStrafe(parkDist);
 
     }
 
 
 
 
-        }
+}
 
 
 
