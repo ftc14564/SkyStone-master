@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@Autonomous(name = "SkyStone_Red")
+@Autonomous(name = "SkyStone_Red_Hook")
 public class SkyStone_Red extends Autonomous2020 {
 
     @Override
     public void runOpMode() {
 
-        runAutonomous(false);
+        runAutonomous(false, false);
     }
 
 }
