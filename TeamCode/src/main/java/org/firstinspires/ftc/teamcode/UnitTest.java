@@ -17,8 +17,9 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 
 @TeleOp (name = "UnitTest")
 public class UnitTest extends Autonomous2020 {
-final double TICKS_PER_INCH_STRAIGHT = 89.1;
-final double TICKS_PER_INCH_STRAFE = 126.00;
+//final double TICKS_PER_INCH_STRAIGHT = 89.1;
+//final double TICKS_PER_INCH_STRAFE = 115.00;
+//orignal ticks per inch strafe was 126
 
 
     @Override
@@ -39,6 +40,10 @@ final double TICKS_PER_INCH_STRAFE = 126.00;
                 grabCollection();
                 straight_inch(1, 1, 10);
                 closeGrabber();
+            }
+
+            if (gamepad1.right_bumper){
+                armExtended(5);
             }
 
             if (gamepad1.x) {
@@ -68,16 +73,48 @@ final double TICKS_PER_INCH_STRAFE = 126.00;
             }
             
             if(gamepad1.dpad_down){
-                strafe_inch(1,1,12);
+                strafe_inch(0.8,1,12);
+                telemetry.addData("Encoder value LB", motorLeftBack.getCurrentPosition());
+                telemetry.addData("Encoder value RB", motorRightBack.getCurrentPosition());
+                telemetry.addData("Encoder value LF", motorLeftFront.getCurrentPosition());
+                telemetry.addData("Encoder value RF", motorRightFront.getCurrentPosition());
+                System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
+                System.out.println("RIGHT BACK" + motorRightBack.getCurrentPosition());
+                System.out.println("RIGHT FRONT" + motorRightFront.getCurrentPosition());
+                System.out.println("LEFT FRONT" + motorLeftFront.getCurrentPosition());
             }
             if(gamepad1.dpad_up){
-                strafe_inch(1,1,24);
+                strafe_inch(0.8,1,24);
+                telemetry.addData("Encoder value LB", motorLeftBack.getCurrentPosition());
+                telemetry.addData("Encoder value RB", motorRightBack.getCurrentPosition());
+                telemetry.addData("Encoder value LF", motorLeftFront.getCurrentPosition());
+                telemetry.addData("Encoder value RF", motorRightFront.getCurrentPosition());
+                System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
+                System.out.println("RIGHT BACK" + motorRightBack.getCurrentPosition());
+                System.out.println("RIGHT FRONT" + motorRightFront.getCurrentPosition());
+                System.out.println("LEFT FRONT" + motorLeftFront.getCurrentPosition());
             }
             if(gamepad1.dpad_right){
-                strafe_inch(1,-1,12);
+                strafe_inch(0.8,-1,12);
+                telemetry.addData("Encoder value LB", motorLeftBack.getCurrentPosition());
+                telemetry.addData("Encoder value RB", motorRightBack.getCurrentPosition());
+                telemetry.addData("Encoder value LF", motorLeftFront.getCurrentPosition());
+                telemetry.addData("Encoder value RF", motorRightFront.getCurrentPosition());
+                System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
+                System.out.println("RIGHT BACK" + motorRightBack.getCurrentPosition());
+                System.out.println("RIGHT FRONT" + motorRightFront.getCurrentPosition());
+                System.out.println("LEFT FRONT" + motorLeftFront.getCurrentPosition());
             }
             if(gamepad1.dpad_left){
-                strafe_inch(1,-1,24);
+                strafe_inch(0.8,-1,24);
+                telemetry.addData("Encoder value LB", motorLeftBack.getCurrentPosition());
+                telemetry.addData("Encoder value RB", motorRightBack.getCurrentPosition());
+                telemetry.addData("Encoder value LF", motorLeftFront.getCurrentPosition());
+                telemetry.addData("Encoder value RF", motorRightFront.getCurrentPosition());
+                System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
+                System.out.println("RIGHT BACK" + motorRightBack.getCurrentPosition());
+                System.out.println("RIGHT FRONT" + motorRightFront.getCurrentPosition());
+                System.out.println("LEFT FRONT" + motorLeftFront.getCurrentPosition());
             }
         }
 

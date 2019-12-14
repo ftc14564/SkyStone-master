@@ -68,7 +68,7 @@ boolean testMode = false;
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 126.00;
+    final double TICKS_PER_INCH_STRAFE = 115.00;
     final double TICKS_PER_INCH_STRAIGHT = 89.1;
 
     float power = 0;
@@ -594,11 +594,17 @@ boolean testMode = false;
         telemetry.addData("Straight", "Still in straight()");
         telemetry.update();
 
+        double avg_encoder = (motorLeftFront.getCurrentPosition() + motorLeftBack.getCurrentPosition() + motorRightBack.getCurrentPosition() + motorRightFront.getCurrentPosition()) / 4;
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance))){
+
+        while (opModeIsActive() && !isStopRequested() && (avg_encoder < Math.abs(distance))){
 //                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
 //                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
 //                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance)))
+
+
+            System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
+            System.out.println( "Avg Encoder" + avg_encoder);
 
 
             /*if(System.currentTimeMillis()-startTime > 29500 ){
@@ -638,6 +644,8 @@ boolean testMode = false;
                 motorRightFront.setPower(direction * .4 * power);
                 motorLeftBack.setPower(direction * .4 * power);
             }
+            avg_encoder = (motorLeftFront.getCurrentPosition() + motorLeftBack.getCurrentPosition() + motorRightBack.getCurrentPosition() + motorRightFront.getCurrentPosition()) / 4;
+            sleep(10);
         }
         stopWheels();
 
@@ -694,15 +702,25 @@ boolean testMode = false;
         motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        double avg_encoder = (Math.abs(motorLeftFront.getCurrentPosition()) + Math.abs(motorLeftBack.getCurrentPosition()) + Math.abs(motorRightBack.getCurrentPosition()) + Math.abs(motorRightFront.getCurrentPosition())) / 4;
 
-        while (opModeIsActive() && !isStopRequested() && (Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance))){
+
+        while (opModeIsActive() && !isStopRequested() &&  avg_encoder < Math.abs(distance)){
 //                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
 //                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
 //                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance))) {
 
+
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
+            sleep(10);
+            System.out.println( "Strafe LEFT BACK " + motorLeftBack.getCurrentPosition());
+            System.out.println( "Strafe RIGHT BACK " + motorRightBack.getCurrentPosition());
+            System.out.println( "Strafe LEFT FRONT " + motorLeftFront.getCurrentPosition());
+            System.out.println( "Strafe RIGHT FRONT " + motorRightFront.getCurrentPosition());
+            System.out.println( "Strafe Avg Encoder" + avg_encoder);
+
             telemetry.addData("Position", motorLeftFront.getCurrentPosition());
             telemetry.update();
             if (Math.abs(motorRightFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
@@ -737,6 +755,8 @@ boolean testMode = false;
                 motorRightFront.setPower(direction * .5 * power);
                 motorLeftBack.setPower(direction * .5 * power);
             }
+            avg_encoder = (Math.abs(motorLeftFront.getCurrentPosition()) + Math.abs(motorLeftBack.getCurrentPosition()) + Math.abs(motorRightBack.getCurrentPosition()) + Math.abs(motorRightFront.getCurrentPosition())) / 4;
+
         }
         stopWheels();
 
@@ -860,12 +880,12 @@ boolean testMode = false;
         }
     }
     public void firstStepBlue(){
-        straight_inch(0.5,1, 9);
+        straight_inch(0.5,1, 12);
         //Direction - +1 is LEFT LEFT LEFT LEFT LEFT
        // strafe_inch(1,1,12);
     }
     public void firstStepRed(){
-        straight(0.5,1,9);
+        straight(0.5,1,12);
         //strafe_inch(1,-1,12);
     }
 
@@ -1009,13 +1029,15 @@ boolean testMode = false;
 
         waitForStart();
 
-        if(!testMode)
+        if(!testMode) {
             firstStepBlue();
+        }
         boolean blockSeen = false;
 
 
         int i = 0;
         int strafeCount = 0;
+        int retryCount = 0;
         while (!isStopRequested()) {
             //START
             i++;
@@ -1044,7 +1066,9 @@ boolean testMode = false;
                 // express position (translation) of robot in inches.
                 VectorF translation = lastLocation.getTranslation();
                 telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+
                         translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                telemetry.update();
 
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
@@ -1052,18 +1076,23 @@ boolean testMode = false;
                 x = (translation.get(0))/mmPerInch;
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 center(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
-                if(!testMode) {
+
                     blockSeen = true;
                     telemetry.addData("reached here", "yes");
                     break;
-                }
-            } else {
+
+            }
+            else if (retryCount < 10) {
+                retryCount++;
+            }
+            else {
                 strafeCount++;
                 telemetry.addData("Visible Target", "none");
                 strafe_inch(0.8,-1,8);
+                retryCount=0;
                 if(strafeCount > 1)
                     break;
-                sleep(1000);
+                //sleep(1000);
             }
 
             telemetry.update();
@@ -1072,42 +1101,49 @@ boolean testMode = false;
         boolean leftBlock = false;
         boolean centerBlock = false;
         boolean rightBlock = false;
-        if (blockSeen) {
-
+        double distanceFromTrayLeft = y + 11.5;
+        if (blockSeen && !testMode) {
+            System.out.println(" NEEL TESTTTTT    " + y);
+            System.out.print("DISTANCEEEEE STRAFFEEE   " + y) ;
+            if(distanceFromTrayLeft < 0){
+                strafe_inch(0.8,-1, distanceFromTrayLeft);
+            }
+            else{
+                strafe_inch(0.8,1,distanceFromTrayLeft);
+            }
             //
 
-            if (y < 0) {
-                leftBlock = true;
-                telemetry.addData("right", "right right iq " + y);
-                telemetry.update();
-                strafe_inch(0.8,1,(Math.abs(-11-y)));
-//                if(y<-3.5) {
-//                    strafe_inch(0.8, -1, Math.abs(y + (3.5)));
+//            if (y < 0) {
+//                leftBlock = true;
+//                telemetry.addData("y value", "negative y value" + y);
+//                System.out.println("HIGH IQ NEEL     "+ y);
+//                telemetry.update();
+//                if(y > -11 && !testMode){
+//                    strafe_inch(0.8,1,Math.abs(y+11));
 //                }
-//                else if(y >-3.5){
-//                    strafe_inch(0.8,1,Math.abs(y+3.5));
+//                else{
+//                    strafe_inch(0.8,1,(Math.abs(y+11)));
 //                }
-                telemetry.addData("right", "right right iq " + y);
-                telemetry.update();
-
-            } else if (y > 0) {
-                centerBlock = true;
-//                strafe_inch(0.8, 1, 8);
-                if(y<11){
-                    strafe_inch(0.8,1,(11-y));
-                }
-                else{
-                    strafe_inch(0.8,-1,Math.abs(11-y));
-                }
-                strafe_inch(0.8,1,(y+11));
-                telemetry.addData("center", "center center iq" + y);
-                if(y<-3.5) {
-                    strafe_inch(0.8, -1, Math.abs(y + (3.5)));
-                }
-                else if(y >-3.5){
-                    strafe_inch(0.8,1,Math.abs(y+3.5));
-                }
-            }
+//
+//            } else if (y > 0 && !testMode) {
+//                centerBlock = true;
+////                strafe_inch(0.8, 1, 8);
+//                strafe_inch(0.8,1,(Math.abs(y+11)));
+////                if(y<11){
+////                    strafe_inch(0.8,1,(11-y));
+////                }
+////                else{
+////                    strafe_inch(0.8,-1,Math.abs(11-y));
+////                }
+////                strafe_inch(0.8,1,(y+11));
+//                telemetry.addData("y valueeee", "postive y value" + y);
+//                telemetry.update();
+//                System.out.println("HIGH IQ NEEL     "+ y);
+//
+//            }
+        }
+        else{
+            strafe_inch(0.8,-1,8);
         }
 
 
@@ -1122,12 +1158,15 @@ boolean testMode = false;
 //            liftInch(0.5);
 //            straight_inch(1, -1, 10);
 //            strafe_inch(1, 1, 10);
-        straight_inch(0.6, 1, 18);
-        sleep(700);
-        tray_left.setPosition(0);
-        tray_right.setPosition(0);
-        sleep(1000);
-        straight_inch(0.6, -1, 18);
+        if(!testMode) {
+            straight_inch(0.6, 1, 18);
+            sleep(700);
+            tray_left.setPosition(0);
+            tray_right.setPosition(0);
+            sleep(1000);
+            straight_inch(0.6, -1, 18);
+            strafe_inch(0.8,1,36);
+        }
 
     }
 
