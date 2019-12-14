@@ -68,7 +68,7 @@ boolean testMode = false;
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 115.00;
+    final double TICKS_PER_INCH_STRAFE = 126.00;
     final double TICKS_PER_INCH_STRAIGHT = 89.1;
 
     float power = 0;
@@ -556,6 +556,131 @@ boolean testMode = false;
 
     }
 
+
+    double P_FWD_COEFF = -0.005;
+    double FWD_THRESHOLD = 1;
+
+    public void EncodeFwdDist(double speed, double distance, Boolean strafe) {
+
+        distance *= -1;
+
+        motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
+        motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
+        motorRightBack.setMode(STOP_AND_RESET_ENCODER);
+        motorRightFront.setMode(STOP_AND_RESET_ENCODER);
+        motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
+        motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
+        motorRightBack.setMode(RUN_WITHOUT_ENCODER);
+        motorRightFront.setMode(RUN_WITHOUT_ENCODER);
+
+        double target_encoder = 0;
+
+        if(!strafe) {
+            target_encoder = (distance * TICKS_PER_INCH_STRAIGHT);
+            speed *= 0.7;
+        }
+        else {
+            target_encoder = (distance * TICKS_PER_INCH_STRAFE);
+        }
+
+        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT/5, strafe)) {
+            idle();
+        }
+        //sleep(100);
+        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed/3, target_encoder, P_FWD_COEFF / 3, TICKS_PER_INCH_STRAIGHT/10, strafe)) {
+            idle();
+        }
+
+    }
+
+    boolean onTargetDist(double speed, double distance, double PCoeff, double distThreshold, Boolean strafe) {
+        double error;
+        double steer;
+        boolean onTarget = false;
+        double power;
+
+        //determine  power based on error
+        error = getErrorDist(distance, strafe);
+
+        if (Math.abs(error) <= distThreshold) {
+
+            steer = 0.0;
+            power = 0.0;
+            onTarget = true;
+            stopWheels();
+        } else {
+
+            steer = getSteerDist(error, PCoeff);
+            power = speed * steer;
+        }
+
+        double weightConstant = 0.8;//this constant will depend on the robot. you need to test experimentally to see which is best
+
+        while (Math.abs(weightConstant * power) < 0.25)
+            weightConstant *= 1.2;
+
+        if (!strafe)
+            simpleStraight(weightConstant*power);
+        else
+            simpleStrafe(weightConstant*power);
+
+
+        telemetry.addData("Target dist", "%5.2f", distance);
+        telemetry.addData("Error/Steer", "%5.2f/%5.2f", error, steer);
+        telemetry.addData("speed", "%5.2f", speed);
+
+        return onTarget;
+    }
+
+    public double getErrorDist(double targetDist, Boolean strafe) {
+
+        double robotError;
+
+        double curr_encoder = 0;
+        if(!strafe)
+             curr_encoder = motorRightFront.getCurrentPosition();
+        else
+            curr_encoder = -1 * motorRightFront.getCurrentPosition();
+
+        robotError = targetDist - curr_encoder;
+
+        telemetry.addData("Robot Error", "%5.2f", robotError);
+        telemetry.update();
+
+        return robotError;
+
+    }
+
+    public double getSteerDist(double error, double PCoeff) {
+        return Range.clip(error * PCoeff, -1, 1);
+    }
+
+    public void simpleStraight(double power) {
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motorLeftFront.setPower(power);
+        motorRightBack.setPower(power);
+        motorRightFront.setPower(power);
+        motorLeftBack.setPower(power);
+
+    }
+
+    public void simpleStrafe(double power) {
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motorLeftFront.setPower(power);
+        motorRightBack.setPower(power);
+        motorRightFront.setPower(power);
+        motorLeftBack.setPower(power);
+
+    }
+
     public void straight(double power, int direction, double distance) {
 
 //        distance /= 2.25;
@@ -587,8 +712,7 @@ boolean testMode = false;
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+
 
 
         telemetry.addData("Straight", "Still in straight()");
@@ -598,26 +722,18 @@ boolean testMode = false;
 
 
         while (opModeIsActive() && !isStopRequested() && (avg_encoder < Math.abs(distance))){
-//                && Math.abs(motorLeftFront.getCurrentPosition()) < Math.abs(distance)
-//                && Math.abs(motorRightFront.getCurrentPosition()) < Math.abs(distance)
-//                && Math.abs(motorRightBack.getCurrentPosition()) < Math.abs(distance)))
-
-
-            System.out.println( "LEFT BACK" + motorLeftBack.getCurrentPosition());
-            System.out.println( "Avg Encoder" + avg_encoder);
-
 
             /*if(System.currentTimeMillis()-startTime > 29500 ){
                 break;
             }*/
             telemetry.addData("Position", motorLeftFront.getCurrentPosition());
             telemetry.update();
-            if (Math.abs(motorRightFront.getCurrentPosition()) < .1 * Math.abs(distance)) {
+            if (Math.abs(motorRightFront.getCurrentPosition()) < .01 * Math.abs(distance)) {
 
-                motorLeftFront.setPower(direction * power);
-                motorRightBack.setPower(direction * power);
-                motorRightFront.setPower(direction * power);
-                motorLeftBack.setPower(direction * power);
+                motorLeftFront.setPower(direction * .4 * power);
+                motorRightBack.setPower(direction * .4 * power);
+                motorRightFront.setPower(direction * .4 * power);
+                motorLeftBack.setPower(direction * .4 * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .2 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .9 * power);
                 motorRightBack.setPower(direction * .9 * power);
@@ -629,15 +745,15 @@ boolean testMode = false;
                 motorRightFront.setPower(direction * power);
                 motorLeftBack.setPower(direction * power);
             } else if (Math.abs(motorRightFront.getCurrentPosition()) < .8 * Math.abs(distance)) {
+                motorLeftFront.setPower(direction * .8 * power);
+                motorRightBack.setPower(direction * .8 * power);
+                motorRightFront.setPower(direction * .8 * power);
+                motorLeftBack.setPower(direction * .8 * power);
+            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
                 motorLeftFront.setPower(direction * .6 * power);
                 motorRightBack.setPower(direction * .6 * power);
                 motorRightFront.setPower(direction * .6 * power);
                 motorLeftBack.setPower(direction * .6 * power);
-            } else if (Math.abs(motorRightFront.getCurrentPosition()) < .9 * Math.abs(distance)) {
-                motorLeftFront.setPower(direction * .3 * power);
-                motorRightBack.setPower(direction * .3 * power);
-                motorRightFront.setPower(direction * .3 * power);
-                motorLeftBack.setPower(direction * .3 * power);
             } else {
                 motorLeftFront.setPower(direction * .4 * power);
                 motorRightBack.setPower(direction * .4 * power);
@@ -918,30 +1034,30 @@ boolean testMode = false;
         VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
         VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
         stoneTarget.setName("Stone Target");
-        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
-        blueRearBridge.setName("Blue Rear Bridge");
-        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
-        redRearBridge.setName("Red Rear Bridge");
-        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
-        redFrontBridge.setName("Red Front Bridge");
-        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
-        blueFrontBridge.setName("Blue Front Bridge");
-        VuforiaTrackable red1 = targetsSkyStone.get(5);
-        red1.setName("Red Perimeter 1");
-        VuforiaTrackable red2 = targetsSkyStone.get(6);
-        red2.setName("Red Perimeter 2");
-        VuforiaTrackable front1 = targetsSkyStone.get(7);
-        front1.setName("Front Perimeter 1");
-        VuforiaTrackable front2 = targetsSkyStone.get(8);
-        front2.setName("Front Perimeter 2");
-        VuforiaTrackable blue1 = targetsSkyStone.get(9);
-        blue1.setName("Blue Perimeter 1");
-        VuforiaTrackable blue2 = targetsSkyStone.get(10);
-        blue2.setName("Blue Perimeter 2");
-        VuforiaTrackable rear1 = targetsSkyStone.get(11);
-        rear1.setName("Rear Perimeter 1");
-        VuforiaTrackable rear2 = targetsSkyStone.get(12);
-        rear2.setName("Rear Perimeter 2");
+//        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
+//        blueRearBridge.setName("Blue Rear Bridge");
+//        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
+//        redRearBridge.setName("Red Rear Bridge");
+//        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
+//        redFrontBridge.setName("Red Front Bridge");
+//        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
+//        blueFrontBridge.setName("Blue Front Bridge");
+//        VuforiaTrackable red1 = targetsSkyStone.get(5);
+//        red1.setName("Red Perimeter 1");
+//        VuforiaTrackable red2 = targetsSkyStone.get(6);
+//        red2.setName("Red Perimeter 2");
+//        VuforiaTrackable front1 = targetsSkyStone.get(7);
+//        front1.setName("Front Perimeter 1");
+//        VuforiaTrackable front2 = targetsSkyStone.get(8);
+//        front2.setName("Front Perimeter 2");
+//        VuforiaTrackable blue1 = targetsSkyStone.get(9);
+//        blue1.setName("Blue Perimeter 1");
+//        VuforiaTrackable blue2 = targetsSkyStone.get(10);
+//        blue2.setName("Blue Perimeter 2");
+//        VuforiaTrackable rear1 = targetsSkyStone.get(11);
+//        rear1.setName("Rear Perimeter 1");
+//        VuforiaTrackable rear2 = targetsSkyStone.get(12);
+//        rear2.setName("Rear Perimeter 2");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
@@ -951,54 +1067,54 @@ boolean testMode = false;
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         //Set the position of the bridge support targets with relation to origin (center of field)
-        blueFrontBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
-
-        blueRearBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
-
-        redFrontBridge.setLocation(OpenGLMatrix
-                .translation(-bridgeX, -bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
-
-        redRearBridge.setLocation(OpenGLMatrix
-                .translation(bridgeX, -bridgeY, bridgeZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
-
-        //Set the position of the perimeter targets with relation to origin (center of field)
-        red1.setLocation(OpenGLMatrix
-                .translation(quadField, -halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-
-        red2.setLocation(OpenGLMatrix
-                .translation(-quadField, -halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-
-        front1.setLocation(OpenGLMatrix
-                .translation(-halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-
-        front2.setLocation(OpenGLMatrix
-                .translation(-halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-
-        blue1.setLocation(OpenGLMatrix
-                .translation(-quadField, halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-
-        blue2.setLocation(OpenGLMatrix
-                .translation(quadField, halfField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-
-        rear1.setLocation(OpenGLMatrix
-                .translation(halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-
-        rear2.setLocation(OpenGLMatrix
-                .translation(halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+//        blueFrontBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
+//
+//        blueRearBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
+//
+//        redFrontBridge.setLocation(OpenGLMatrix
+//                .translation(-bridgeX, -bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
+//
+//        redRearBridge.setLocation(OpenGLMatrix
+//                .translation(bridgeX, -bridgeY, bridgeZ)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
+//
+//        //Set the position of the perimeter targets with relation to origin (center of field)
+//        red1.setLocation(OpenGLMatrix
+//                .translation(quadField, -halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
+//
+//        red2.setLocation(OpenGLMatrix
+//                .translation(-quadField, -halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
+//
+//        front1.setLocation(OpenGLMatrix
+//                .translation(-halfField, -quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
+//
+//        front2.setLocation(OpenGLMatrix
+//                .translation(-halfField, quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
+//
+//        blue1.setLocation(OpenGLMatrix
+//                .translation(-quadField, halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
+//
+//        blue2.setLocation(OpenGLMatrix
+//                .translation(quadField, halfField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
+//
+//        rear1.setLocation(OpenGLMatrix
+//                .translation(halfField, quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+//
+//        rear2.setLocation(OpenGLMatrix
+//                .translation(halfField, -quadField, mmTargetHeight)
+//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
         if (CAMERA_CHOICE == BACK) {
             phoneYRotate = -90;
         } else {
