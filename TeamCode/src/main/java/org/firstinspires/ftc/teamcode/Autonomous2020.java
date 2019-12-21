@@ -28,6 +28,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
@@ -563,6 +564,45 @@ public class Autonomous2020 extends Teleop2020  {
     public void dummyStraight(double power, int direction, float value){
         telemetry.addData("Moving straight upwards :D - Neel high iq","MMMMMOVE up por favor");
     }
+    public void logging(boolean activate, String message){
+        if(activate)
+        System.out.println(message);
+    }
+
+    public void getTargetXAndY(){
+        Random random = new Random();
+        int targetX = random.nextInt(145);
+        int targetY = random.nextInt(145);
+        //getting Target values
+
+        int obstacleTargetX = random.nextInt(145);
+        int obstacleTargetY = random.nextInt(145);
+        //getting obstacle Target values
+
+        if(targetY != obstacleTargetY && targetX != obstacleTargetX) {
+            EncoderMoveDist(1, targetY - where_y, false);
+            Rotate(1, 1, 90);
+            EncoderMoveDist(1, targetX - where_x, false);
+        }
+        else if (targetY == obstacleTargetY){
+            Rotate(1, 1, 90);
+            EncoderMoveDist(1, targetX - where_x, false);
+            Rotate(1,-1,90);
+            EncoderMoveDist(1, targetY - where_y, false);
+        }
+        else if(targetX == obstacleTargetX){
+            EncoderMoveDist(1, targetY - where_y, false);
+            Rotate(1, 1, 90);
+            EncoderMoveDist(1, targetX - where_x, false);
+        }
+    }
+
+
+
+
+
+
+
     public void center (float x, float y, double angle){
         dummyRotate(1,-1,angle);
         if (x<0){
