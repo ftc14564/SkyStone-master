@@ -569,6 +569,7 @@ public class Autonomous2020 extends Teleop2020  {
         System.out.println(message);
     }
 
+    // test function for obstacle simultion
     public void getTargetXAndY(){
         Random random = new Random();
         int targetX = random.nextInt(145);
