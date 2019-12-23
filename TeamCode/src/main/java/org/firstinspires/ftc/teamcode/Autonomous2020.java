@@ -38,10 +38,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 
-
 @Autonomous(name = "Autonomous2020")
 public class Autonomous2020 extends Teleop2020  {
-
 
 
 
@@ -173,8 +171,6 @@ public class Autonomous2020 extends Teleop2020  {
                 imu = hardwareMap.get(BNO055IMU.class, "imu");
                 imu.initialize(parameters);
 
-                // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-                // first.
 
                 vuInitDone = true;
             } catch (Exception e) {
@@ -334,7 +330,11 @@ public class Autonomous2020 extends Teleop2020  {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
         }
 
+        vuforia.setFrameQueueCapacity(1);
+
         targetsSkyStone.activate();
+
+
 
     }
 
@@ -1242,9 +1242,11 @@ public class Autonomous2020 extends Teleop2020  {
         grabCollection();
         EncoderStraight(18);
         closeGrabber();
+        sleep(1200);
+        liftInch(0.3);
 
         //step back
-        EncoderStraight(-18);
+        EncoderStraight(-16);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1256,7 +1258,7 @@ public class Autonomous2020 extends Teleop2020  {
             dropDist = -1* (where_y) + 48;
         }
         EncoderStrafe(dropDist);
-        
+
         grabCollection();
 
     }
@@ -1264,11 +1266,17 @@ public class Autonomous2020 extends Teleop2020  {
 
         EncoderStraight(18);
         sleep(700);
-        tray_left.setPosition(0);
-        sleep(600);
 
+        if(isBlueSide) {
+            tray_right.setPosition(0);
+            sleep(600);
+        }
+        else{
+            tray_left.setPosition(0);
+            sleep(600);
+        }
         //step back
-        EncoderStraight(-18);
+        EncoderMoveDist(0.6, -18,false);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1293,28 +1301,33 @@ public class Autonomous2020 extends Teleop2020  {
 
         //assume that robot is aligned such that it's
         //exactly two tiles away from the bridge towards the tray
-
-        EncoderStraight(30);
+        if(isBlueSide)
+            EncoderStrafe(-18);
+        else
+            EncoderStrafe(18);
+        EncoderStraight(28);
         tray_left.setPosition(0);
-        tray_right.setPosition(0);
+        tray_right.setPosition(1);
         sleep(600);
-        EncoderStraight(-30);
-
+        EncoderMoveDist(0.4, -28,false);
+        tray_left.setPosition(1);
+        tray_right.setPosition(0);
         //park after 20 seconds
-        sleep(20000);
+        sleep(12000);
 
 
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 55;  //48 + some extra to be over the line
+            parkDist = 52;  //48 + some extra to be over the line
         }
         else {
-            parkDist = -55;
+            parkDist = -52;
         }
         EncoderStrafe(parkDist);
 
 
     }
+
 
     public void runAutonomous(Boolean isBlueSide, Boolean useArm) {
 
@@ -1322,7 +1335,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         waitForStart();
 
-        EncoderStraight(30);
+        EncoderStraight(12);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
 
@@ -1330,7 +1343,7 @@ public class Autonomous2020 extends Teleop2020  {
             double blockDist=0;
 
             if(!useArm)
-                blockDist = y + 11.5;
+                blockDist = y + 11;
             else
                 blockDist = y + 4.5;
 
@@ -1338,49 +1351,46 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
         //grab a block (even if it's a random one)
-        if(!useArm)
-            grabAndDropBlock_Hook(isBlueSide);
-         else
+//        if(!useArm)
+//            grabAndDropBlock_Hook(isBlueSide);
+//         else
             grabAndDropBlock_Arm(isBlueSide);
 
 
-        //return for second
-        double returnDist = 0;
-        if(isBlueSide){
-            returnDist = 24 + 48;
-        }
-        else {
-            returnDist = -24 - 48;
-        }
-        EncoderStrafe(returnDist);
-
-        //see second one ?
-        blockSeen = vuFindBlock(isBlueSide);
-
-        if (blockSeen) {
-            double blockDist=0;
-
-            if(!useArm)
-                blockDist = y + 11.5;
-            else
-                blockDist = y + 4.5;
-
-            EncoderStrafe (blockDist);
-        }
-
-        //grab a block (even if it's a random one)
-        if(!useArm)
-            grabAndDropBlock_Hook(isBlueSide);
-        else
-            grabAndDropBlock_Arm(isBlueSide);
-
+//        //return for second
+//        double returnDist = 0;
+//        if(isBlueSide){
+//            returnDist = 24 + 40;
+//        }
+//        else {
+//            returnDist = -24 - 40;
+//        }
+//        EncoderStrafe(returnDist);
+//
+//        //see second one ?
+//        blockSeen = vuFindBlock(isBlueSide);
+//
+//        if (blockSeen) {
+//            double blockDist=0;
+//
+//            if(!useArm)
+//                blockDist = y -3;
+//            else
+//                blockDist = y + 4.5;
+//
+//            EncoderStrafe (blockDist);
+//        }
+//
+//        //grab a block (even if it's a random one)
+//            grabAndDropBlock_Hook(isBlueSide);
+            EncoderStraight(3);
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 24;
+            parkDist = 32;
         }
         else {
-            parkDist = -24;
+            parkDist = -32;
         }
         EncoderStrafe(parkDist);
 

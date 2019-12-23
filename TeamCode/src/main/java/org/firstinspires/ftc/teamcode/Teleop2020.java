@@ -100,7 +100,7 @@ public class Teleop2020 extends LinearOpMode {
         motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
 
-        power_multiplier = 0.8;
+        power_multiplier = 1;
 
 
 
@@ -141,11 +141,13 @@ public class Teleop2020 extends LinearOpMode {
 
         if ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))) {
             while ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))&& !isStopRequested()) {
+                idle();
                 lift.setPower(1.0);
                 lift_assist.setPower(1.0);
             }
         } else {
             while ((Math.abs(lift.getCurrentPosition()) > Math.abs(ticks)) && !isStopRequested()) {
+                idle();
                 lift.setPower(-1.0);
                 lift_assist.setPower(-1.0);
             }
@@ -165,6 +167,7 @@ public class Teleop2020 extends LinearOpMode {
         long currentTime = System.currentTimeMillis();
         double targetTime = Math.abs(inches) * ARM_INCH_TO_TIME_MS + currentTime;
         while((currentTime < targetTime ) && !isStopRequested()){
+            idle();
             currentTime = System.currentTimeMillis();
             if(inches == Math.abs(inches)){
                 extend.setPosition(0);
@@ -209,6 +212,7 @@ public class Teleop2020 extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+            idle();
 
             float forward = -1*gamepad1.right_stick_y;
             float sideways = gamepad1.left_stick_x;
@@ -282,13 +286,13 @@ public class Teleop2020 extends LinearOpMode {
                 //Subtract from 1 to make the trigger give a reduction in power
                 //Multiply by 2/3 to not completely reduce the power
             }
-            if (gamepad1.b) {
-                if (power_multiplier == 1)
-                    power_multiplier = 0.5;
-                else if (power_multiplier == 0.5)
-                    power_multiplier = 1;
-                sleep(200);
-            }
+//            if (gamepad1.b) {
+//                if (power_multiplier == 1)
+//                    power_multiplier = 0.5;
+//                else if (power_multiplier == 0.5)
+//                    power_multiplier = 1;
+//                sleep(200);
+//            }
             if(lift.getCurrentPosition()>= 0 && gamepad2.left_stick_y > 0.1) {
                 lift.setPower(-1);
                 lift_assist.setPower(-1);
@@ -350,6 +354,7 @@ public class Teleop2020 extends LinearOpMode {
                 lift.setDirection(DcMotorSimple.Direction.FORWARD);
                 while ((Math.abs(lift.getCurrentPosition()) < Math.abs((0.5*288))) && !isStopRequested())
                 {
+                    idle();
                     lift.setPower(1.0);
                 }
                 lift.setPower(0);
