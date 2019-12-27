@@ -29,8 +29,7 @@ public class Teleop2020 extends LinearOpMode {
     Servo grab_front;
     Servo extend;
     Servo turn;
-    Servo tray_right;
-    Servo tray_left;
+    Servo foundation;
 
 
 
@@ -84,8 +83,7 @@ public class Teleop2020 extends LinearOpMode {
         grab_front = hardwareMap.servo.get("grab_front");
         grab_back = hardwareMap.servo.get("grab_back");
         turn = hardwareMap.servo.get("turn");
-        tray_right = hardwareMap.servo.get("tray_right");
-        tray_left = hardwareMap.servo.get("tray_left");
+        foundation = hardwareMap.servo.get("foundation");
         armPosition = 0;
 
         //grab_front.setPosition(0.1);
@@ -325,12 +323,12 @@ public class Teleop2020 extends LinearOpMode {
 //                 grab_front.setPosition(1);
 //                 grab_back.setPosition(1);
 //            }
-            if (gamepad1. dpad_right){
+            if (gamepad1. dpad_right){ //normal position
                 turn.setPosition(1);
             }
 
-            if (gamepad1. dpad_left){
-                turn.setPosition(0);
+            if (gamepad1. dpad_left){ //vertical position
+                turn.setPosition(0.25);
             }
 
             if (gamepad2.dpad_up) {               //GRABBED POSITION
@@ -389,35 +387,35 @@ public class Teleop2020 extends LinearOpMode {
 //                grab.setPosition(0);
 //            }
 
-            if (gamepad1.dpad_down){        //Both Down
-                tray_left.setPosition(0);
-                tray_right.setPosition(1);
+            if (gamepad1.x){  //position up
+                foundation.setPosition(0);
 
             }
-            if (gamepad1.dpad_up) {     //Both Up
-                tray_left.setPosition(0.9); //0.9 because servo strains at position 1
-                tray_right.setPosition(0);
+            if (gamepad1.y) {   //position down
+                foundation.setPosition(1);
             }
-            if (gamepad1.right_trigger > 0.1){ //Only Right down
-                tray_left.setPosition(0.9); //0.9 because servo strains at position 1
-                tray_right.setPosition(1);
 
-            }
-            if (gamepad1.left_trigger > 0.1) { //Only Left down
-                tray_left.setPosition(0);
-                tray_right.setPosition(0);
-            }
 
             if (gamepad2.x) {
 
-                liftPosition -= 5;
-                liftInch(liftPosition);
+                double target = lift.getCurrentPosition() + (2*REV_CORE_HEX_TICKS_PER_INCH);
+                lift.setMode(RUN_WITHOUT_ENCODER);
+                while(lift.getCurrentPosition()<target){
+                    lift.setPower(1);
+                    lift_assist.setPower(1);
+
+                }
 
             }
-            if (gamepad2.y) {
+            if (lift.getCurrentPosition()>= 2*REV_CORE_HEX_TICKS_PER_INCH && gamepad2.y) {
 
-                liftPosition += 5;
-                liftInch(liftPosition);
+                double target = lift.getCurrentPosition() - (2*REV_CORE_HEX_TICKS_PER_INCH);
+                lift.setMode(RUN_WITHOUT_ENCODER);
+                while(lift.getCurrentPosition()>target){
+                    lift.setPower(-0.5);
+                    lift_assist.setPower(-0.5);
+
+                }
 
 
             }
@@ -446,6 +444,7 @@ public class Teleop2020 extends LinearOpMode {
         motorRightBack.setPower(0);
         motorRightFront.setPower(0);
         lift.setPower(0);
+        lift_assist.setPower(0);
         telemetry.addData("lift encoder value", lift.getCurrentPosition());
 
 

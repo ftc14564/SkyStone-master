@@ -21,6 +21,7 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgcodecs.Imgcodecs;
 
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -87,8 +88,6 @@ public class CVUtil {
     }
 
 
-
-
     public void onResume()
     {
         if (!OpenCVLoader.initDebug()) {
@@ -109,12 +108,33 @@ public class CVUtil {
         Mat mat = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
         Utils.bitmapToMat(bm, mat);
 
+
         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HSV);
         String filePath = "/sdcard/FIRST/rgbFile.png";
         Imgcodecs.imwrite(filePath, mat);
         mat.release();
         System.out.println("Got Frame");
+
+    }
+    Mat detectColor(Mat srcImg) {
+        Mat blurImg = new Mat();
+        Mat hsvImage = new Mat();
+        Mat color_range = new Mat();
+
+        //bluring image to filter small noises.
+        Imgproc.GaussianBlur(srcImg, blurImg, new Size(5,5),0);
+
+        //converting blured image from BGR to HSV
+        Imgproc.cvtColor(blurImg, hsvImage, Imgproc.COLOR_BGR2HSV);
+
+        //filtering pixels based on given HSV color range
+        Core.inRange(hsvImage, new Scalar(180,100,100), new Scalar(255,100,50), color_range);
+        String filePath = "/sdcard/FIRST/color_rangeFile.png";
+        Imgcodecs.imwrite(filePath, color_range);
+        color_range.release();
+        System.out.println("Color Range");
+        return color_range;
 
     }
 }

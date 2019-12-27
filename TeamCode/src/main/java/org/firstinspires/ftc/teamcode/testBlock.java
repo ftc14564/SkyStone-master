@@ -48,6 +48,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.core.Scalar;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1176,16 +1178,21 @@ Bytes    16-bit word    Description
                 for (int i = 0; i < numImages; i++) {
                     if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
                         Image rgb = frame.getImage(i);
+                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
+
                         if (rgb != null) {
                             Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
                                     Bitmap.Config.RGB_565);
                             bm.copyPixelsFromBuffer(rgb.getPixels());
 
                             cvUtil.updateFrame(bm, frame);
+                            cvUtil.detectColor(mat);
 
                         }
                     }
                 }
+
+
 
                 telemetry.addData("Open CV Got Frame", count++);
                 telemetry.update();

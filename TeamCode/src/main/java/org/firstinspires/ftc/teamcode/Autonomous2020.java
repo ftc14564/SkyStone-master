@@ -1267,14 +1267,16 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStraight(18);
         sleep(700);
 
-        if(isBlueSide) {
-            tray_right.setPosition(0);
-            sleep(600);
-        }
-        else{
-            tray_left.setPosition(0);
-            sleep(600);
-        }
+        foundation.setPosition(1);
+        sleep(600);
+//        if(isBlueSide) {
+//            tray_right.setPosition(0);
+//            sleep(600);
+//        }
+//        else{
+//            tray_left.setPosition(0);
+//            sleep(600);
+//        }
         //step back
         EncoderMoveDist(0.6, -18,false);
 
@@ -1290,7 +1292,7 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStrafe(dropDist);
 
         //drop the block
-        tray_left.setPosition(0.8);
+//        tray_left.setPosition(0.8);
     }
 
     public void runAutonomousTray(Boolean isBlueSide) {
@@ -1302,26 +1304,26 @@ public class Autonomous2020 extends Teleop2020  {
         //assume that robot is aligned such that it's
         //exactly two tiles away from the bridge towards the tray
         if(isBlueSide)
-            EncoderStrafe(-18);
+            EncoderStrafe(12);
         else
-            EncoderStrafe(18);
-        EncoderStraight(28);
-        tray_left.setPosition(0);
-        tray_right.setPosition(1);
-        sleep(600);
-        EncoderMoveDist(0.4, -28,false);
-        tray_left.setPosition(1);
-        tray_right.setPosition(0);
-        //park after 20 seconds
+            EncoderStrafe(-12);
+
+        foundation.setPosition(0);
+        EncoderStraight(-32);
+        foundation.setPosition(1);
+        sleep(300);
+        EncoderStraight(32);
+        foundation.setPosition(0);
+        //park after 12 seconds
         sleep(12000);
 
 
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 52;  //48 + some extra to be over the line
+            parkDist = -46;  //48 + some extra to be over the line
         }
         else {
-            parkDist = -52;
+            parkDist = 46;
         }
         EncoderStrafe(parkDist);
 
