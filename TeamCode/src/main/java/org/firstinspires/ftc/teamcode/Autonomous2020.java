@@ -569,15 +569,17 @@ public class Autonomous2020 extends Teleop2020  {
         System.out.println(message);
     }
 
-    // test function for obstacle simultion
+    // test function for obstacle simulation
     public void getTargetXAndY(){
         Random random = new Random();
         int targetX = random.nextInt(145);
         int targetY = random.nextInt(145);
+        logging(true, "target x: " + targetX + "    target y: " + targetY);
         //getting Target values
 
         int obstacleTargetX = random.nextInt(145);
         int obstacleTargetY = random.nextInt(145);
+        logging(true, "obstacleTarget x: " + obstacleTargetX  + "    obstacleTarget y: " + obstacleTargetY);
         //getting obstacle Target values
 
         if(targetY != obstacleTargetY && targetX != obstacleTargetX) {
@@ -772,6 +774,7 @@ public class Autonomous2020 extends Teleop2020  {
         motorRightBack.setMode(RUN_WITHOUT_ENCODER);
         motorRightFront.setMode(RUN_WITHOUT_ENCODER);
 
+
         double target_encoder = 0;
 
         if(!strafe) {
@@ -864,6 +867,9 @@ public class Autonomous2020 extends Teleop2020  {
         motorRightBack.setPower(power);
         motorRightFront.setPower(power);
         motorLeftBack.setPower(power);
+        //get distance sensor value from new lf and rf that are on the front of the robot instead of sides
+        //if rf sees obstacle, strafe left until no longer see obstacle in front
+        //if lf sees obstacle, strafe right until no longer see obstacle in front
 
     }
 
