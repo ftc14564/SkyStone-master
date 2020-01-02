@@ -45,7 +45,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
 
-
+    private Navigate navigator;
     private DistanceSensor sensorRange_rf;
     private DistanceSensor sensorRange_rb;
     private DistanceSensor sensorRange_lf;
@@ -57,6 +57,10 @@ public class Autonomous2020 extends Teleop2020  {
     Rev2mDistanceSensor distanceSensor_rb;
     Rev2mDistanceSensor distanceSensor_lf;
     Rev2mDistanceSensor distanceSensor_lb;
+    Rev2mDistanceSensor distanceSensor_rf_Straight;
+    Rev2mDistanceSensor distanceSensor_rb_Straight;
+    Rev2mDistanceSensor distanceSensor_lf_Straight;
+    Rev2mDistanceSensor distanceSensor_lb_Straight;
 
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F, 0F, 0F};
@@ -79,7 +83,7 @@ public class Autonomous2020 extends Teleop2020  {
     double y = 0;
     double x = 0;
 
-    double where_x = 0;
+    double where_x = 18;
     double where_y = 0;
 
     BNO055IMU imu;
@@ -201,6 +205,8 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void initFn() {
         teleopInitFn();
+
+        navigator = new Navigate(this);
         telemetry.addData("Init: start ", "");
 
 
@@ -600,7 +606,9 @@ public class Autonomous2020 extends Teleop2020  {
         }
     }
 
-
+    public boolean goTo(double x, double y) {
+       return navigator.goTo(x,y);
+    }
 
 
 
