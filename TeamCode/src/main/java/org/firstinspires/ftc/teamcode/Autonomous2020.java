@@ -1167,8 +1167,9 @@ public class Autonomous2020 extends Teleop2020  {
         public void run() {
             idle();
             sleep(10);
-            armExtended(5.4375);
+            armExtended(4.675);
             grabCollection();
+            armExtended(0.7625);
 
 
         }
@@ -1261,10 +1262,10 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStraight(18);
         closeGrabber();
         sleep(1200);
-        liftInch(0.2);
+        liftInch(0.5);
 
         //step back
-        EncoderStraight(-16);
+        EncoderStraight(-22);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1357,7 +1358,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         new Thread(new extendThread()).start();
 
-        sleep(5000);
+        sleep(9000);
 
         EncoderStraight(12);
 
@@ -1370,15 +1371,15 @@ public class Autonomous2020 extends Teleop2020  {
             if(!useArm)
                 blockDist = y + 11;
             else
-                blockDist = y + 4.5;
+                blockDist = y + 3;
 
             EncoderStrafe (blockDist);
         }
 
         //grab a block (even if it's a random one)
-//        if(!useArm)
-//            grabAndDropBlock_Hook(isBlueSide);
-//         else
+        if(!useArm)
+            grabAndDropBlock_Hook(isBlueSide);
+         else
             grabAndDropBlock_Arm(isBlueSide);
 
 
@@ -1401,14 +1402,17 @@ public class Autonomous2020 extends Teleop2020  {
 //            if(!useArm)
 //                blockDist = y -3;
 //            else
-//                blockDist = y + 4.5;
+//                blockDist = y + 3;
 //
 //            EncoderStrafe (blockDist);
 //        }
 //
 //        //grab a block (even if it's a random one)
+//        if(!useArm)
 //            grabAndDropBlock_Hook(isBlueSide);
-            EncoderStraight(3);
+//        else
+//            grabAndDropBlock_Arm(isBlueSide);
+//
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
