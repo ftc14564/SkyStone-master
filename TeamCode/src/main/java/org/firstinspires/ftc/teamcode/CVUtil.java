@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -20,10 +22,18 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgcodecs.Imgcodecs;
+import static org.opencv.imgcodecs.Imgcodecs.imread;
+
+
+import org.opencv.core.Point;
+
+
+
 
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,9 +42,14 @@ import android.view.WindowManager;
 import android.view.View.OnTouchListener;
 import android.view.SurfaceView;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+
+
+
 
 import com.vuforia.Frame;
 import com.vuforia.Image;
+
 
 public class CVUtil {
 
@@ -57,7 +72,9 @@ public class CVUtil {
     private Context m_context;
     private BaseLoaderCallback mLoaderCallback;
 
-    public void initCv(Context context) {
+
+
+        public void initCv(Context context) {
 
 
         m_context = context;
@@ -129,12 +146,20 @@ public class CVUtil {
         Imgproc.cvtColor(blurImg, hsvImage, Imgproc.COLOR_BGR2HSV);
 
         //filtering pixels based on given HSV color range
-        Core.inRange(hsvImage, new Scalar(180,100,100), new Scalar(255,100,50), color_range);
+        Core.inRange(hsvImage, new Scalar(0,50,50), new Scalar(5,255,255), color_range);
+
+        //filtering pixels based on given HSV color range
         String filePath = "/sdcard/FIRST/color_rangeFile.png";
         Imgcodecs.imwrite(filePath, color_range);
         color_range.release();
         System.out.println("Color Range");
         return color_range;
 
+
     }
-}
+
+
+
+
+    }
+

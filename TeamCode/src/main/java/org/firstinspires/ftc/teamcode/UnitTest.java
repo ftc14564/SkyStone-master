@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Locale;
@@ -61,15 +62,19 @@ public class UnitTest extends Autonomous2020 {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+            telemetry.addData(" rf", distanceSensor_rf.getDistance(DistanceUnit.CM));
+            telemetry.addData(" rb", distanceSensor_rb.getDistance(DistanceUnit.CM));
+            telemetry.update();
+
             if (gamepad2.x) {
-                armExtended(10);
+//                armExtended(10);
                 grabCollection();
                 straight_inch(1, 1, 10);
                 closeGrabber();
             }
 
             if (gamepad1.right_bumper){
-                armExtended(5);
+//                armExtended(5);
             }
 
             if (gamepad1.x) {

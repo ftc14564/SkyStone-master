@@ -149,6 +149,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
 
+
     class InitThread_Depot implements Runnable {
         @Override
         public void run() {
@@ -198,6 +199,14 @@ public class Autonomous2020 extends Teleop2020  {
         teleopInitFn();
         telemetry.addData("Init: start ", "");
 
+        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
+        distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
+        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
+        distanceSensor_rb = (Rev2mDistanceSensor)sensorRange_rb;
+        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lf");
+        distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
+        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
+        distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
 
         strafing = false;
 
@@ -1153,6 +1162,17 @@ public class Autonomous2020 extends Teleop2020  {
             strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
         }
     }
+    class extendThread implements Runnable {
+        @Override
+        public void run() {
+            idle();
+            sleep(10);
+            armExtended(5.4375);
+            grabCollection();
+
+
+        }
+    }
 
 
     @Override
@@ -1238,12 +1258,10 @@ public class Autonomous2020 extends Teleop2020  {
     public void grabAndDropBlock_Arm(Boolean isBlueSide) {
 
 
-        armExtended(10);
-        grabCollection();
         EncoderStraight(18);
         closeGrabber();
         sleep(1200);
-        liftInch(0.3);
+        liftInch(0.2);
 
         //step back
         EncoderStraight(-16);
@@ -1309,7 +1327,7 @@ public class Autonomous2020 extends Teleop2020  {
             EncoderStrafe(-12);
 
         foundation.setPosition(0);
-        EncoderStraight(-32);
+        EncoderStraight(-35);
         foundation.setPosition(1);
         sleep(300);
         EncoderStraight(32);
@@ -1337,11 +1355,16 @@ public class Autonomous2020 extends Teleop2020  {
 
         waitForStart();
 
+        new Thread(new extendThread()).start();
+
+        sleep(5000);
+
         EncoderStraight(12);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
 
         if (blockSeen) {
+
             double blockDist=0;
 
             if(!useArm)
