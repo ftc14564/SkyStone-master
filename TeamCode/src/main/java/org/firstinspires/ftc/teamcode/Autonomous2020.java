@@ -1383,36 +1383,37 @@ public class Autonomous2020 extends Teleop2020  {
             grabAndDropBlock_Arm(isBlueSide);
 
 
-//        //return for second
-//        double returnDist = 0;
-//        if(isBlueSide){
-//            returnDist = 24 + 40;
-//        }
-//        else {
-//            returnDist = -24 - 40;
-//        }
-//        EncoderStrafe(returnDist);
-//
-//        //see second one ?
-//        blockSeen = vuFindBlock(isBlueSide);
-//
-//        if (blockSeen) {
-//            double blockDist=0;
-//
-//            if(!useArm)
-//                blockDist = y -3;
-//            else
-//                blockDist = y + 4;
-//
-//            EncoderStrafe (blockDist);
-//        }
-//
-//        //grab a block (even if it's a random one)
-//        if(!useArm)
-//            grabAndDropBlock_Hook(isBlueSide);
-//        else
-//            grabAndDropBlock_Arm(isBlueSide);
-//
+        //return for second
+        double returnDist = 0;
+        if(isBlueSide){
+            returnDist = 24 + 40;
+        }
+        else {
+            returnDist = -24 - 40;
+        }
+        EncoderStrafe(returnDist);
+
+        //see second one ?
+        sleep(300);
+        blockSeen = vuFindBlock(isBlueSide);
+
+        if (blockSeen) {
+            double blockDist=0;
+
+            if(!useArm)
+                blockDist = y -3;
+            else
+                blockDist = y + 4;
+
+            EncoderStrafe (blockDist);
+        }
+
+        //grab a block (even if it's a random one)
+        if(!useArm)
+            grabAndDropBlock_Hook(isBlueSide);
+        else
+            grabAndDropBlock_Arm(isBlueSide);
+
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
