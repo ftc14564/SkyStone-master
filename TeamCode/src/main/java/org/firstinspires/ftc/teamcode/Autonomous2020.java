@@ -1166,10 +1166,9 @@ public class Autonomous2020 extends Teleop2020  {
         @Override
         public void run() {
             idle();
-            sleep(10);
+            sleep(9);
             armExtended(4.675);
-            grabCollection();
-            armExtended(0.7625);
+            //armExtended(0.7625);
 
 
         }
@@ -1258,11 +1257,11 @@ public class Autonomous2020 extends Teleop2020  {
     }
     public void grabAndDropBlock_Arm(Boolean isBlueSide) {
 
-
+        grabCollection();
         EncoderStraight(18);
         closeGrabber();
         sleep(1200);
-        liftInch(0.5);
+        liftInch(0.3);
 
         //step back
         EncoderStraight(-22);
@@ -1331,7 +1330,7 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStraight(-35);
         foundation.setPosition(1);
         sleep(300);
-        EncoderStraight(32);
+        EncoderStraight(36);
         foundation.setPosition(0);
         //park after 12 seconds
         sleep(12000);
@@ -1358,9 +1357,10 @@ public class Autonomous2020 extends Teleop2020  {
 
         new Thread(new extendThread()).start();
 
-        sleep(9000);
+        //sleep(9000);
 
         EncoderStraight(12);
+        sleep(2000);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
 
@@ -1371,7 +1371,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(!useArm)
                 blockDist = y + 11;
             else
-                blockDist = y + 3;
+                blockDist = y + 4;
 
             EncoderStrafe (blockDist);
         }
@@ -1402,7 +1402,7 @@ public class Autonomous2020 extends Teleop2020  {
 //            if(!useArm)
 //                blockDist = y -3;
 //            else
-//                blockDist = y + 3;
+//                blockDist = y + 4;
 //
 //            EncoderStrafe (blockDist);
 //        }
@@ -1416,10 +1416,10 @@ public class Autonomous2020 extends Teleop2020  {
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 32;
+            parkDist = 20;
         }
         else {
-            parkDist = -32;
+            parkDist = -20;
         }
         EncoderStrafe(parkDist);
 
