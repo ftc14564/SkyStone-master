@@ -51,17 +51,19 @@ public class Navigate {
 
     }
     public boolean goTo(double x, double y){
-        autoBase.EncoderStraight(Math.abs(autoBase.where_y-y));
-        if(autoBase.where_x < x){
-            autoBase.Rotate(1,1,90);
-        }
-        else{
-            autoBase.Rotate(1,-1,90);
-        }
-        autoBase.EncoderStraight(Math.abs(autoBase.where_x-x));
+        
+//        autoBase.EncoderStraight(Math.abs(autoBase.where_y-y));
+//        if(autoBase.where_x < x){
+//            autoBase.Rotate(1,1,90);
+//        }
+//        else{
+//            autoBase.Rotate(1,-1,90);
+//        }
+//        autoBase.EncoderStraight(Math.abs(autoBase.where_x-x));
 
         return false;
     }
+
 
     public void abort(){
 
