@@ -65,8 +65,8 @@ public class Autonomous2020 extends Teleop2020  {
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 126.00;
-    final double TICKS_PER_INCH_STRAIGHT = 89.1;
+    final double TICKS_PER_INCH_STRAFE = 229/3;   //Neverest 40 was 126.00;
+    final double TICKS_PER_INCH_STRAIGHT = 114.59/3;  //Neverest 40 was 89.1;
 
     float power = 0;
     float track = 0;
@@ -744,19 +744,19 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(!strafe) {
             target_encoder = (distance * TICKS_PER_INCH_STRAIGHT);
-            speed *= 0.7;
+            speed *= 0.9;
         }
         else {
             target_encoder = (distance * TICKS_PER_INCH_STRAFE);
         }
 
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT/5, strafe)) {
+        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe)) {
             idle();
         }
         //sleep(100);
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed/3, target_encoder, P_FWD_COEFF / 3, TICKS_PER_INCH_STRAIGHT/10, strafe)) {
-            idle();
-        }
+//        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed/2, target_encoder, P_FWD_COEFF / 2, TICKS_PER_INCH_STRAIGHT/5, strafe)) {
+//            idle();
+//        }
 
     }
 
@@ -767,7 +767,7 @@ public class Autonomous2020 extends Teleop2020  {
         double power;
 
         //determine  power based on error
-        error = getErrorDist(distance, strafe);
+        error = getErrorDist(distance, strafe, distThreshold);
 
         if (Math.abs(error) <= distThreshold) {
 
@@ -789,7 +789,7 @@ public class Autonomous2020 extends Teleop2020  {
         if (!strafe)
             simpleStraight(weightConstant*power);
         else
-            simpleStrafe(weightConstant*power);
+            simpleStrafe(weightConstant*power*1.25);
 
 
         telemetry.addData("Target dist", "%5.2f", distance);
@@ -799,22 +799,31 @@ public class Autonomous2020 extends Teleop2020  {
         return onTarget;
     }
 
-    public double getErrorDist(double targetDist, Boolean strafe) {
+    public double getErrorDist(double targetDist, Boolean strafe, double distThr) {
 
         double robotError;
-
+        double robotError2;
+        double err;
         double curr_encoder = 0;
         if(!strafe)
-             curr_encoder = motorRightFront.getCurrentPosition();
+             curr_encoder = motorLeftFront.getCurrentPosition();
         else
-            curr_encoder = -1 * motorRightFront.getCurrentPosition();
+            curr_encoder = 1 * motorLeftFront.getCurrentPosition();
 
         robotError = targetDist - curr_encoder;
 
+        if (targetDist <0) {
+            robotError2 = Math.min(curr_encoder, -1*(distThr + TICKS_PER_INCH_STRAIGHT));
+            err = Math.max(robotError, robotError2);
+        }
+         else {
+            robotError2 = Math.max(curr_encoder, (distThr + TICKS_PER_INCH_STRAIGHT));
+            err = Math.min(robotError, robotError2);
+        }
         telemetry.addData("Robot Error", "%5.2f", robotError);
         telemetry.update();
 
-        return robotError;
+        return err;
 
     }
 
@@ -1062,7 +1071,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
     public void makeParallelLeft() {
-        double sensor_gap = 24;
+        double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         if (distanceSensor_lb.getDistance(DistanceUnit.CM) < (distanceSensor_lf.getDistance(DistanceUnit.CM))) {
             double theta;
@@ -1101,17 +1110,17 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM);
-        if (dis < 9) {
-            strafe(0.7, -1, 200);
-        } else if (dis > 12) {
-            strafe(0.7, 1, ((dis - 11) / 2.54) * 200);
-        }
+//        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM);
+//        if (dis < 9) {
+//            strafe(0.7, -1, 200);
+//        } else if (dis > 12) {
+//            strafe(0.7, 1, ((dis - 11) / 2.54) * 200);
+//        }
     }
 
     public void makeParallelRight() {
 
-        double sensor_gap = 26;
+        double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         if (distanceSensor_rb.getDistance(DistanceUnit.CM) < (distanceSensor_rf.getDistance(DistanceUnit.CM))) {
@@ -1155,12 +1164,12 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM);
-        if (dis < 13) {
-            strafe(0.7, 1, 200);
-        } else if (dis > 16) {
-            strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
-        }
+//        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM);
+//        if (dis < 13) {
+//            strafe(0.7, 1, 200);
+//        } else if (dis > 16) {
+//            strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
+//        }
     }
     class extendThread implements Runnable {
         @Override
@@ -1255,10 +1264,10 @@ public class Autonomous2020 extends Teleop2020  {
 
         return blockSeen;
     }
-    public void grabAndDropBlock_Arm(Boolean isBlueSide) {
+    public void grabAndDropBlock_Arm(Boolean isBlueSide, double fwd) {
 
         grabCollection();
-        EncoderStraight(18);
+        EncoderStraight(fwd);
         closeGrabber();
         sleep(1200);
         liftInch(0.3);
@@ -1270,7 +1279,7 @@ public class Autonomous2020 extends Teleop2020  {
         //take to drop zone ( 2 tiles away towards the bridge )
         double dropDist = 0;
         if(isBlueSide){
-            dropDist = -1*(where_y) - 48;
+            dropDist = -1*(where_y) - 35;
         }
         else {
             dropDist = -1* (where_y) + 48;
@@ -1330,7 +1339,7 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStraight(-35);
         foundation.setPosition(1);
         sleep(300);
-        EncoderStraight(36);
+        EncoderStraight(38);
         foundation.setPosition(0);
         //park after 12 seconds
         sleep(12000);
@@ -1380,39 +1389,54 @@ public class Autonomous2020 extends Teleop2020  {
         if(!useArm)
             grabAndDropBlock_Hook(isBlueSide);
          else
-            grabAndDropBlock_Arm(isBlueSide);
+            grabAndDropBlock_Arm(isBlueSide, 18);
 
 
         //return for second
-        double returnDist = 0;
-        if(isBlueSide){
-            returnDist = 24 + 40;
-        }
-        else {
-            returnDist = -24 - 40;
-        }
-        EncoderStrafe(returnDist);
-
-        //see second one ?
-        sleep(300);
-        blockSeen = vuFindBlock(isBlueSide);
-
-        if (blockSeen) {
-            double blockDist=0;
-
-            if(!useArm)
-                blockDist = y -3;
-            else
-                blockDist = y + 4;
-
-            EncoderStrafe (blockDist);
-        }
-
-        //grab a block (even if it's a random one)
-        if(!useArm)
-            grabAndDropBlock_Hook(isBlueSide);
-        else
-            grabAndDropBlock_Arm(isBlueSide);
+//        double returnDist = 0;
+//        if(isBlueSide){
+//            returnDist = 24 + 27;
+//        }
+//        else {
+//            returnDist = -24 - 40;
+//        }
+//        EncoderStrafe(returnDist);
+//
+//        if (isBlueSide){
+//            makeParallelRight();
+//        }
+//        else {
+//            makeParallelLeft();
+//        }
+//
+//        //see second one ?
+//        sleep(300);
+//        blockSeen = vuFindBlock(isBlueSide);
+//
+//        if (blockSeen) {
+//            double blockDist=0;
+//
+//            if(Math.abs(y)>10){
+//                if(y>0){
+//                    y = y-10;
+//                }
+//                else {
+//                    y = y+10;
+//                }
+//            }
+//            if(!useArm)
+//                blockDist = y -3;
+//            else
+//                blockDist = y + 4;
+//
+//            EncoderStrafe (blockDist);
+//        }
+//
+//        //grab a block (even if it's a random one)
+//        if(!useArm)
+//            grabAndDropBlock_Hook(isBlueSide);
+//        else
+//            grabAndDropBlock_Arm(isBlueSide, 18);
 
         //park (1 tile back towards the bridge)
         double parkDist = 0;
