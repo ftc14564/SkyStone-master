@@ -121,6 +121,12 @@ public class CVUtil {
 
 
         Image img = frame.getImage(0);
+        Mat hsvMat = new Mat();
+        Mat blurredMat = new Mat();
+        Mat mask = new Mat();
+
+
+
 
         Mat mat = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
         Utils.bitmapToMat(bm, mat);
@@ -128,8 +134,17 @@ public class CVUtil {
 
         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
         //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HSV);
-        String filePath = "/sdcard/FIRST/rgbFile.png";
-        Imgcodecs.imwrite(filePath, mat);
+        Imgproc.blur(mat, blurredMat, new Size(7, 7));
+        Imgproc.cvtColor(blurredMat, hsvMat, Imgproc.COLOR_BGR2HSV);
+
+        Scalar minValues = new Scalar(0, 0, 0);
+        Scalar maxValues = new Scalar(180, 255, 255);
+        Core.inRange(hsvMat, minValues, maxValues, mask);
+
+//        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
+//        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
+        String filePath = "/sdcard/FIRST/mask.png";
+        Imgcodecs.imwrite(filePath, mask);
         mat.release();
         System.out.println("Got Frame");
 
