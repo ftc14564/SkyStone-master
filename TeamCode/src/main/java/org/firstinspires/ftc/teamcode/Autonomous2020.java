@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -48,12 +49,14 @@ public class Autonomous2020 extends Teleop2020  {
     private DistanceSensor sensorRange_lf;
     private DistanceSensor sensorRange_lb;
 
-    double distanceToWall;
-
     Rev2mDistanceSensor distanceSensor_rf;
     Rev2mDistanceSensor distanceSensor_rb;
     Rev2mDistanceSensor distanceSensor_lf;
     Rev2mDistanceSensor distanceSensor_lb;
+
+    ColorSensor sensorColor;
+    DistanceSensor sensorDistance;
+
 
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F, 0F, 0F};
@@ -65,8 +68,8 @@ public class Autonomous2020 extends Teleop2020  {
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 229/3;   //Neverest 40 was 126.00;
-    final double TICKS_PER_INCH_STRAIGHT = 114.59/3;  //Neverest 40 was 89.1;
+    final double TICKS_PER_INCH_STRAFE = 174/3;
+    final double TICKS_PER_INCH_STRAIGHT = 88/3;
 
     float power = 0;
     float track = 0;
@@ -166,6 +169,13 @@ public class Autonomous2020 extends Teleop2020  {
                 parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
                 parameters.mode = BNO055IMU.SensorMode.IMU;
 
+                // get a reference to the color sensor.
+                sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
+
+                // get a reference to the distance sensor that shares the same name.
+                sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
+
+
                 // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
                 // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
                 // and named "imu".
@@ -203,8 +213,10 @@ public class Autonomous2020 extends Teleop2020  {
         distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
         sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
         distanceSensor_rb = (Rev2mDistanceSensor)sensorRange_rb;
-        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lf");
+//temp
+        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lb"); //change back to 2m_lf
         distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
+
         sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
         distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
 
@@ -367,7 +379,7 @@ public class Autonomous2020 extends Teleop2020  {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-    double P_TURN_COEFF = -0.05;
+    double P_TURN_COEFF = 0.05;
     double TURN_THRESHOLD = 1;
 
     public void gyroTurnREV(double speed, double angle) {
@@ -375,14 +387,43 @@ public class Autonomous2020 extends Teleop2020  {
         telemetry.addData("starting gyro turn", "-----");
         telemetry.update();
 
-        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 3)) {
+        Orientation prev_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        int stall_counter = 0;
+        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 5)) {
+
+            Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if( prev_angles.firstAngle == new_angles.firstAngle) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_angles = new_angles;
+            }
+
+            if (stall_counter > 10)
+                break;
+
             telemetry.update();
             idle();
             telemetry.addData("-->", "inside while loop :-(");
             telemetry.update();
         }
         //sleep(100);
-        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF / 3, 1)) {
+        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF / 5, 1)) {
+
+            Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if( prev_angles.firstAngle == new_angles.firstAngle) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_angles = new_angles;
+            }
+
+            if (stall_counter > 10)
+                break;
+
             telemetry.update();
             idle();
             telemetry.addData("-->", "inside while loop :-(");
@@ -417,14 +458,17 @@ public class Autonomous2020 extends Teleop2020  {
             leftSpeed = -rightSpeed;
             //leftSpeed = -5;
         }
-
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         motorLeftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorRightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorRightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double weightConstant = 0.8;//this constant will depend on the robot. you need to test experimentally to see which is best
 
-        while (Math.abs(weightConstant * leftSpeed) < 0.2)
+        while (Math.abs(weightConstant * leftSpeed) < 0.25)
             weightConstant *= 1.5;
 
         motorLeftFront.setPower(weightConstant * leftSpeed);
@@ -750,7 +794,19 @@ public class Autonomous2020 extends Teleop2020  {
             target_encoder = (distance * TICKS_PER_INCH_STRAFE);
         }
 
+        double prev_pos = motorLeftFront.getCurrentPosition();
+        int stall_counter = 0;
         while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe)) {
+            if (prev_pos == motorLeftFront.getCurrentPosition()) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_pos = motorLeftFront.getCurrentPosition();
+            }
+            if(stall_counter > 10)
+                break;
+
             idle();
         }
         //sleep(100);
@@ -789,7 +845,7 @@ public class Autonomous2020 extends Teleop2020  {
         if (!strafe)
             simpleStraight(weightConstant*power);
         else
-            simpleStrafe(weightConstant*power*1.25);
+            simpleStrafe(weightConstant*power*1.5);
 
 
         telemetry.addData("Target dist", "%5.2f", distance);
@@ -813,11 +869,11 @@ public class Autonomous2020 extends Teleop2020  {
         robotError = targetDist - curr_encoder;
 
         if (targetDist <0) {
-            robotError2 = Math.min(curr_encoder, -1*(distThr + TICKS_PER_INCH_STRAIGHT));
+            robotError2 = Math.min(curr_encoder, -1*(distThr*5));
             err = Math.max(robotError, robotError2);
         }
          else {
-            robotError2 = Math.max(curr_encoder, (distThr + TICKS_PER_INCH_STRAIGHT));
+            robotError2 = Math.max(curr_encoder, (distThr*5));
             err = Math.min(robotError, robotError2);
         }
         telemetry.addData("Robot Error", "%5.2f", robotError);
@@ -1070,7 +1126,7 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
-    public void makeParallelLeft() {
+    public void makeParallelLeft(double distance_from_wall) {
         double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         if (distanceSensor_lb.getDistance(DistanceUnit.CM) < (distanceSensor_lf.getDistance(DistanceUnit.CM))) {
@@ -1110,15 +1166,16 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-//        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM);
-//        if (dis < 9) {
-//            strafe(0.7, -1, 200);
-//        } else if (dis > 12) {
-//            strafe(0.7, 1, ((dis - 11) / 2.54) * 200);
-//        }
+        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM) / 2.54;
+        if (dis < distance_from_wall) {
+            EncoderMoveDist(1, (distance_from_wall-dis),true);
+        } else if (dis > distance_from_wall) {
+            EncoderMoveDist(1,-1*(dis-distance_from_wall),true);
+        }
+
     }
 
-    public void makeParallelRight() {
+    public void makeParallelRight(double distance_from_wall) {
 
         double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -1164,12 +1221,12 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-//        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM);
-//        if (dis < 13) {
-//            strafe(0.7, 1, 200);
-//        } else if (dis > 16) {
-//            strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
-//        }
+        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM) / 2.54;
+        if (dis < distance_from_wall) {
+            EncoderMoveDist(1,-1*(distance_from_wall-dis),true);
+        } else if (dis > distance_from_wall) {
+            EncoderMoveDist(1,dis-distance_from_wall,true);
+        }
     }
     class extendThread implements Runnable {
         @Override
