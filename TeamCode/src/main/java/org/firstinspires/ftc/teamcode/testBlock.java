@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
+import android.util.Log;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
@@ -16,6 +19,9 @@ import com.qualcomm.robotcore.util.Range;
 import com.vuforia.ObjectTracker;
 import com.vuforia.Tracker;
 import com.vuforia.TrackerManager;
+import com.vuforia.PIXEL_FORMAT;
+import com.vuforia.Image;
+
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -33,10 +39,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.core.Scalar;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.BlockingQueue;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
@@ -47,7 +65,6 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
-
 
 @Autonomous(name = "testblock")
 public class testBlock extends LinearOpMode {
@@ -1001,6 +1018,9 @@ Bytes    16-bit word    Description
     }
 
 
+
+
+
     @Override
     public void runOpMode() {
 
@@ -1133,10 +1153,61 @@ Bytes    16-bit word    Description
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
 
+        vuforia.setFrameQueueCapacity(1);
+        vuforia.enableConvertFrameToBitmap();
+
         targetsSkyStone.activate();
 
+        CVUtil cvUtil = new CVUtil();
+        cvUtil.initCv(hardwareMap.appContext);
 
+        VuforiaLocalizer.CloseableFrame frame;
+
+
+        int count = 0;
         while (!isStopRequested()) {
+
+            try {
+
+                telemetry.addData("Trying to get OpenCV Frame", "none");
+                telemetry.update();
+
+                frame = vuforia.getFrameQueue().take();
+
+                long numImages = frame.getNumImages();
+                for (int i = 0; i < numImages; i++) {
+                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                        Image rgb = frame.getImage(i);
+                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
+
+                        if (rgb != null) {
+                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
+                                    Bitmap.Config.RGB_565);
+                            bm.copyPixelsFromBuffer(rgb.getPixels());
+
+                            cvUtil.detectColor(mat);
+                            cvUtil.updateFrame(bm, frame);
+
+
+                        }
+                    }
+                }
+
+
+
+                telemetry.addData("Open CV Got Frame", count++);
+                telemetry.update();
+
+
+            } catch (InterruptedException e) {
+                //Log.v(TAG, "Exception!!");
+                System.out.println("get frame exception");
+                telemetry.addData("Open CV Exception", "none");
+
+
+                break;
+            }
+
 
             // check all the trackable targets to see which one (if any) is visible.
             targetVisible = false;

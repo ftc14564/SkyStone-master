@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -39,10 +40,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 
-
 @Autonomous(name = "Autonomous2020")
 public class Autonomous2020 extends Teleop2020  {
-
 
 
 
@@ -51,12 +50,14 @@ public class Autonomous2020 extends Teleop2020  {
     private DistanceSensor sensorRange_lf;
     private DistanceSensor sensorRange_lb;
 
-    double distanceToWall;
-
     Rev2mDistanceSensor distanceSensor_rf;
     Rev2mDistanceSensor distanceSensor_rb;
     Rev2mDistanceSensor distanceSensor_lf;
     Rev2mDistanceSensor distanceSensor_lb;
+
+    ColorSensor sensorColor;
+    DistanceSensor sensorDistance;
+
 
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F, 0F, 0F};
@@ -68,8 +69,8 @@ public class Autonomous2020 extends Teleop2020  {
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 126.00;
-    final double TICKS_PER_INCH_STRAIGHT = 89.1;
+    final double TICKS_PER_INCH_STRAFE = 174/3;
+    final double TICKS_PER_INCH_STRAIGHT = 88/3;
 
     float power = 0;
     float track = 0;
@@ -152,6 +153,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
 
+
     class InitThread_Depot implements Runnable {
         @Override
         public void run() {
@@ -168,14 +170,19 @@ public class Autonomous2020 extends Teleop2020  {
                 parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
                 parameters.mode = BNO055IMU.SensorMode.IMU;
 
+                // get a reference to the color sensor.
+                sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
+
+                // get a reference to the distance sensor that shares the same name.
+                sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
+
+
                 // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
                 // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
                 // and named "imu".
                 imu = hardwareMap.get(BNO055IMU.class, "imu");
                 imu.initialize(parameters);
 
-                // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-                // first.
 
                 vuInitDone = true;
             } catch (Exception e) {
@@ -203,6 +210,16 @@ public class Autonomous2020 extends Teleop2020  {
         teleopInitFn();
         telemetry.addData("Init: start ", "");
 
+        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
+        distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
+        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
+        distanceSensor_rb = (Rev2mDistanceSensor)sensorRange_rb;
+//temp
+        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lb"); //change back to 2m_lf
+        distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
+
+        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
+        distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
 
         strafing = false;
 
@@ -335,7 +352,11 @@ public class Autonomous2020 extends Teleop2020  {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
         }
 
+        vuforia.setFrameQueueCapacity(1);
+
         targetsSkyStone.activate();
+
+
 
     }
 
@@ -359,7 +380,7 @@ public class Autonomous2020 extends Teleop2020  {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-    double P_TURN_COEFF = -0.05;
+    double P_TURN_COEFF = 0.05;
     double TURN_THRESHOLD = 1;
 
     public void gyroTurnREV(double speed, double angle) {
@@ -367,14 +388,43 @@ public class Autonomous2020 extends Teleop2020  {
         telemetry.addData("starting gyro turn", "-----");
         telemetry.update();
 
-        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 3)) {
+        Orientation prev_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        int stall_counter = 0;
+        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 5)) {
+
+            Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if( prev_angles.firstAngle == new_angles.firstAngle) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_angles = new_angles;
+            }
+
+            if (stall_counter > 10)
+                break;
+
             telemetry.update();
             idle();
             telemetry.addData("-->", "inside while loop :-(");
             telemetry.update();
         }
         //sleep(100);
-        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF / 3, 1)) {
+        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF / 5, 1)) {
+
+            Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if( prev_angles.firstAngle == new_angles.firstAngle) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_angles = new_angles;
+            }
+
+            if (stall_counter > 10)
+                break;
+
             telemetry.update();
             idle();
             telemetry.addData("-->", "inside while loop :-(");
@@ -409,14 +459,17 @@ public class Autonomous2020 extends Teleop2020  {
             leftSpeed = -rightSpeed;
             //leftSpeed = -5;
         }
-
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         motorLeftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorLeftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorRightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorRightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double weightConstant = 0.8;//this constant will depend on the robot. you need to test experimentally to see which is best
 
-        while (Math.abs(weightConstant * leftSpeed) < 0.2)
+        while (Math.abs(weightConstant * leftSpeed) < 0.25)
             weightConstant *= 1.5;
 
         motorLeftFront.setPower(weightConstant * leftSpeed);
@@ -775,19 +828,31 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(!strafe) {
             target_encoder = (distance * TICKS_PER_INCH_STRAIGHT);
-            speed *= 0.7;
+            speed *= 0.9;
         }
         else {
             target_encoder = (distance * TICKS_PER_INCH_STRAFE);
         }
 
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT/5, strafe)) {
+        double prev_pos = motorLeftFront.getCurrentPosition();
+        int stall_counter = 0;
+        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe)) {
+            if (prev_pos == motorLeftFront.getCurrentPosition()) {
+                stall_counter++;
+            }
+            else {
+                stall_counter = 0;
+                prev_pos = motorLeftFront.getCurrentPosition();
+            }
+            if(stall_counter > 10)
+                break;
+
             idle();
         }
         //sleep(100);
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed/3, target_encoder, P_FWD_COEFF / 3, TICKS_PER_INCH_STRAIGHT/10, strafe)) {
-            idle();
-        }
+//        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed/2, target_encoder, P_FWD_COEFF / 2, TICKS_PER_INCH_STRAIGHT/5, strafe)) {
+//            idle();
+//        }
 
     }
 
@@ -798,7 +863,7 @@ public class Autonomous2020 extends Teleop2020  {
         double power;
 
         //determine  power based on error
-        error = getErrorDist(distance, strafe);
+        error = getErrorDist(distance, strafe, distThreshold);
 
         if (Math.abs(error) <= distThreshold) {
 
@@ -820,7 +885,7 @@ public class Autonomous2020 extends Teleop2020  {
         if (!strafe)
             simpleStraight(weightConstant*power);
         else
-            simpleStrafe(weightConstant*power);
+            simpleStrafe(weightConstant*power*1.5);
 
 
         telemetry.addData("Target dist", "%5.2f", distance);
@@ -830,22 +895,31 @@ public class Autonomous2020 extends Teleop2020  {
         return onTarget;
     }
 
-    public double getErrorDist(double targetDist, Boolean strafe) {
+    public double getErrorDist(double targetDist, Boolean strafe, double distThr) {
 
         double robotError;
-
+        double robotError2;
+        double err;
         double curr_encoder = 0;
         if(!strafe)
-             curr_encoder = motorRightFront.getCurrentPosition();
+             curr_encoder = motorLeftFront.getCurrentPosition();
         else
-            curr_encoder = -1 * motorRightFront.getCurrentPosition();
+            curr_encoder = 1 * motorLeftFront.getCurrentPosition();
 
         robotError = targetDist - curr_encoder;
 
+        if (targetDist <0) {
+            robotError2 = Math.min(curr_encoder, -1*(distThr*5));
+            err = Math.max(robotError, robotError2);
+        }
+         else {
+            robotError2 = Math.max(curr_encoder, (distThr*5));
+            err = Math.min(robotError, robotError2);
+        }
         telemetry.addData("Robot Error", "%5.2f", robotError);
         telemetry.update();
 
-        return robotError;
+        return err;
 
     }
 
@@ -1092,8 +1166,8 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
-    public void makeParallelLeft() {
-        double sensor_gap = 24;
+    public void makeParallelLeft(double distance_from_wall) {
+        double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         if (distanceSensor_lb.getDistance(DistanceUnit.CM) < (distanceSensor_lf.getDistance(DistanceUnit.CM))) {
             double theta;
@@ -1132,17 +1206,18 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM);
-        if (dis < 9) {
-            strafe(0.7, -1, 200);
-        } else if (dis > 12) {
-            strafe(0.7, 1, ((dis - 11) / 2.54) * 200);
+        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM) / 2.54;
+        if (dis < distance_from_wall) {
+            EncoderMoveDist(1, (distance_from_wall-dis),true);
+        } else if (dis > distance_from_wall) {
+            EncoderMoveDist(1,-1*(dis-distance_from_wall),true);
         }
+
     }
 
-    public void makeParallelRight() {
+    public void makeParallelRight(double distance_from_wall) {
 
-        double sensor_gap = 26;
+        double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         if (distanceSensor_rb.getDistance(DistanceUnit.CM) < (distanceSensor_rf.getDistance(DistanceUnit.CM))) {
@@ -1186,11 +1261,22 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
         }
 
-        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM);
-        if (dis < 13) {
-            strafe(0.7, 1, 200);
-        } else if (dis > 16) {
-            strafe(0.7, -1, ((dis - 15) / 2.54) * 200);
+        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM) / 2.54;
+        if (dis < distance_from_wall) {
+            EncoderMoveDist(1,-1*(distance_from_wall-dis),true);
+        } else if (dis > distance_from_wall) {
+            EncoderMoveDist(1,dis-distance_from_wall,true);
+        }
+    }
+    class extendThread implements Runnable {
+        @Override
+        public void run() {
+            idle();
+            sleep(9);
+            armExtended(4.675);
+            //armExtended(0.7625);
+
+
         }
     }
 
@@ -1275,28 +1361,28 @@ public class Autonomous2020 extends Teleop2020  {
 
         return blockSeen;
     }
-    public void grabAndDropBlock_Arm(Boolean isBlueSide) {
+    public void grabAndDropBlock_Arm(Boolean isBlueSide, double fwd) {
 
-
-        armExtended(10);
         grabCollection();
-        EncoderStraight(18);
+        EncoderStraight(fwd);
         closeGrabber();
+        sleep(1200);
+        liftInch(0.3);
 
         //step back
-        EncoderStraight(-18);
+        EncoderStraight(-22);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
         double dropDist = 0;
         if(isBlueSide){
-            dropDist = -1*(where_y) - 48;
+            dropDist = -1*(where_y) - 35;
         }
         else {
             dropDist = -1* (where_y) + 48;
         }
         EncoderStrafe(dropDist);
-        
+
         grabCollection();
 
     }
@@ -1304,11 +1390,19 @@ public class Autonomous2020 extends Teleop2020  {
 
         EncoderStraight(18);
         sleep(700);
-        tray_left.setPosition(0);
-        sleep(600);
 
+        foundation.setPosition(1);
+        sleep(600);
+//        if(isBlueSide) {
+//            tray_right.setPosition(0);
+//            sleep(600);
+//        }
+//        else{
+//            tray_left.setPosition(0);
+//            sleep(600);
+//        }
         //step back
-        EncoderStraight(-18);
+        EncoderMoveDist(0.6, -18,false);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1322,7 +1416,7 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStrafe(dropDist);
 
         //drop the block
-        tray_left.setPosition(0.8);
+//        tray_left.setPosition(0.8);
     }
 
     public void runAutonomousTray(Boolean isBlueSide) {
@@ -1333,28 +1427,33 @@ public class Autonomous2020 extends Teleop2020  {
 
         //assume that robot is aligned such that it's
         //exactly two tiles away from the bridge towards the tray
+        if(isBlueSide)
+            EncoderStrafe(12);
+        else
+            EncoderStrafe(-12);
 
-        EncoderStraight(30);
-        tray_left.setPosition(0);
-        tray_right.setPosition(0);
-        sleep(600);
-        EncoderStraight(-30);
-
-        //park after 20 seconds
-        sleep(20000);
+        foundation.setPosition(0);
+        EncoderStraight(-35);
+        foundation.setPosition(1);
+        sleep(300);
+        EncoderStraight(38);
+        foundation.setPosition(0);
+        //park after 12 seconds
+        sleep(12000);
 
 
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 55;  //48 + some extra to be over the line
+            parkDist = -46;  //48 + some extra to be over the line
         }
         else {
-            parkDist = -55;
+            parkDist = 46;
         }
         EncoderStrafe(parkDist);
 
 
     }
+
 
     public void runAutonomous(Boolean isBlueSide, Boolean useArm) {
 
@@ -1362,17 +1461,23 @@ public class Autonomous2020 extends Teleop2020  {
 
         waitForStart();
 
-        EncoderStraight(30);
+        new Thread(new extendThread()).start();
+
+        //sleep(9000);
+
+        EncoderStraight(12);
+        sleep(2000);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
 
         if (blockSeen) {
+
             double blockDist=0;
 
             if(!useArm)
-                blockDist = y + 11.5;
+                blockDist = y + 11;
             else
-                blockDist = y + 4.5;
+                blockDist = y + 4;
 
             EncoderStrafe (blockDist);
         }
@@ -1381,46 +1486,62 @@ public class Autonomous2020 extends Teleop2020  {
         if(!useArm)
             grabAndDropBlock_Hook(isBlueSide);
          else
-            grabAndDropBlock_Arm(isBlueSide);
+            grabAndDropBlock_Arm(isBlueSide, 18);
 
 
         //return for second
-        double returnDist = 0;
-        if(isBlueSide){
-            returnDist = 24 + 48;
-        }
-        else {
-            returnDist = -24 - 48;
-        }
-        EncoderStrafe(returnDist);
-
-        //see second one ?
-        blockSeen = vuFindBlock(isBlueSide);
-
-        if (blockSeen) {
-            double blockDist=0;
-
-            if(!useArm)
-                blockDist = y + 11.5;
-            else
-                blockDist = y + 4.5;
-
-            EncoderStrafe (blockDist);
-        }
-
-        //grab a block (even if it's a random one)
-        if(!useArm)
-            grabAndDropBlock_Hook(isBlueSide);
-        else
-            grabAndDropBlock_Arm(isBlueSide);
+//        double returnDist = 0;
+//        if(isBlueSide){
+//            returnDist = 24 + 27;
+//        }
+//        else {
+//            returnDist = -24 - 40;
+//        }
+//        EncoderStrafe(returnDist);
+//
+//        if (isBlueSide){
+//            makeParallelRight();
+//        }
+//        else {
+//            makeParallelLeft();
+//        }
+//
+//        //see second one ?
+//        sleep(300);
+//        blockSeen = vuFindBlock(isBlueSide);
+//
+//        if (blockSeen) {
+//            double blockDist=0;
+//
+//            if(Math.abs(y)>10){
+//                if(y>0){
+//                    y = y-10;
+//                }
+//                else {
+//                    y = y+10;
+//                }
+//            }
+//            if(!useArm)
+//                blockDist = y -3;
+//            else
+//                blockDist = y + 4;
+//
+//            EncoderStrafe (blockDist);
+//        }
+//
+//        //grab a block (even if it's a random one)
+//        if(!useArm)
+//            grabAndDropBlock_Hook(isBlueSide);
+//        else
+//            grabAndDropBlock_Arm(isBlueSide, 18);
 
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 24;
+            parkDist = 20;
         }
         else {
-            parkDist = -24;
+            parkDist = -20;
         }
         EncoderStrafe(parkDist);
 
