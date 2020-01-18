@@ -61,13 +61,13 @@ public class Autonomous2020 extends Teleop2020  {
     Rev2mDistanceSensor distanceSensor_rb_Straight;
     Rev2mDistanceSensor distanceSensor_lf_Straight;
     Rev2mDistanceSensor distanceSensor_lb_Straight;
-
+    boolean avoidObstacles;
     // hsvValues is an array that will hold the hue, saturation, and value information.
     float hsvValues[] = {0F, 0F, 0F};
 
     // values is a reference to the hsvValues array.
     final float values[] = hsvValues;
-
+    long timer = 0;
     // sometimes it helps to multiply the raw RGB values with a scale factor
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
@@ -90,7 +90,8 @@ public class Autonomous2020 extends Teleop2020  {
     Orientation angles;
     Acceleration gravity, gravity1;
     BNO055IMU.Parameters parameters;
-    private static final boolean PHONE_IS_PORTRAIT = false  ;
+    private static final boolean PHONE_IS_PORTRAIT = false;
+    boolean strafedRightToAvoidObstacles;
 
     private static final String VUFORIA_KEY = "AYpOJ0H/////AAABGeEbm+5m+k5BrTnPlF3X9R177NGoUFUGl1kpgLa7MBwlsRdnD3IdxY7LmZ41NTQMASZ1MbCWaEpM4Sag7tDfQsJjqVvCwZr3qJm5y33J8rnMWz1ViOwwzZgnsSZqeGRY9+uPGa6cTMO/cxs+YF+4OqsD+iu4exeMCsxyAPYhXQrEIaW6h7zYVrdi9b5WsgNGUfP60Qz8U3szKTfVmaHmMFvc+iuJ1qmAM5AjlsBlc8MMHzLAL/3sf3UiCDe4tgo4mmYEsdl499QhqhhImEiKS8rTkap/53B8Hm89z3m5HuBoH4EKVUc65k2aCBg5c5jXVoZan8DkQFqSPnArwQnCHpaL/d1y79BRE44nJXj54E6V";
 
@@ -576,35 +577,35 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     // test function for obstacle simulation
-    public void getTargetXAndY(){
-        Random random = new Random();
-        int targetX = random.nextInt(145);
-        int targetY = random.nextInt(145);
-        logging(true, "target x: " + targetX + "    target y: " + targetY);
-        //getting Target values
-
-        int obstacleTargetX = random.nextInt(145);
-        int obstacleTargetY = random.nextInt(145);
-        logging(true, "obstacleTarget x: " + obstacleTargetX  + "    obstacleTarget y: " + obstacleTargetY);
-        //getting obstacle Target values
-
-        if(targetY != obstacleTargetY && targetX != obstacleTargetX) {
-            EncoderMoveDist(1, targetY - where_y, false);
-            Rotate(1, 1, 90);
-            EncoderMoveDist(1, targetX - where_x, false);
-        }
-        else if (targetY == obstacleTargetY){
-            Rotate(1, 1, 90);
-            EncoderMoveDist(1, targetX - where_x, false);
-            Rotate(1,-1,90);
-            EncoderMoveDist(1, targetY - where_y, false);
-        }
-        else if(targetX == obstacleTargetX){
-            EncoderMoveDist(1, targetY - where_y, false);
-            Rotate(1, 1, 90);
-            EncoderMoveDist(1, targetX - where_x, false);
-        }
-    }
+//    public void getTargetXAndY(){
+//        Random random = new Random();
+//        int targetX = random.nextInt(145);
+//        int targetY = random.nextInt(145);
+//        logging(true, "target x: " + targetX + "    target y: " + targetY);
+//        //getting Target values
+//
+//        int obstacleTargetX = random.nextInt(145);
+//        int obstacleTargetY = random.nextInt(145);
+//        logging(true, "obstacleTarget x: " + obstacleTargetX  + "    obstacleTarget y: " + obstacleTargetY);
+//        //getting obstacle Target values
+//
+//        if(targetY != obstacleTargetY && targetX != obstacleTargetX) {
+//            EncoderMoveDist(1, targetY - where_y, false);
+//            Rotate(1, 1, 90);
+//            EncoderMoveDist(1, targetX - where_x, false);
+//        }
+//        else if (targetY == obstacleTargetY){
+//            Rotate(1, 1, 90);
+//            EncoderMoveDist(1, targetX - where_x, false);
+//            Rotate(1,-1,90);
+//            EncoderMoveDist(1, targetY - where_y, false);
+//        }
+//        else if(targetX == obstacleTargetX){
+//            EncoderMoveDist(1, targetY - where_y, false);
+//            Rotate(1, 1, 90);
+//            EncoderMoveDist(1, targetX - where_x, false);
+//        }
+//    }
 
     public boolean goTo(double x, double y) {
        return navigator.goTo(x,y);
@@ -754,18 +755,18 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void EncoderStraight(double dist){
-        EncoderMoveDist(1, dist,false);
+        EncoderMoveDist(1, dist,false, false);
     }
 
     public void EncoderStrafe(double dist){
-        EncoderMoveDist(1, dist,true);
+        EncoderMoveDist(1, dist,true, false);
     }
 
     double P_FWD_COEFF = -0.005;
     double FWD_THRESHOLD = 1;
 
-    public void EncoderMoveDist(double speed, double distance, Boolean strafe) {
-
+    public void EncoderMoveDist(double speed, double distance, Boolean strafe, Boolean checkForObstacles) {
+        checkForObstacles = avoidObstacles;
         if(!strafe)
             where_x += distance;
         else
@@ -781,6 +782,8 @@ public class Autonomous2020 extends Teleop2020  {
         motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
         motorRightBack.setMode(RUN_WITHOUT_ENCODER);
         motorRightFront.setMode(RUN_WITHOUT_ENCODER);
+
+
 
 
         double target_encoder = 0;
@@ -809,6 +812,7 @@ public class Autonomous2020 extends Teleop2020  {
         boolean onTarget = false;
         double power;
 
+
         //determine  power based on error
         error = getErrorDist(distance, strafe);
 
@@ -818,6 +822,24 @@ public class Autonomous2020 extends Teleop2020  {
             power = 0.0;
             onTarget = true;
             stopWheels();
+            if(strafedRightToAvoidObstacles == true){
+                long currentTime = 0;
+                simpleStrafe(-1);
+                while(currentTime <timer){
+                    currentTime++;
+
+                }
+                stopWheels();
+            }
+            else{
+                long currentTime = 0;
+                simpleStrafe(1);
+                while(currentTime <timer){
+                    currentTime++;
+
+                }
+                stopWheels();
+            }
         } else {
 
             steer = getSteerDist(error, PCoeff);
@@ -833,8 +855,30 @@ public class Autonomous2020 extends Teleop2020  {
             simpleStraight(weightConstant*power);
         else
             simpleStrafe(weightConstant*power);
+        if(avoidObstacles && distance > 0 &&!strafe){
+            //checking distance sensor to see if obstacle in front
+            double rfStraight = distanceSensor_rf_Straight.getDistance(DistanceUnit.INCH);
+            double lfStraight = distanceSensor_lf_Straight.getDistance(DistanceUnit.INCH);
+            if(rfStraight<12){
+                strafedRightToAvoidObstacles = false;
+                simpleStrafe(-1);
+                while(rfStraight <12){
+                    timer ++;
+                }
+                stopWheels();
+                //strafe left until no longer sees
+            }
+            else if (lfStraight <12){
+                strafedRightToAvoidObstacles = true;
+                simpleStrafe(1);{
+                    while(lfStraight <12){
+                        timer++;
+                    }
+                    stopWheels();
+                }
+            }
 
-
+        }
         telemetry.addData("Target dist", "%5.2f", distance);
         telemetry.addData("Error/Steer", "%5.2f/%5.2f", error, steer);
         telemetry.addData("speed", "%5.2f", speed);
