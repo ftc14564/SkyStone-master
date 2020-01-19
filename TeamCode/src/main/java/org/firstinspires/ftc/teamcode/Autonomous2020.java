@@ -82,7 +82,6 @@ public class Autonomous2020 extends Teleop2020  {
     double where_x = 0;
     double where_y = 0;
 
-    BNO055IMU imu;
     Orientation angles;
     Acceleration gravity, gravity1;
     BNO055IMU.Parameters parameters;
@@ -1388,18 +1387,22 @@ public class Autonomous2020 extends Teleop2020  {
         //assume that robot is aligned such that it's
         //exactly two tiles away from the bridge towards the tray
         if(isBlueSide)
-            EncoderStrafe(12);
+            EncoderStrafe(6);
         else
-            EncoderStrafe(-12);
+            EncoderStrafe(-6);
 
         foundation.setPosition(0);
-        EncoderStraight(-35);
+        EncoderMoveDist(0.5, -40,false);
         foundation.setPosition(1);
-        sleep(300);
-        EncoderStraight(38);
+        sleep(500);
+        gyroTurnREV(1, 180);
+        EncoderMoveDist(0.5, -25,false);
         foundation.setPosition(0);
+        EncoderStrafe(-25);
+        EncoderStraight(-18);
+        EncoderStrafe(-24);
         //park after 12 seconds
-        sleep(12000);
+//        sleep(12000);
 
 
         double parkDist = 0;
@@ -1437,7 +1440,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(!useArm)
                 blockDist = y + 11;
             else
-                blockDist = y + 4;
+                blockDist = y + 6;
 
             EncoderStrafe (blockDist);
         }
@@ -1484,7 +1487,7 @@ public class Autonomous2020 extends Teleop2020  {
 //            if(!useArm)
 //                blockDist = y -3;
 //            else
-//                blockDist = y + 4;
+//                blockDist = y + 6;
 //
 //            EncoderStrafe (blockDist);
 //        }

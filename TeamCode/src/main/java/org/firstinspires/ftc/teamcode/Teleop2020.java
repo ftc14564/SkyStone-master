@@ -28,15 +28,17 @@ public class Teleop2020 extends LinearOpMode {
     Servo grab_back;
     Servo grab_front;
     DcMotor extend;
-    Servo turn;
     Servo foundation;
     Servo sideArm;
+    Servo sideArmBase;
 
 
     BNO055IMU imu, imu1;
     Orientation angles, angles1;
 
     double basePower = 0.2;
+    double powerReductionFactor = 0.8;
+    double turnPowerFactor = 0.6;
     float power = 0;
     float track = 0;
     boolean strafing;
@@ -53,7 +55,8 @@ public class Teleop2020 extends LinearOpMode {
 //    private static final double ARM_INCH_PER_MS = 1471.724;
     private static final double ARM_INCH_PER_MS = 735;
 
-
+    private  double liftStallPower = LIFT_NON_SLIP_POWER;
+    private double liftPrevPosition = 0;
     private static final float mmPerInch = 25.4f;
     private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
     private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
@@ -83,10 +86,11 @@ public class Teleop2020 extends LinearOpMode {
         //        extend.setDirection(CRServo.Direction.REVERSE);
         grab_front = hardwareMap.servo.get("grab_front");
         grab_back = hardwareMap.servo.get("grab_back");
-        turn = hardwareMap.servo.get("turn");
         foundation = hardwareMap.servo.get("foundation");
         armPosition = 0;
         sideArm = hardwareMap.servo.get("sideArm");
+        sideArmBase = hardwareMap.servo.get("sideArmBase");
+
 
         //grab_front.setPosition(0.1);
         //grab_back.setPosition(0.1);
@@ -137,13 +141,13 @@ public class Teleop2020 extends LinearOpMode {
         telemetry.addData("y:", y);
         telemetry.update();
 
-        double a = (x + y) + basePower * ((x + y) / Math.abs(x + y));
-        double b = (y - x) + basePower * ((y - x) / Math.abs(y - x));
-        double c = -(y - x) - basePower * ((y - x) / Math.abs(y - x));
-        double d = -(x + y) - basePower * ((x + y) / Math.abs(x + y));
+        double a = powerReductionFactor*(x + y) + basePower * ((x + y) / Math.abs(x + y));
+        double b = powerReductionFactor*(y - x) + basePower * ((y - x) / Math.abs(y - x));
+        double c = -powerReductionFactor*(y - x) - basePower * ((y - x) / Math.abs(y - x));
+        double d = -powerReductionFactor*(x + y) - basePower * ((x + y) / Math.abs(x + y));
 
         motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE); //changed for 2020 config
+        motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
         motorLeftFront.setPower(a + turn);
@@ -155,26 +159,53 @@ public class Teleop2020 extends LinearOpMode {
 
     public void setLiftPosition(double position){
         lift.setMode(RUN_WITHOUT_ENCODER);
-        double margin = 0.25* REV_CORE_HEX_TICKS_PER_INCH;
+        double coarseMargin = 0.25* REV_CORE_HEX_TICKS_PER_INCH;
+        double fineMargin = 0.1* REV_CORE_HEX_TICKS_PER_INCH;
+
         telemetry.addData("TargetLift Value", position);
 
-        while ((lift.getCurrentPosition() < (position - margin)) && !isStopRequested()){
+        while ((lift.getCurrentPosition() < (position - coarseMargin)) && !isStopRequested()){
             idle();
+            System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
             lift.setPower(1);
             lift_assist.setPower(1);
             position-=1; //to avoid getting stuck at top position
         }
-        while ((lift.getCurrentPosition() > (position + margin)) && !isStopRequested()) {
+
+        while ((lift.getCurrentPosition() < (position - fineMargin)) && !isStopRequested()){
+            while((lift.getCurrentPosition() != liftPrevPosition) && !isStopRequested()) {
+                System.out.println("B: prev:"+ liftPrevPosition + "curr:" + lift.getCurrentPosition() + "pow:" + liftStallPower);
+
+                lift.setPower(liftStallPower);
+                lift_assist.setPower(liftStallPower);
+                idle();
+                liftPrevPosition = lift.getCurrentPosition();
+                if(lift.getCurrentPosition() < position)
+                    liftStallPower+=0.01;
+                else
+                    liftStallPower-=0.01;
+
+            }
+
+            idle();
+            if(liftPrevPosition == lift.getCurrentPosition())
+                break;
+            else
+                liftStallPower+=0.1;
+        }
+
+        while ((lift.getCurrentPosition() > (position + coarseMargin)) && !isStopRequested()) {
             idle();
             lift.setPower(-0.25);
             lift_assist.setPower(-0.25);
 
+
         }
-        double noSlipPower = LIFT_NON_SLIP_POWER + (position / (REV_CORE_HEX_TICKS_PER_INCH * 32));
-        lift.setPower(noSlipPower);
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift_assist.setPower(noSlipPower);
-        lift_assist.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //double noSlipPower = LIFT_NON_SLIP_POWER + (position / (REV_CORE_HEX_TICKS_PER_INCH * 32));
+        lift.setPower(liftStallPower);
+     //   lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift_assist.setPower(liftStallPower);
+     //   lift_assist.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
     public void liftInch(double inches) {
@@ -245,7 +276,7 @@ public class Teleop2020 extends LinearOpMode {
             idle();
 
             float forward = -1 * gamepad1.right_stick_y;
-            double turn_component = gamepad1.left_stick_x*0.7;
+            double turn_component = gamepad1.left_stick_x*turnPowerFactor;
             double x_component = gamepad1.right_stick_x;
             double y_component = -1 * gamepad1.right_stick_y;
 
@@ -303,18 +334,19 @@ public class Teleop2020 extends LinearOpMode {
 //            }
 
 
-//                if (gamepad1.right_trigger > 0) {
-//                    power_multiplier = 1 - (gamepad1.right_trigger * 2 / 3);
-//                    //Subtract from 1 to make the trigger give a reduction in power
-//                    //Multiply by 2/3 to not completely reduce the power
-//                }
-//            if (gamepad1.b) {
-//                if (power_multiplier == 1)
-//                    power_multiplier = 0.5;
-//                else if (power_multiplier == 0.5)
-//                    power_multiplier = 1;
-//                sleep(200);
-//            }
+                if (gamepad1.right_trigger > 0) {
+                    powerReductionFactor = 0.8 - (gamepad1.right_trigger * 2 / 3);
+                    //Subtract from 1 to make the trigger give a reduction in power
+                    //Multiply by 2/3 to not completely reduce the power
+                }
+
+                if (gamepad1.b) {
+                    if (powerReductionFactor == 0.8)
+                        powerReductionFactor = 0.4;
+                    else if (powerReductionFactor == 0.4)
+                        powerReductionFactor = 0.8;
+                    sleep(200);
+                }
 //                if (lift.getCurrentPosition() >= 0 && gamepad2.left_stick_y > 0.1) {
 //                    lift.setPower(-1);
 //                    lift_assist.setPower(-1);
@@ -330,9 +362,12 @@ public class Teleop2020 extends LinearOpMode {
 //                }
 
                 if (gamepad2.a){
+                    liftStallPower = LIFT_NON_SLIP_POWER;
+                    setLiftPosition(Math.abs(0));
                     liftTarget = 0;
                 }
                 if (gamepad2.b){
+
                     liftTarget = 0.5*REV_CORE_HEX_TICKS_PER_INCH;
                 }
 
@@ -351,20 +386,20 @@ public class Teleop2020 extends LinearOpMode {
 //                 grab_back.setPosition(1);
 //            }
 
-                if (gamepad1.dpad_right) { //normal position
-                    turn.setPosition(1);
-                }
-
                 if (gamepad1.dpad_left) { //vertical position
-                    turn.setPosition(0.35);
+                    sideArm.setPosition(1);
+                    sideArmBase.setPosition(1);
                 }
 
-                if(gamepad1.dpad_up){
+                if(gamepad1.dpad_up){  //ARM UP
+                    sideArmBase.setPosition(0.4);
                     sideArm.setPosition(1);
                 }
 
-                if(gamepad1.dpad_down){
-                    sideArm.setPosition(0.4);
+                if(gamepad1.dpad_down){  //ARM DOWN
+                    sideArmBase.setPosition(1);
+                    sideArm.setPosition(0.2);
+
                 }
 
                 if (gamepad2.dpad_down) {               //GRABBED POSITION
@@ -382,7 +417,7 @@ public class Teleop2020 extends LinearOpMode {
 
                 if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
                     grab_front.setPosition(1);           //AND LIFT TO NOT HIT BLOCK
-                    grab_back.setPosition(0.5);
+                    grab_back.setPosition(0.3);
 
                     lift.setDirection(DcMotorSimple.Direction.FORWARD);
                     liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);

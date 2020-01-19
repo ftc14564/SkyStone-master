@@ -1185,7 +1185,7 @@ Bytes    16-bit word    Description
                                     Bitmap.Config.RGB_565);
                             bm.copyPixelsFromBuffer(rgb.getPixels());
 
-                            cvUtil.detectColor(mat);
+//                            cvUtil.detectColor(mat);
                             cvUtil.updateFrame(bm, frame);
 
 
