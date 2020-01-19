@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.io.ByteArrayOutputStream;
@@ -116,6 +118,8 @@ public class CVUtil {
     }
 
 
+    Date dtLastTimePic = new Date();
+
     void updateFrame(Bitmap bm, Frame frame) {
 
 
@@ -208,8 +212,19 @@ public class CVUtil {
 
 //        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
 //        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
-            String filePath = "/sdcard/FIRST/morphOutput.png";
-            Imgcodecs.imwrite(filePath, mat);
+            System.out.println("Mat Empty Ashi" + mat.empty());
+            String filePath = new SimpleDateFormat("'/sdcard/FIRST/pic'yyyyMMddHHmmss'.png'").format(new Date());
+
+            Date currentDate = new Date();
+            long diffInMS = Math.abs(currentDate.getTime() - dtLastTimePic.getTime());
+            if (! mat.empty()) {
+                if(diffInMS > 2000) {
+                    Imgcodecs.imwrite(filePath, mat);
+                    System.out.println("Ashi Writing frame as" + filePath);
+                    dtLastTimePic = new Date();
+                }
+            }
+
             mat.release();
             System.out.println("Got Frame");
 
