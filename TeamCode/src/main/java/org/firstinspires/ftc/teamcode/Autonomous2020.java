@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
@@ -9,6 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.Range;
+import com.vuforia.Frame;
+import com.vuforia.Image;
+import com.vuforia.PIXEL_FORMAT;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -25,6 +30,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -358,7 +365,53 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
+    public void captureFrame() {
+        CVUtil cvUtil = new CVUtil();
+        cvUtil.initCv(hardwareMap.appContext);
+        int count = 0;
+        while (!isStopRequested()) {
 
+            try {
+
+                telemetry.addData("Trying to get OpenCV Frame", "none");
+                telemetry.update();
+
+                Frame frame = vuforia.getFrameQueue().take();
+
+                long numImages = frame.getNumImages();
+                for (int i = 0; i < numImages; i++) {
+                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                        Image rgb = frame.getImage(i);
+                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
+
+                        if (rgb != null) {
+                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
+                                    Bitmap.Config.RGB_565);
+                            bm.copyPixelsFromBuffer(rgb.getPixels());
+
+//                            cvUtil.detectColor(mat);
+                            cvUtil.updateFrame(bm, frame);
+
+
+                        }
+                    }
+                }
+
+
+                telemetry.addData("Open CV Got Frame", count++);
+                telemetry.update();
+
+
+            } catch (InterruptedException e) {
+                //Log.v(TAG, "Exception!!");
+                System.out.println("get frame exception");
+                telemetry.addData("Open CV Exception", "none");
+
+
+                break;
+            }
+        }
+    }
     public void stopWheels() {
         motorRightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRightBack.setPower(0);
@@ -1420,9 +1473,13 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void runAutonomous(Boolean isBlueSide, Boolean useArm) {
 
+
         initFn();
 
         waitForStart();
+
+        while (opModeIsActive() && !isStopRequested())
+            captureFrame();
 
         new Thread(new extendThread()).start();
 

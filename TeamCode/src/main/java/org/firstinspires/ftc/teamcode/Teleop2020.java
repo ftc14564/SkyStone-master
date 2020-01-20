@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,9 +9,15 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImpl;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.vuforia.Image;
+import com.vuforia.PIXEL_FORMAT;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 
 import java.util.Locale;
 
@@ -37,7 +45,8 @@ public class Teleop2020 extends LinearOpMode {
     Orientation angles, angles1;
 
     double basePower = 0.2;
-    double powerReductionFactor = 0.8;
+    private static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.8;
+    double powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
     double turnPowerFactor = 0.6;
     float power = 0;
     float track = 0;
@@ -48,8 +57,11 @@ public class Teleop2020 extends LinearOpMode {
     double angleToTurn;
     double liftPosition;
     private static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
-    private static final double LIFT_JUMP_RESOLUTION = 1;
+    private static final double LIFT_JUMP_RESOLUTION_DOWN = 1;
+    private static final double LIFT_JUMP_RESOLUTION_UP = 3;
+
     private static final double LIFT_MAX_INCH = 16;
+
 
     private static final double LIFT_NON_SLIP_POWER = 0.2;
 //    private static final double ARM_INCH_PER_MS = 1471.724;
@@ -235,6 +247,8 @@ public class Teleop2020 extends LinearOpMode {
 
     }
 
+
+
     public void setArmPosition_startPosition() {
 
     }
@@ -335,7 +349,7 @@ public class Teleop2020 extends LinearOpMode {
 
 
                 if (gamepad1.right_trigger > 0) {
-                    powerReductionFactor = 0.8 - (gamepad1.right_trigger * 2 / 3);
+                    powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR - (gamepad1.right_trigger * 2 / 3);
                     //Subtract from 1 to make the trigger give a reduction in power
                     //Multiply by 2/3 to not completely reduce the power
                 }
@@ -365,6 +379,8 @@ public class Teleop2020 extends LinearOpMode {
                     liftStallPower = LIFT_NON_SLIP_POWER;
                     setLiftPosition(Math.abs(0));
                     liftTarget = 0;
+                    powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
+
                 }
                 if (gamepad2.b){
 
@@ -386,17 +402,23 @@ public class Teleop2020 extends LinearOpMode {
 //                 grab_back.setPosition(1);
 //            }
 
-                if (gamepad1.dpad_left) { //vertical position
-                    sideArm.setPosition(1);
+                if (gamepad1.dpad_left) { //GRABBER OPEN FOR COLLECTION
+                    sideArm.setPosition(0.7);
                     sideArmBase.setPosition(1);
                 }
 
-                if(gamepad1.dpad_up){  //ARM UP
-                    sideArmBase.setPosition(0.4);
-                    sideArm.setPosition(1);
+                if(gamepad1.dpad_up){  //BLOCK LIFTED OFF GROUND
+                    for (double i = 0.0 ; i<0.4;i+=0.05) {
+                        sideArmBase.setPosition(0.7 - i);
+                        sideArm.setPosition(0.2 + i/3);
+                    }
+                }
+                if (gamepad1.dpad_right) { //GRABBER OPEN FOR COLLECTION
+                    sideArm.setPosition(0.8);
+                    sideArmBase.setPosition(0.7);
                 }
 
-                if(gamepad1.dpad_down){  //ARM DOWN
+                if(gamepad1.dpad_down){  //BLOCK GRABBED BUT ON GROUND
                     sideArmBase.setPosition(1);
                     sideArm.setPosition(0.2);
 
@@ -407,22 +429,27 @@ public class Teleop2020 extends LinearOpMode {
                     grab_back.setPosition(0.5);
                 }
                 if (gamepad2.dpad_up) {               //OPEN FOR COLLECTION POSITION
-                    grab_front.setPosition(1);
+                    grab_front.setPosition(0.7);
                     grab_back.setPosition(0.5);
                 }
                 if (gamepad2.dpad_left) {               //Dropping
                     grab_front.setPosition(1);
-                    grab_back.setPosition(0.3);
+                    grab_back.setPosition(0.4);
                 }
 
                 if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
-                    grab_front.setPosition(1);           //AND LIFT TO NOT HIT BLOCK
-                    grab_back.setPosition(0.3);
+                    grab_front.setPosition(0.7);           //AND LIFT TO NOT HIT BLOCK
+                    grab_back.setPosition(0.4);
 
                     lift.setDirection(DcMotorSimple.Direction.FORWARD);
                     liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);
 
                 }
+
+                if (liftTarget > (0.5 * REV_CORE_HEX_TICKS_PER_INCH) ) {
+                    powerReductionFactor = 0.3;
+                }
+
 
                 if (gamepad2.right_bumper) {
 
@@ -460,10 +487,10 @@ public class Teleop2020 extends LinearOpMode {
 
                 if (lift.getCurrentPosition() < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH && gamepad2.y) {
 
-                    liftTarget = liftTarget + (LIFT_JUMP_RESOLUTION * REV_CORE_HEX_TICKS_PER_INCH);
+                    liftTarget = liftTarget + (LIFT_JUMP_RESOLUTION_UP * REV_CORE_HEX_TICKS_PER_INCH);
                 }
                 if (gamepad2.x) {
-                    liftTarget = liftTarget - (LIFT_JUMP_RESOLUTION * REV_CORE_HEX_TICKS_PER_INCH);
+                    liftTarget = liftTarget - (LIFT_JUMP_RESOLUTION_DOWN * REV_CORE_HEX_TICKS_PER_INCH);
                 }
 
                 if(Math.abs(liftTarget) > 5) {
