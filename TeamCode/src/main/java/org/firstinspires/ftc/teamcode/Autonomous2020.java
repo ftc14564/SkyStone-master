@@ -50,368 +50,15 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 public class Autonomous2020 extends Teleop2020  {
 
 
-
-    private DistanceSensor sensorRange_rf;
-    private DistanceSensor sensorRange_rb;
-    private DistanceSensor sensorRange_lf;
-    private DistanceSensor sensorRange_lb;
-
-    Rev2mDistanceSensor distanceSensor_rf;
-    Rev2mDistanceSensor distanceSensor_rb;
-    Rev2mDistanceSensor distanceSensor_lf;
-    Rev2mDistanceSensor distanceSensor_lb;
-
-    ColorSensor sensorColor;
-    DistanceSensor sensorDistance;
-
-
-    // hsvValues is an array that will hold the hue, saturation, and value information.
-    float hsvValues[] = {0F, 0F, 0F};
-
-    // values is a reference to the hsvValues array.
-    final float values[] = hsvValues;
-
-    // sometimes it helps to multiply the raw RGB values with a scale factor
-    // to amplify/attentuate the measured values.
-    final double SCALE_FACTOR = 255;
-
-    final double TICKS_PER_INCH_STRAFE = 174/3;
-    final double TICKS_PER_INCH_STRAIGHT = 88/3;
-
-    float power = 0;
-    float track = 0;
-    boolean strafing;
-    boolean initDone = false;
-    boolean vuInitDone = false;
-    double y = 0;
-    double x = 0;
-
-    double where_x = 0;
-    double where_y = 0;
-
-    Orientation angles;
-    Acceleration gravity, gravity1;
-    BNO055IMU.Parameters parameters;
-    private static final boolean PHONE_IS_PORTRAIT = false  ;
-
-    private static final String VUFORIA_KEY = "AYpOJ0H/////AAABGeEbm+5m+k5BrTnPlF3X9R177NGoUFUGl1kpgLa7MBwlsRdnD3IdxY7LmZ41NTQMASZ1MbCWaEpM4Sag7tDfQsJjqVvCwZr3qJm5y33J8rnMWz1ViOwwzZgnsSZqeGRY9+uPGa6cTMO/cxs+YF+4OqsD+iu4exeMCsxyAPYhXQrEIaW6h7zYVrdi9b5WsgNGUfP60Qz8U3szKTfVmaHmMFvc+iuJ1qmAM5AjlsBlc8MMHzLAL/3sf3UiCDe4tgo4mmYEsdl499QhqhhImEiKS8rTkap/53B8Hm89z3m5HuBoH4EKVUc65k2aCBg5c5jXVoZan8DkQFqSPnArwQnCHpaL/d1y79BRE44nJXj54E6V";
-
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
-    private static final float mmPerInch = 25.4f;
-    private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
-    private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
-    private static final float bridgeZ = 6.42f * mmPerInch;
-    private static final float bridgeY = 23 * mmPerInch;
-    private static final float bridgeX = 5.18f * mmPerInch;
-    private static final float bridgeRotY = 59;                                 // Units are degrees
-    private static final float bridgeRotZ = 180;
-    private static final float stoneZ = 2.00f * mmPerInch;
-    // Constants for perimeter targets
-    private static final float halfField = 72 * mmPerInch;
-    private static final float quadField = 36 * mmPerInch;
-    // Select which camera you want use.  The FRONT camera is the one on the same side as the screen.
-    // Valid choices are:  BACK or FRONT
-    private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
-
-
-    private OpenGLMatrix lastLocation = null;
-    private boolean targetVisible = false;
-    private List<VuforiaTrackable> allTrackables;
-
-    /**
-     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
-     * localization engine.
-     */
-    VuforiaLocalizer vuforia = null;
-    VuforiaLocalizer.Parameters Vu_parameters;
-
-    WebcamName webcamName = null;
-
-    private float phoneXRotate = 0;
-    private float phoneYRotate = 0;
-    private float phoneZRotate = 0;
-    boolean red = false;
-    boolean blue = false;
-
-
-    /**
-     * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
-     * Detection engine.
-     */
-    private TFObjectDetector tfod;
-
-
-    int cameraMonitorViewId;
-    VuforiaLocalizer.Parameters vu_parameters;
-
-    VuforiaTrackables targetsSkyStone ;
-    VuforiaTrackable stoneTarget ;
-
-    OpenGLMatrix robotFromCamera ;
-
-    // Next, translate the camera lens to where it is on the robot.
-    // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-    final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
-    final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-    final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
-
-
-
-
-    class InitThread_Depot implements Runnable {
-        @Override
-        public void run() {
-            try {
-
-                telemetry.addData("Init: Thread start ", "");
-
-                parameters = new BNO055IMU.Parameters();
-                parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-                parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-                parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-                parameters.loggingEnabled = false;
-                parameters.loggingTag = "IMU";
-                parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-                parameters.mode = BNO055IMU.SensorMode.IMU;
-
-                // get a reference to the color sensor.
-                sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
-
-                // get a reference to the distance sensor that shares the same name.
-                sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
-
-
-                // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-                // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-                // and named "imu".
-                imu = hardwareMap.get(BNO055IMU.class, "imu");
-                imu.initialize(parameters);
-
-
-                vuInitDone = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            initDone = true;
-            initDone = true;
-            telemetry.addData("Init: Thread done ", "");
-
-            while (!isStopRequested()) {
-
-                sleep(20);
-
-            }
-
-        }
-
-    }
-
-    ;
-
-
     public void initFn() {
         teleopInitFn();
-        telemetry.addData("Init: start ", "");
-
-        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
-        distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
-        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
-        distanceSensor_rb = (Rev2mDistanceSensor)sensorRange_rb;
-//temp
-        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lb"); //change back to 2m_lf
-        distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
-
-        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
-        distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
-
-        strafing = false;
-
-        double driveSpeed = 0;
-
-        new Thread(new InitThread_Depot()).start();
-
-        // webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        vu_parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-        vu_parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
-
-        vu_parameters.vuforiaLicenseKey = VUFORIA_KEY;
-
-        /**
-         * We also indicate which camera on the RC we wish to use.
-         */
-        // parameters.cameraName = webcamName;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(vu_parameters);
-
-
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
-        stoneTarget = targetsSkyStone.get(0);
-        stoneTarget.setName("Stone Target");
-//        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
-//        blueRearBridge.setName("Blue Rear Bridge");
-//        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
-//        redRearBridge.setName("Red Rear Bridge");
-//        VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
-//        redFrontBridge.setName("Red Front Bridge");
-//        VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
-//        blueFrontBridge.setName("Blue Front Bridge");
-//        VuforiaTrackable red1 = targetsSkyStone.get(5);
-//        red1.setName("Red Perimeter 1");
-//        VuforiaTrackable red2 = targetsSkyStone.get(6);
-//        red2.setName("Red Perimeter 2");
-//        VuforiaTrackable front1 = targetsSkyStone.get(7);
-//        front1.setName("Front Perimeter 1");
-//        VuforiaTrackable front2 = targetsSkyStone.get(8);
-//        front2.setName("Front Perimeter 2");
-//        VuforiaTrackable blue1 = targetsSkyStone.get(9);
-//        blue1.setName("Blue Perimeter 1");
-//        VuforiaTrackable blue2 = targetsSkyStone.get(10);
-//        blue2.setName("Blue Perimeter 2");
-//        VuforiaTrackable rear1 = targetsSkyStone.get(11);
-//        rear1.setName("Rear Perimeter 1");
-//        VuforiaTrackable rear2 = targetsSkyStone.get(12);
-//        rear2.setName("Rear Perimeter 2");
-
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsSkyStone);
-        stoneTarget.setLocation(OpenGLMatrix
-                .translation(0, 0, stoneZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-
-        //Set the position of the bridge support targets with relation to origin (center of field)
-//        blueFrontBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
-//
-//        blueRearBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
-//
-//        redFrontBridge.setLocation(OpenGLMatrix
-//                .translation(-bridgeX, -bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, 0)));
-//
-//        redRearBridge.setLocation(OpenGLMatrix
-//                .translation(bridgeX, -bridgeY, bridgeZ)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, 0)));
-//
-//        //Set the position of the perimeter targets with relation to origin (center of field)
-//        red1.setLocation(OpenGLMatrix
-//                .translation(quadField, -halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-//
-//        red2.setLocation(OpenGLMatrix
-//                .translation(-quadField, -halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 180)));
-//
-//        front1.setLocation(OpenGLMatrix
-//                .translation(-halfField, -quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-//
-//        front2.setLocation(OpenGLMatrix
-//                .translation(-halfField, quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
-//
-//        blue1.setLocation(OpenGLMatrix
-//                .translation(-quadField, halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-//
-//        blue2.setLocation(OpenGLMatrix
-//                .translation(quadField, halfField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
-//
-//        rear1.setLocation(OpenGLMatrix
-//                .translation(halfField, quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-//
-//        rear2.setLocation(OpenGLMatrix
-//                .translation(halfField, -quadField, mmTargetHeight)
-//                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-        if (CAMERA_CHOICE == BACK) {
-            phoneYRotate = -90;
-        } else {
-            phoneYRotate = 90;
-        }
-
-        // Rotate the phone vertical about the X axis if it's in portrait mode
-        if (PHONE_IS_PORTRAIT) {
-            phoneXRotate = 90;
-        }
-
-
-        robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
-
-        /**  Let all the trackable listeners know where the phone is.  */
-        for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
-        }
-
-        vuforia.setFrameQueueCapacity(1);
-
-        targetsSkyStone.activate();
-
+        telemetry.addData("Init: Done ", "");
+        telemetry.update();
 
 
     }
 
-    public void captureFrame() {
-        CVUtil cvUtil = new CVUtil();
-        cvUtil.initCv(hardwareMap.appContext);
-        int count = 0;
-        while (!isStopRequested()) {
 
-            try {
-
-                telemetry.addData("Trying to get OpenCV Frame", "none");
-                telemetry.update();
-
-                Frame frame = vuforia.getFrameQueue().take();
-
-                long numImages = frame.getNumImages();
-                for (int i = 0; i < numImages; i++) {
-                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                        Image rgb = frame.getImage(i);
-                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
-
-                        if (rgb != null) {
-                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
-                                    Bitmap.Config.RGB_565);
-                            bm.copyPixelsFromBuffer(rgb.getPixels());
-
-//                            cvUtil.detectColor(mat);
-                            cvUtil.updateFrame(bm, frame);
-
-
-                        }
-                    }
-                }
-
-
-                telemetry.addData("Open CV Got Frame", count++);
-                telemetry.update();
-
-
-            } catch (InterruptedException e) {
-                //Log.v(TAG, "Exception!!");
-                System.out.println("get frame exception");
-                telemetry.addData("Open CV Exception", "none");
-
-
-                break;
-            }
-        }
-    }
     public void stopWheels() {
         motorRightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRightBack.setPower(0);
@@ -438,6 +85,9 @@ public class Autonomous2020 extends Teleop2020  {
 
         telemetry.addData("starting gyro turn", "-----");
         telemetry.update();
+
+        //Reverse direction needed for Tetrix motors
+        angle = angle*-1;
 
         Orientation prev_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
@@ -1383,6 +1033,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         //step back
         EncoderStraight(-22);
+        gyroTurnREV(1, 90);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1393,9 +1044,21 @@ public class Autonomous2020 extends Teleop2020  {
         else {
             dropDist = -1* (where_y) + 48;
         }
-        EncoderStrafe(dropDist);
+        EncoderStraight(dropDist);
+//        gyroTurnREV(1,0);
+//        EncoderStraight(6);
 
         grabCollection();
+
+//        EncoderStraight(-6);
+//        gyroTurnREV(1, 180);
+//        foundation.setPosition(0);
+//        EncoderMoveDist(0.5, -12,false);
+//        foundation.setPosition(1);
+//        sleep(500);
+//        gyroTurnREV(1, 270);
+
+
 
     }
     public void grabAndDropBlock_Hook(Boolean isBlueSide) {
@@ -1478,9 +1141,6 @@ public class Autonomous2020 extends Teleop2020  {
 
         waitForStart();
 
-        while (opModeIsActive() && !isStopRequested())
-            captureFrame();
-
         new Thread(new extendThread()).start();
 
         //sleep(9000);
@@ -1497,7 +1157,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(!useArm)
                 blockDist = y + 11;
             else
-                blockDist = y + 6;
+                blockDist = y + 4.5;
 
             EncoderStrafe (blockDist);
         }
@@ -1544,7 +1204,7 @@ public class Autonomous2020 extends Teleop2020  {
 //            if(!useArm)
 //                blockDist = y -3;
 //            else
-//                blockDist = y + 6;
+//                blockDist = y + 4.5;
 //
 //            EncoderStrafe (blockDist);
 //        }
@@ -1558,12 +1218,12 @@ public class Autonomous2020 extends Teleop2020  {
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = 20;
-        }
-        else {
             parkDist = -20;
         }
-        EncoderStrafe(parkDist);
+        else {
+            parkDist = -28;
+        }
+        EncoderStraight(parkDist);
 
     }
 

@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -56,8 +55,8 @@ public class UnitTest extends Autonomous2020 {
 
         initFn();
 
-        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
-        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        //int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        //final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
 
         waitForStart();
@@ -174,30 +173,30 @@ public class UnitTest extends Autonomous2020 {
             // convert the RGB values to HSV values.
             // multiply by the SCALE_FACTOR.
             // then cast it back to int (SCALE_FACTOR is a double)
-            Color.RGBToHSV((int) (sensorColor.red() * SCALE_FACTOR),
-                    (int) (sensorColor.green() * SCALE_FACTOR),
-                    (int) (sensorColor.blue() * SCALE_FACTOR),
-                    hsvValues);
-
-            // send the info back to driver station using telemetry function.
-            telemetry.addData("Distance (cm)",
-                    String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
-            telemetry.addData("Alpha", sensorColor.alpha());
-            telemetry.addData("Red  ", sensorColor.red());
-            telemetry.addData("Green", sensorColor.green());
-            telemetry.addData("Blue ", sensorColor.blue());
-            telemetry.addData("Hue", hsvValues[0]);
+//            Color.RGBToHSV((int) (sensorColor.red() * SCALE_FACTOR),
+//                    (int) (sensorColor.green() * SCALE_FACTOR),
+//                    (int) (sensorColor.blue() * SCALE_FACTOR),
+//                    hsvValues);
+//
+//            // send the info back to driver station using telemetry function.
+//            telemetry.addData("Distance (cm)",
+//                    String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
+//            telemetry.addData("Alpha", sensorColor.alpha());
+//            telemetry.addData("Red  ", sensorColor.red());
+//            telemetry.addData("Green", sensorColor.green());
+//            telemetry.addData("Blue ", sensorColor.blue());
+//            telemetry.addData("Hue", hsvValues[0]);
 
             // change the background color to match the color detected by the RGB sensor.
             // pass a reference to the hue, saturation, and value array as an argument
             // to the HSVToColor method.
-            relativeLayout.post(new Runnable() {
-                public void run() {
-                    relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
-                }
-            });
-
-            telemetry.update();
+//            relativeLayout.post(new Runnable() {
+//                public void run() {
+//                    relativeLayout.setBackgroundColor(Color.HSVToColor(0xff, values));
+//                }
+//            });
+//
+//            telemetry.update();
         }
 
     }
