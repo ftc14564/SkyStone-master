@@ -209,7 +209,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         navigator = new Navigate(this);
         telemetry.addData("Init: start ", "");
-
+ 
 
         strafing = false;
 
