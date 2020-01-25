@@ -64,6 +64,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGR
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
+import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
 
 @Autonomous(name = "testblock")
@@ -125,7 +126,7 @@ public class testBlock extends LinearOpMode {
     Orientation angles;
     Acceleration gravity, gravity1;
     BNO055IMU.Parameters parameters;
-    private static final boolean PHONE_IS_PORTRAIT = false  ;
+    private static final boolean PHONE_IS_PORTRAIT = false;
 
     private static final String VUFORIA_KEY = "AYpOJ0H/////AAABGeEbm+5m+k5BrTnPlF3X9R177NGoUFUGl1kpgLa7MBwlsRdnD3IdxY7LmZ41NTQMASZ1MbCWaEpM4Sag7tDfQsJjqVvCwZr3qJm5y33J8rnMWz1ViOwwzZgnsSZqeGRY9+uPGa6cTMO/cxs+YF+4OqsD+iu4exeMCsxyAPYhXQrEIaW6h7zYVrdi9b5WsgNGUfP60Qz8U3szKTfVmaHmMFvc+iuJ1qmAM5AjlsBlc8MMHzLAL/3sf3UiCDe4tgo4mmYEsdl499QhqhhImEiKS8rTkap/53B8Hm89z3m5HuBoH4EKVUc65k2aCBg5c5jXVoZan8DkQFqSPnArwQnCHpaL/d1y79BRE44nJXj54E6V";
 
@@ -797,8 +798,8 @@ Bytes    16-bit word    Description
 
     }
 
-    public void strafe_inch(double power, int direction, double distance){
-       double ticks = distance*TICKS_PER_INCH;
+    public void strafe_inch(double power, int direction, double distance) {
+        double ticks = distance * TICKS_PER_INCH;
         strafe(power, direction, ticks);
     }
 
@@ -1018,9 +1019,6 @@ Bytes    16-bit word    Description
     }
 
 
-
-
-
     @Override
     public void runOpMode() {
 
@@ -1030,6 +1028,8 @@ Bytes    16-bit word    Description
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.cameraDirection = FRONT;
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
@@ -1167,46 +1167,45 @@ Bytes    16-bit word    Description
         int count = 0;
         while (!isStopRequested()) {
 
-            try {
-
-                telemetry.addData("Trying to get OpenCV Frame", "none");
-                telemetry.update();
-
-                frame = vuforia.getFrameQueue().take();
-
-                long numImages = frame.getNumImages();
-                for (int i = 0; i < numImages; i++) {
-                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                        Image rgb = frame.getImage(i);
-                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
-
-                        if (rgb != null) {
-                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
-                                    Bitmap.Config.RGB_565);
-                            bm.copyPixelsFromBuffer(rgb.getPixels());
-
-//                            cvUtil.detectColor(mat);
-                            cvUtil.updateFrame(bm, frame);
-
-
-                        }
-                    }
-                }
-
-
-
-                telemetry.addData("Open CV Got Frame", count++);
-                telemetry.update();
-
-
-            } catch (InterruptedException e) {
-                //Log.v(TAG, "Exception!!");
-                System.out.println("get frame exception");
-                telemetry.addData("Open CV Exception", "none");
-
-
-                break;
-            }
+//            try {
+//
+//                telemetry.addData("Trying to get OpenCV Frame", "none");
+//                telemetry.update();
+//
+//                frame = vuforia.getFrameQueue().take();
+//
+//                long numImages = frame.getNumImages();
+//                for (int i = 0; i < numImages; i++) {
+//                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+//                        Image rgb = frame.getImage(i);
+//                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
+//
+//                        if (rgb != null) {
+//                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
+//                                    Bitmap.Config.RGB_565);
+//                            bm.copyPixelsFromBuffer(rgb.getPixels());
+//
+////                            cvUtil.detectColor(mat);
+//                            cvUtil.updateFrame(bm, frame);
+//
+//
+//                        }
+//                    }
+//                }
+//
+//
+//                telemetry.addData("Open CV Got Frame", count++);
+//                telemetry.update();
+//
+//
+//            } catch (InterruptedException e) {
+//                //Log.v(TAG, "Exception!!");
+//                System.out.println("get frame exception");
+//                telemetry.addData("Open CV Exception", "none");
+//
+//
+//                break;
+//            }
 
 
             // check all the trackable targets to see which one (if any) is visible.
@@ -1243,10 +1242,10 @@ Bytes    16-bit word    Description
             telemetry.update();
 
 
-
-
         }
     }
+
+
 
 
 

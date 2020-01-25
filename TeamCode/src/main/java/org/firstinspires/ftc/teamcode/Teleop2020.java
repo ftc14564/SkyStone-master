@@ -44,6 +44,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
+import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
 
 @TeleOp (name = "Teleop2020")
 public class Teleop2020 extends LinearOpMode {
@@ -80,7 +81,7 @@ public class Teleop2020 extends LinearOpMode {
 
     private static final double LIFT_MAX_INCH = 16;
 
-    private static final boolean USE_VUFORIA = false;
+    protected static boolean USE_VUFORIA = false;
 
 
     private static final double LIFT_NON_SLIP_POWER = 0.2;
@@ -149,7 +150,7 @@ public class Teleop2020 extends LinearOpMode {
     protected static final float quadField = 36 * mmPerInch;
     // Select which camera you want use.  The FRONT camera is the one on the same side as the screen.
     // Valid choices are:  BACK or FRONT
-    protected static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
+    protected static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = FRONT;
 
 
     protected OpenGLMatrix lastLocation = null;
@@ -267,7 +268,7 @@ public class Teleop2020 extends LinearOpMode {
         vu_parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-        vu_parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        vu_parameters.cameraDirection = FRONT;
 
         vu_parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
@@ -821,7 +822,7 @@ public class Teleop2020 extends LinearOpMode {
 
                 }
                 if (gamepad1.y) {   //position down
-                    foundation.setPosition(1);
+                    foundation.setPosition(0.7);
                 }
 
 

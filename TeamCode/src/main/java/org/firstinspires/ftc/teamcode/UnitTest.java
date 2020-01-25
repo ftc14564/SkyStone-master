@@ -118,10 +118,10 @@ public class UnitTest extends Autonomous2020 {
                 EncoderMoveDist(1,-10,false);
             }
             if(gamepad1.dpad_right){
-                EncoderMoveDist(1,20,true);
+                EncoderMoveDist(1,5,true);
             }
             if(gamepad1.dpad_left){
-                EncoderMoveDist(1,-20,true);
+                EncoderMoveDist(1,-5,true);
             }
 
             

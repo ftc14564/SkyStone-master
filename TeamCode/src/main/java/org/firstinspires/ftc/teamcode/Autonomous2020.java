@@ -34,6 +34,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 
@@ -935,7 +936,7 @@ public class Autonomous2020 extends Teleop2020  {
         public void run() {
             idle();
             sleep(9);
-            armExtended(4.675);
+            armExtended(9.5);
             //armExtended(0.7625);
 
 
@@ -1032,7 +1033,7 @@ public class Autonomous2020 extends Teleop2020  {
         liftInch(0.3);
 
         //step back
-        EncoderStraight(-22);
+        EncoderStraight(-18);
         gyroTurnREV(1, 90);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
@@ -1045,18 +1046,24 @@ public class Autonomous2020 extends Teleop2020  {
             dropDist = -1* (where_y) + 48;
         }
         EncoderStraight(dropDist);
-//        gyroTurnREV(1,0);
-//        EncoderStraight(6);
+        EncoderStraight(36);
+        gyroTurnREV(1,0);
+        liftInch(4);
+        EncoderStraight(24);
 
         grabCollection();
 
-//        EncoderStraight(-6);
-//        gyroTurnREV(1, 180);
-//        foundation.setPosition(0);
-//        EncoderMoveDist(0.5, -12,false);
-//        foundation.setPosition(1);
-//        sleep(500);
-//        gyroTurnREV(1, 270);
+        sleep(500);
+        EncoderStraight(-6);
+        gyroTurnREV(1, 180);
+        foundation.setPosition(0);
+        EncoderMoveDist(0.5, -12,false);
+        foundation.setPosition(0.7);
+        sleep(500);
+        EncoderStraight(30);
+        gyroTurnREV(1, 270);
+        EncoderMoveDist(0.5, -18,false);
+        foundation.setPosition(0);
 
 
 
@@ -1109,7 +1116,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         foundation.setPosition(0);
         EncoderMoveDist(0.5, -40,false);
-        foundation.setPosition(1);
+        foundation.setPosition(0.7);
         sleep(500);
         gyroTurnREV(1, 180);
         EncoderMoveDist(0.5, -25,false);
@@ -1137,16 +1144,16 @@ public class Autonomous2020 extends Teleop2020  {
     public void runAutonomous(Boolean isBlueSide, Boolean useArm) {
 
 
+        USE_VUFORIA = true;
         initFn();
 
         waitForStart();
 
         new Thread(new extendThread()).start();
 
-        //sleep(9000);
+        sleep(5000);
 
-        EncoderStraight(12);
-        sleep(2000);
+        EncoderStraight(13.5);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
 
@@ -1157,7 +1164,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(!useArm)
                 blockDist = y + 11;
             else
-                blockDist = y + 4.5;
+                blockDist = y + 5;
 
             EncoderStrafe (blockDist);
         }
@@ -1166,7 +1173,7 @@ public class Autonomous2020 extends Teleop2020  {
         if(!useArm)
             grabAndDropBlock_Hook(isBlueSide);
          else
-            grabAndDropBlock_Arm(isBlueSide, 18);
+            grabAndDropBlock_Arm(isBlueSide, 24);
 
 
         //return for second
@@ -1218,10 +1225,10 @@ public class Autonomous2020 extends Teleop2020  {
         //park (1 tile back towards the bridge)
         double parkDist = 0;
         if(isBlueSide){
-            parkDist = -20;
+            parkDist = 34;
         }
         else {
-            parkDist = -28;
+            parkDist = 34;
         }
         EncoderStraight(parkDist);
 
