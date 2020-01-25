@@ -50,7 +50,10 @@ public class Autonomous2020 extends Teleop2020  {
     private DistanceSensor sensorRange_rb;
     private DistanceSensor sensorRange_lf;
     private DistanceSensor sensorRange_lb;
-
+    private DistanceSensor sensorRange_rf_Straight;
+    private DistanceSensor sensorRange_rb_Straight;
+    private DistanceSensor sensorRange_lf_Straight;
+    private DistanceSensor sensorRange_lb_Straight;
     double distanceToWall;
 
     Rev2mDistanceSensor distanceSensor_rf;
@@ -92,6 +95,10 @@ public class Autonomous2020 extends Teleop2020  {
     BNO055IMU.Parameters parameters;
     private static final boolean PHONE_IS_PORTRAIT = false;
     boolean strafedRightToAvoidObstacles;
+    boolean stopThread = false;
+    boolean finishedAvoidingObstacles;
+    double rfStraight;
+    double lfStraight;
 
     private static final String VUFORIA_KEY = "AYpOJ0H/////AAABGeEbm+5m+k5BrTnPlF3X9R177NGoUFUGl1kpgLa7MBwlsRdnD3IdxY7LmZ41NTQMASZ1MbCWaEpM4Sag7tDfQsJjqVvCwZr3qJm5y33J8rnMWz1ViOwwzZgnsSZqeGRY9+uPGa6cTMO/cxs+YF+4OqsD+iu4exeMCsxyAPYhXQrEIaW6h7zYVrdi9b5WsgNGUfP60Qz8U3szKTfVmaHmMFvc+iuJ1qmAM5AjlsBlc8MMHzLAL/3sf3UiCDe4tgo4mmYEsdl499QhqhhImEiKS8rTkap/53B8Hm89z3m5HuBoH4EKVUc65k2aCBg5c5jXVoZan8DkQFqSPnArwQnCHpaL/d1y79BRE44nJXj54E6V";
 
@@ -203,13 +210,66 @@ public class Autonomous2020 extends Teleop2020  {
 
     ;
 
+    class checkingDistanceSensors implements Runnable{
+        public void run(){
+            System.out.println("STARTING THREAD WHICH CHECKS DISTANCE SENSORS");
+            while(!isStopRequested() &&stopThread){
+
+                lfStraight = distanceSensor_lf_Straight.getDistance(DistanceUnit.INCH);
+                rfStraight = distanceSensor_rf_Straight.getDistance(DistanceUnit.INCH);
+                double currentDistanceTraveled = motorRightFront.getCurrentPosition()/TICKS_PER_INCH_STRAIGHT;
+                if(rfStraight<24){
+                    strafedRightToAvoidObstacles = false;
+                    simpleStrafe(-0.5);
+                    System.out.println("strafing LEFT to avoid");
+                    System.out.println("RF STRAIGHT " + rfStraight);
+                    while(rfStraight <24){
+
+                        timer ++;
+                    }
+                    stopWheels();
+                    //strafe left until no longer sees
+                }
+                else if (lfStraight <24){
+                    strafedRightToAvoidObstacles = true;
+                    simpleStrafe(0.5);
+                    System.out.println("strafing RIGHT to avoid");
+                    System.out.println("LF STRAIGHT" + lfStraight);
+                    {
+                        while(lfStraight <24){
+                            timer++;
+                        }
+                        stopWheels();
+                    }
+                }
+            }
+
+        }
+    }
 
     public void initFn() {
         teleopInitFn();
 
         navigator = new Navigate(this);
         telemetry.addData("Init: start ", "");
- 
+
+        sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
+        distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
+        sensorRange_rb = hardwareMap.get(DistanceSensor.class, "2m_rb");
+        distanceSensor_rb = (Rev2mDistanceSensor)sensorRange_rb;
+//temp
+        sensorRange_lf = hardwareMap.get(DistanceSensor.class, "2m_lb"); //change back to 2m_lf
+        distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
+
+        sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
+        distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
+
+        sensorRange_rf_Straight = hardwareMap.get(DistanceSensor.class, "ffRight");
+        distanceSensor_rf_Straight = (Rev2mDistanceSensor)sensorRange_rf_Straight;
+
+        sensorRange_lf_Straight = hardwareMap.get(DistanceSensor.class, "ffLeft");
+        distanceSensor_lf_Straight = (Rev2mDistanceSensor)sensorRange_lf_Straight;
+
 
         strafing = false;
 
@@ -344,6 +404,9 @@ public class Autonomous2020 extends Teleop2020  {
 
         targetsSkyStone.activate();
 
+    }
+    public void activateThreadToCheckDistanceSensors(){
+        new Thread(new checkingDistanceSensors()).start();
     }
 
 
@@ -615,6 +678,8 @@ public class Autonomous2020 extends Teleop2020  {
 
 
 
+
+
     public void center (float x, float y, double angle){
         dummyRotate(1,-1,angle);
         if (x<0){
@@ -754,6 +819,9 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
+    public void testAvoidObstacles() {
+        navigator.goTo(36,36);
+    }
     public void EncoderStraight(double dist){
         EncoderMoveDist(1, dist,false, false);
     }
@@ -822,6 +890,7 @@ public class Autonomous2020 extends Teleop2020  {
             power = 0.0;
             onTarget = true;
             stopWheels();
+
             if(strafedRightToAvoidObstacles == true){
                 long currentTime = 0;
                 simpleStrafe(-1);
@@ -856,27 +925,12 @@ public class Autonomous2020 extends Teleop2020  {
         else
             simpleStrafe(weightConstant*power);
         if(avoidObstacles && distance > 0 &&!strafe){
+            System.out.println("REACHED HERE and about to strafe to avoid!! :D");
+
             //checking distance sensor to see if obstacle in front
-            double rfStraight = distanceSensor_rf_Straight.getDistance(DistanceUnit.INCH);
-            double lfStraight = distanceSensor_lf_Straight.getDistance(DistanceUnit.INCH);
-            if(rfStraight<12){
-                strafedRightToAvoidObstacles = false;
-                simpleStrafe(-1);
-                while(rfStraight <12){
-                    timer ++;
-                }
-                stopWheels();
-                //strafe left until no longer sees
-            }
-            else if (lfStraight <12){
-                strafedRightToAvoidObstacles = true;
-                simpleStrafe(1);{
-                    while(lfStraight <12){
-                        timer++;
-                    }
-                    stopWheels();
-                }
-            }
+            distanceSensor_rf_Straight.getDistance(DistanceUnit.INCH);
+            distanceSensor_lf_Straight.getDistance(DistanceUnit.INCH);
+
 
         }
         telemetry.addData("Target dist", "%5.2f", distance);
@@ -1337,7 +1391,7 @@ public class Autonomous2020 extends Teleop2020  {
     public void grabAndDropBlock_Arm(Boolean isBlueSide) {
 
 
-        armExtended(10);
+//        armExtended(10);
         grabCollection();
         EncoderStraight(18);
         closeGrabber();
@@ -1355,7 +1409,7 @@ public class Autonomous2020 extends Teleop2020  {
             dropDist = -1* (where_y) + 48;
         }
         EncoderStrafe(dropDist);
-        
+
         grabCollection();
 
     }
@@ -1363,7 +1417,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         EncoderStraight(18);
         sleep(700);
-        tray_left.setPosition(0);
+//        tray_left.setPosition(0);
         sleep(600);
 
         //step back
@@ -1381,7 +1435,7 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderStrafe(dropDist);
 
         //drop the block
-        tray_left.setPosition(0.8);
+//        tray_left.setPosition(0.8);
     }
 
     public void runAutonomousTray(Boolean isBlueSide) {
@@ -1394,8 +1448,8 @@ public class Autonomous2020 extends Teleop2020  {
         //exactly two tiles away from the bridge towards the tray
 
         EncoderStraight(30);
-        tray_left.setPosition(0);
-        tray_right.setPosition(0);
+//        tray_left.setPosition(0);
+//        tray_right.setPosition(0);
         sleep(600);
         EncoderStraight(-30);
 
