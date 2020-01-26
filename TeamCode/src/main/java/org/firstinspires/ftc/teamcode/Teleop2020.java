@@ -64,7 +64,7 @@ public class Teleop2020 extends LinearOpMode {
 
 
     double basePower = 0.2;
-    private static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.8;
+    protected static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.8;
     double powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
     double turnPowerFactor = 0.6;
     float power = 0;
@@ -75,20 +75,23 @@ public class Teleop2020 extends LinearOpMode {
     double armPosition;
     double angleToTurn;
     double liftPosition;
-    private static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
-    private static final double LIFT_JUMP_RESOLUTION_DOWN = 1;
-    private static final double LIFT_JUMP_RESOLUTION_UP = 3;
+    protected static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
+    protected static final double LIFT_JUMP_RESOLUTION_DOWN = 1;
+    protected static final double LIFT_JUMP_RESOLUTION_UP = 3;
 
-    private static final double LIFT_MAX_INCH = 16;
+    protected static final double LIFT_MAX_INCH = 16;
+
+    protected static final double CAM_OFFSET = 5;
+
 
     protected static boolean USE_VUFORIA = false;
 
 
-    private static final double LIFT_NON_SLIP_POWER = 0.2;
+    protected static final double LIFT_NON_SLIP_POWER = 0.2;
 //    private static final double ARM_INCH_PER_MS = 1471.724;
-    private static final double ARM_INCH_PER_MS = 735;
+    protected static final double ARM_INCH_PER_MS = 200;
 
-    private  double liftStallPower = LIFT_NON_SLIP_POWER;
+    protected  double liftStallPower = LIFT_NON_SLIP_POWER;
     private double liftPrevPosition = 0;
 
     private DistanceSensor sensorRange_rf;
@@ -118,13 +121,21 @@ public class Teleop2020 extends LinearOpMode {
     final double TICKS_PER_INCH_STRAFE = 174/3;
     final double TICKS_PER_INCH_STRAIGHT = 88/3;
 
+    enum FldDirection{
+        Face_Fld_Center,
+        Face_Fld_Foundation,
+        Face_Fld_Audience,
+        Face_Fld_Drivers
+    }
 
     boolean vuInitDone = false;
-    double y = 0;
-    double x = 0;
+    double vu_y = 0;
+    double vu_x = 0;
 
     double where_x = 0;
     double where_y = 0;
+    FldDirection where_head = FldDirection.Face_Fld_Center;
+    boolean isBlueSide = true;
 
     BNO055IMU imu;
     Orientation angles;

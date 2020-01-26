@@ -99,11 +99,25 @@ public class UnitTest extends Autonomous2020 {
                 gyroTurnREV(1, -45);
             }
             if(gamepad2.dpad_up){
-                gyroTurnREV(1, 90);
+                where_x =0;
+                where_y=0;
+                isBlueSide = true;
+                EncoderGoto(5,5);
+                EncoderGoto(0,0);
+                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                EncoderGoto(-5,-5);
+
             }
             if(gamepad2.dpad_down){
-                gyroTurnREV(1, -90);
+                where_x =0;
+                where_y=0;
+                isBlueSide = false;
+                EncoderGoto(5,5);
+                EncoderGoto(0,0);
+                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                EncoderGoto(-5,-5);
             }
+
             if(gamepad2.dpad_right){
                 makeParallelRight(4);
             }

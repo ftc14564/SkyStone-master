@@ -1165,48 +1165,50 @@ Bytes    16-bit word    Description
 
 
         int count = 0;
+        Boolean doCV = false;
         while (!isStopRequested()) {
 
-//            try {
-//
-//                telemetry.addData("Trying to get OpenCV Frame", "none");
-//                telemetry.update();
-//
-//                frame = vuforia.getFrameQueue().take();
-//
-//                long numImages = frame.getNumImages();
-//                for (int i = 0; i < numImages; i++) {
-//                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-//                        Image rgb = frame.getImage(i);
-//                        Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
-//
-//                        if (rgb != null) {
-//                            Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
-//                                    Bitmap.Config.RGB_565);
-//                            bm.copyPixelsFromBuffer(rgb.getPixels());
-//
-////                            cvUtil.detectColor(mat);
-//                            cvUtil.updateFrame(bm, frame);
-//
-//
-//                        }
-//                    }
-//                }
-//
-//
-//                telemetry.addData("Open CV Got Frame", count++);
-//                telemetry.update();
-//
-//
-//            } catch (InterruptedException e) {
-//                //Log.v(TAG, "Exception!!");
-//                System.out.println("get frame exception");
-//                telemetry.addData("Open CV Exception", "none");
-//
-//
-//                break;
-//            }
+            if(doCV) {
+                try {
 
+                    telemetry.addData("Trying to get OpenCV Frame", "none");
+                    telemetry.update();
+
+                    frame = vuforia.getFrameQueue().take();
+
+                    long numImages = frame.getNumImages();
+                    for (int i = 0; i < numImages; i++) {
+                        if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                            Image rgb = frame.getImage(i);
+                            Mat mat = new Mat(rgb.getHeight(), rgb.getWidth(), CvType.CV_8UC3);
+
+                            if (rgb != null) {
+                                Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
+                                        Bitmap.Config.RGB_565);
+                                bm.copyPixelsFromBuffer(rgb.getPixels());
+
+//                            cvUtil.detectColor(mat);
+                                cvUtil.updateFrame(bm, frame);
+
+
+                            }
+                        }
+                    }
+
+
+                    telemetry.addData("Open CV Got Frame", count++);
+                    telemetry.update();
+
+
+                } catch (InterruptedException e) {
+                    //Log.v(TAG, "Exception!!");
+                    System.out.println("get frame exception");
+                    telemetry.addData("Open CV Exception", "none");
+
+
+                    break;
+                }
+            }
 
             // check all the trackable targets to see which one (if any) is visible.
             targetVisible = false;

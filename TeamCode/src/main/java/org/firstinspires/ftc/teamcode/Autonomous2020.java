@@ -60,6 +60,7 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
+
     public void stopWheels() {
         motorRightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRightBack.setPower(0);
@@ -84,8 +85,12 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void gyroTurnREV(double speed, double angle) {
 
+
         telemetry.addData("starting gyro turn", "-----");
         telemetry.update();
+
+        System.out.println("14564dbg gyroTurnREV: " + angle);
+
 
         //Reverse direction needed for Tetrix motors
         angle = angle*-1;
@@ -178,6 +183,7 @@ public class Autonomous2020 extends Teleop2020  {
         motorRightFront.setPower(weightConstant * rightSpeed);
         motorLeftBack.setPower(weightConstant * leftSpeed);
         motorRightBack.setPower(weightConstant * rightSpeed);
+        System.out.println("14564dbg gyroTurnREV power: " + (weightConstant * leftSpeed));
 
         telemetry.addData("Target angle", "%5.2f", angle);
         telemetry.addData("Error/Steer", "%5.2f/%5.2f", error, steer);
@@ -209,6 +215,31 @@ public class Autonomous2020 extends Teleop2020  {
         return Range.clip(error * PCoeff, -1, 1);
     }
 
+    public void gyroTurnDirection(FldDirection dir) {
+        where_head = dir;
+
+        if(isBlueSide) {
+            if(dir == FldDirection.Face_Fld_Center)
+                gyroTurnREV(1,0);
+            if(dir == FldDirection.Face_Fld_Foundation)
+                gyroTurnREV(1,270);
+            if(dir == FldDirection.Face_Fld_Audience)
+                gyroTurnREV(1,90);
+            if(dir == FldDirection.Face_Fld_Drivers)
+                gyroTurnREV(1,180);
+        }
+        else {
+            if(dir == FldDirection.Face_Fld_Center)
+                gyroTurnREV(1,0);
+            if(dir == FldDirection.Face_Fld_Foundation)
+                gyroTurnREV(1,90);
+            if(dir == FldDirection.Face_Fld_Audience)
+                gyroTurnREV(1,270);
+            if(dir == FldDirection.Face_Fld_Drivers)
+                gyroTurnREV(1,180);
+        }
+
+    }
     public void Rotate(double power, int direction, double angle) {
 
         //angle -=angle*.35;
@@ -462,6 +493,39 @@ public class Autonomous2020 extends Teleop2020  {
         EncoderMoveDist(1, dist,false);
     }
 
+    public void EncoderGoto(double x, double y) {
+        if (!isBlueSide) {
+            if (where_head == FldDirection.Face_Fld_Center) {
+                EncoderMoveDist(1, y - where_y, false);
+                EncoderMoveDist(1, x - where_x, true);
+            } else if (where_head == FldDirection.Face_Fld_Foundation) {
+                EncoderMoveDist(1, x - where_x, false);
+                EncoderMoveDist(1, -1 * (y - where_y), true);
+            } else if (where_head == FldDirection.Face_Fld_Drivers) {
+                EncoderMoveDist(1, -1 * (y - where_y), false);
+                EncoderMoveDist(1, -1 * (x - where_x), true);
+            } else if (where_head == FldDirection.Face_Fld_Audience) {
+                EncoderMoveDist(1, -1 * (x - where_x), false);
+                EncoderMoveDist(1, y - where_y, true);
+            }
+        }
+        if (isBlueSide) {
+            if (where_head == FldDirection.Face_Fld_Center) {
+                EncoderMoveDist(1, y - where_y, false);
+                EncoderMoveDist(1, -1*(x - where_x), true);
+            } else if (where_head == FldDirection.Face_Fld_Audience) {
+                EncoderMoveDist(1, -1*(x - where_x), false);
+                EncoderMoveDist(1, -1 * (y - where_y), true);
+            } else if (where_head == FldDirection.Face_Fld_Drivers) {
+                EncoderMoveDist(1, -1 * (y - where_y), false);
+                EncoderMoveDist(1, x - where_x, true);
+            } else if (where_head == FldDirection.Face_Fld_Foundation) {
+                EncoderMoveDist(1, x - where_x, false);
+                EncoderMoveDist(1, y - where_y, true);
+            }
+        }
+    }
+
     public void EncoderStrafe(double dist){
         EncoderMoveDist(1, dist,true);
     }
@@ -471,11 +535,56 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void EncoderMoveDist(double speed, double distance, Boolean strafe) {
 
-        if(!strafe)
-            where_x += distance;
-        else
-            where_y += distance;
+        System.out.println("14564dbg EncoderMoveDist: " + distance + "Starfe: " + strafe);
 
+        if (!isBlueSide) {
+
+            if (where_head == FldDirection.Face_Fld_Center) {
+                if (strafe)
+                    where_x += distance;
+                else
+                    where_y += distance;
+            } else if (where_head == FldDirection.Face_Fld_Foundation) {
+                if (strafe)
+                    where_y -= distance;
+                else
+                    where_x += distance;
+            } else if (where_head == FldDirection.Face_Fld_Drivers) {
+                if (strafe)
+                    where_x -= distance;
+                else
+                    where_y -= distance;
+            } else if (where_head == FldDirection.Face_Fld_Audience) {
+                if (strafe)
+                    where_y += distance;
+                else
+                    where_x -= distance;
+            }
+        }
+        else {
+
+            if (where_head == FldDirection.Face_Fld_Center) {
+                if (strafe)
+                    where_x -= distance;
+                else
+                    where_y += distance;
+            } else if (where_head == FldDirection.Face_Fld_Audience) {
+                if (strafe)
+                    where_y -= distance;
+                else
+                    where_x -= distance;
+            } else if (where_head == FldDirection.Face_Fld_Drivers) {
+                if (strafe)
+                    where_x += distance;
+                else
+                    where_y -= distance;
+            } else if (where_head == FldDirection.Face_Fld_Foundation) {
+                if (strafe)
+                    where_y += distance;
+                else
+                    where_x += distance;
+            }
+        }
         distance *= -1;
 
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
@@ -601,6 +710,8 @@ public class Autonomous2020 extends Teleop2020  {
         motorRightFront.setPower(power);
         motorLeftBack.setPower(power);
 
+        System.out.println("14564dbg simpleStraight power: " + power);
+
     }
 
     public void simpleStrafe(double power) {
@@ -613,6 +724,9 @@ public class Autonomous2020 extends Teleop2020  {
         motorRightBack.setPower(power);
         motorRightFront.setPower(power);
         motorLeftBack.setPower(power);
+
+        System.out.println("14564dbg simpleStrafe power: " + power);
+
 
     }
 
@@ -936,7 +1050,10 @@ public class Autonomous2020 extends Teleop2020  {
         public void run() {
             idle();
             sleep(9);
-            armExtended(9.5);
+            armExtended(6.5);
+            grabCollection();
+            armExtended(3);
+
             //armExtended(0.7625);
 
 
@@ -989,23 +1106,27 @@ public class Autonomous2020 extends Teleop2020  {
 
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-                y = (translation.get(1))/mmPerInch;
-                x = (translation.get(0))/mmPerInch;
+                vu_x = (translation.get(1))/mmPerInch;
+                vu_y = (translation.get(0))/mmPerInch;
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
                 center(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
 
                 blockSeen = true;
                 telemetry.addData("reached here", "yes");
+                System.out.println("14564dbg seen retry count: " + retryCount);
+
                 break;
 
             }
-            else if (retryCount < 10) {
+            else if (retryCount < 5) {
                 retryCount++;
+                System.out.println("14564dbg retry count: " + retryCount);
+                sleep(200);
                 continue;
             }
             else {
                 strafeCount++;
-                telemetry.addData("Visible Target", "none");
+                telemetry.addData("No Visible Target", "none");
                 if(isBlueSide){
                     EncoderStrafe(8);
                 }else{
@@ -1013,7 +1134,7 @@ public class Autonomous2020 extends Teleop2020  {
                 }
 
                 retryCount=0;
-                if(strafeCount > 1)
+                if(strafeCount > 0)
                     break;
                 //sleep(1000);
             }
@@ -1024,47 +1145,47 @@ public class Autonomous2020 extends Teleop2020  {
 
         return blockSeen;
     }
-    public void grabAndDropBlock_Arm(Boolean isBlueSide, double fwd) {
+    public void grabAndDropBlock_Arm(Boolean doFoundation) {
 
-        grabCollection();
-        EncoderStraight(fwd);
+
+        EncoderGoto(where_x, 54);
         closeGrabber();
-        sleep(1200);
-        liftInch(0.3);
+        sleep(600);
+        setLiftPosition(0.3);
 
         //step back
-        EncoderStraight(-18);
-        gyroTurnREV(1, 90);
+        EncoderGoto(where_x, 44);
 
-        //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
-        //take to drop zone ( 2 tiles away towards the bridge )
-        double dropDist = 0;
-        if(isBlueSide){
-            dropDist = -1*(where_y) - 35;
+        //turn
+        gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+
+        if(doFoundation) {
+            //go  to foundation
+            EncoderGoto(108, where_y);
+            setLiftPosition(4);
+            gyroTurnDirection(FldDirection.Face_Fld_Center);
+
+            //drop block
+            grabCollection();
+
+            sleep(200);
+            gyroTurnDirection(FldDirection.Face_Fld_Drivers);
+            foundation.setPosition(0);
+            EncoderGoto(where_x, 36);
+            foundation.setPosition(0.7);
+            sleep(200);
+            EncoderGoto(where_x, 24);
+            gyroTurnDirection(FldDirection.Face_Fld_Audience);
+            EncoderGoto(112, where_y);
+            foundation.setPosition(0);
+
+            setLiftPosition(0);
         }
         else {
-            dropDist = -1* (where_y) + 48;
+            EncoderGoto(96, where_y);
+            //drop block
+            grabCollection();
         }
-        EncoderStraight(dropDist);
-        EncoderStraight(36);
-        gyroTurnREV(1,0);
-        liftInch(4);
-        EncoderStraight(24);
-
-        grabCollection();
-
-        sleep(500);
-        EncoderStraight(-6);
-        gyroTurnREV(1, 180);
-        foundation.setPosition(0);
-        EncoderMoveDist(0.5, -12,false);
-        foundation.setPosition(0.7);
-        sleep(500);
-        EncoderStraight(30);
-        gyroTurnREV(1, 270);
-        EncoderMoveDist(0.5, -18,false);
-        foundation.setPosition(0);
-
 
 
     }
@@ -1090,10 +1211,10 @@ public class Autonomous2020 extends Teleop2020  {
         //take to drop zone ( 2 tiles away towards the bridge )
         double dropDist = 0;
         if(isBlueSide){
-            dropDist = -1*(where_y) - 48;
+            dropDist = -1*(where_x) - 48;
         }
         else {
-            dropDist = -1* (where_y) + 48;
+            dropDist = -1* (where_x) + 48;
         }
         EncoderStrafe(dropDist);
 
@@ -1141,97 +1262,107 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
-    public void runAutonomous(Boolean isBlueSide, Boolean useArm) {
+    public void runAutonomous(Boolean isBlue, Boolean useArm) {
 
 
         USE_VUFORIA = true;
+
+        where_y = 18;
+        isBlueSide = isBlue;
+
+        if(!isBlueSide)
+            where_x = 36;
+        else
+            where_x = -36;
+
+        Boolean returnForSecond = false;
+        Boolean doParking = true;
+        Boolean testVuOnly = false;
+
         initFn();
 
         waitForStart();
 
-        new Thread(new extendThread()).start();
+        if(!testVuOnly) {
+            new Thread(new extendThread()).start();
+        }
 
-        sleep(5000);
+        EncoderGoto(36, 30);
 
-        EncoderStraight(13.5);
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
+
 
         if (blockSeen) {
 
             double blockDist=0;
 
             if(!useArm)
-                blockDist = y + 11;
+                blockDist = vu_x + 11;
             else
-                blockDist = y + 5;
+                blockDist = vu_x + CAM_OFFSET;
 
             EncoderStrafe (blockDist);
         }
 
-        //grab a block (even if it's a random one)
-        if(!useArm)
-            grabAndDropBlock_Hook(isBlueSide);
-         else
-            grabAndDropBlock_Arm(isBlueSide, 24);
+        if(!testVuOnly) {
+            //grab a block (even if it's a random one)
+            if (!useArm)
+                grabAndDropBlock_Hook(isBlueSide);
+            else
+                grabAndDropBlock_Arm(true);
+        }
 
+        if (returnForSecond) {
+            double returnDist = 0;
+            if (isBlueSide) {
+                returnDist = 24 + 27;
+            } else {
+                returnDist = -24 - 40;
+            }
+            EncoderStrafe(returnDist);
 
-        //return for second
-//        double returnDist = 0;
-//        if(isBlueSide){
-//            returnDist = 24 + 27;
-//        }
-//        else {
-//            returnDist = -24 - 40;
-//        }
-//        EncoderStrafe(returnDist);
-//
-//        if (isBlueSide){
-//            makeParallelRight();
-//        }
-//        else {
-//            makeParallelLeft();
-//        }
-//
-//        //see second one ?
-//        sleep(300);
-//        blockSeen = vuFindBlock(isBlueSide);
-//
-//        if (blockSeen) {
-//            double blockDist=0;
-//
-//            if(Math.abs(y)>10){
-//                if(y>0){
-//                    y = y-10;
-//                }
-//                else {
-//                    y = y+10;
-//                }
-//            }
-//            if(!useArm)
-//                blockDist = y -3;
-//            else
-//                blockDist = y + 4.5;
-//
-//            EncoderStrafe (blockDist);
-//        }
-//
-//        //grab a block (even if it's a random one)
-//        if(!useArm)
-//            grabAndDropBlock_Hook(isBlueSide);
-//        else
-//            grabAndDropBlock_Arm(isBlueSide, 18);
+            if (isBlueSide) {
+                makeParallelRight(26);
+            } else {
+                makeParallelLeft(26);
+            }
+
+            //see second one ?
+            sleep(300);
+            blockSeen = vuFindBlock(isBlueSide);
+
+            if (blockSeen) {
+                double blockDist = 0;
+
+                if (Math.abs(vu_x) > 10) {
+                    if (vu_x > 0) {
+                        vu_x = vu_x - 10;
+                    } else {
+                        vu_x = vu_x + 10;
+                    }
+                }
+                if (!useArm)
+                    blockDist = vu_x - 3;
+                else
+                    blockDist = vu_x + 4.5;
+
+                EncoderStrafe(blockDist);
+            }
+
+            //grab a block (even if it's a random one)
+            if (!useArm)
+                grabAndDropBlock_Hook(isBlueSide);
+            else
+                grabAndDropBlock_Arm( false);
+        }
 
         //park (1 tile back towards the bridge)
-        double parkDist = 0;
-        if(isBlueSide){
-            parkDist = 34;
+        if(doParking) {
+            gyroTurnDirection(FldDirection.Face_Fld_Audience);
+            EncoderGoto(where_x, 36);
+            EncoderGoto(72, 36);
         }
-        else {
-            parkDist = 34;
-        }
-        EncoderStraight(parkDist);
-
     }
 
 
