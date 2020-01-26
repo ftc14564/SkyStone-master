@@ -1133,7 +1133,7 @@ public class Autonomous2020 extends Teleop2020  {
                 }
 
                 retryCount=0;
-                if(strafeCount > 0)
+                if(strafeCount > 1)
                     break;
                 //sleep(1000);
             }
@@ -1153,7 +1153,7 @@ public class Autonomous2020 extends Teleop2020  {
         setLiftPosition(0.3);
 
         //step back
-        EncoderGoto(where_x, 44, 0.8);
+        EncoderGoto(where_x, 38, 0.8);
 
         //turn
         gyroTurnDirection(FldDirection.Face_Fld_Foundation);
@@ -1304,7 +1304,7 @@ public class Autonomous2020 extends Teleop2020  {
             new Thread(new extendThread()).start();
         }
 
-        EncoderGoto(36, 30, 1);
+        EncoderGoto(where_x, 30, 1);
 
 
         Boolean blockSeen = vuFindBlock(isBlueSide);
