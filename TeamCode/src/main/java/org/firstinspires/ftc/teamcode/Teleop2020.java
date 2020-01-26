@@ -64,7 +64,7 @@ public class Teleop2020 extends LinearOpMode {
 
 
     double basePower = 0.2;
-    protected static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.8;
+    protected static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.4;
     double powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
     double turnPowerFactor = 0.6;
     float power = 0;
@@ -87,9 +87,12 @@ public class Teleop2020 extends LinearOpMode {
     protected static boolean USE_VUFORIA = false;
 
 
+    protected static boolean DEBUG = false;
+
+
     protected static final double LIFT_NON_SLIP_POWER = 0.2;
 //    private static final double ARM_INCH_PER_MS = 1471.724;
-    protected static final double ARM_INCH_PER_MS = 200;
+    protected static final double ARM_INCH_PER_MS = 225;
 
     protected  double liftStallPower = LIFT_NON_SLIP_POWER;
     private double liftPrevPosition = 0;
@@ -452,9 +455,7 @@ public class Teleop2020 extends LinearOpMode {
     }
 
     public void vectorCombine(double x, double y, double turn) {
-        telemetry.addData("x:", x);
-        telemetry.addData("y:", y);
-        telemetry.update();
+
 
         double a = powerReductionFactor*(x + y) + basePower * ((x + y) / Math.abs(x + y));
         double b = powerReductionFactor*(y - x) + basePower * ((y - x) / Math.abs(y - x));
@@ -470,6 +471,15 @@ public class Teleop2020 extends LinearOpMode {
         motorLeftBack.setPower(c - turn);
         motorRightBack.setPower(d + turn);
 
+        telemetry.addData("x:", x);
+        telemetry.addData("y:", y);
+
+        telemetry.addData("a:", a);
+        telemetry.addData("b:", b);
+        telemetry.addData("c:", c);
+        telemetry.addData("d:", d);
+
+        telemetry.update();
     }
 
     public void setLiftPosition(double position){
@@ -481,7 +491,7 @@ public class Teleop2020 extends LinearOpMode {
 
         while ((lift.getCurrentPosition() < (position - coarseMargin)) && !isStopRequested()){
             idle();
-            System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
+            if(DEBUG) System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
             lift.setPower(1);
             lift_assist.setPower(1);
             position-=1; //to avoid getting stuck at top position
@@ -489,7 +499,7 @@ public class Teleop2020 extends LinearOpMode {
 
         while ((lift.getCurrentPosition() < (position - fineMargin)) && !isStopRequested()){
             while((lift.getCurrentPosition() != liftPrevPosition) && !isStopRequested()) {
-                System.out.println("B: prev:"+ liftPrevPosition + "curr:" + lift.getCurrentPosition() + "pow:" + liftStallPower);
+                if(DEBUG) System.out.println("B: prev:"+ liftPrevPosition + "curr:" + lift.getCurrentPosition() + "pow:" + liftStallPower);
 
                 lift.setPower(liftStallPower);
                 lift_assist.setPower(liftStallPower);
@@ -611,7 +621,7 @@ public class Teleop2020 extends LinearOpMode {
 
         } catch (InterruptedException e) {
             //Log.v(TAG, "Exception!!");
-            System.out.println("get frame exception");
+            if(DEBUG) System.out.println("get frame exception");
             telemetry.addData("Open CV Exception", "none");
         }
     }
@@ -646,6 +656,17 @@ public class Teleop2020 extends LinearOpMode {
             double x_component = gamepad1.right_stick_x;
             double y_component = -1 * gamepad1.right_stick_y;
 
+            if(y_component == 0)
+                y_component = 0.001;
+            if(x_component == 0)
+                x_component = 0.001;
+
+            if (gamepad1.right_trigger > 0) {
+                powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR + (gamepad1.right_trigger * 2 / 3);
+                //Subtract from 1 to make the trigger give a reduction in power
+                //Multiply by 2/3 to not completely reduce the power
+            }
+
                 if (gamepad1.left_bumper && Math.abs(forward) > 0.1) {
                     //right turn
                     motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);  //changed
@@ -666,8 +687,8 @@ public class Teleop2020 extends LinearOpMode {
                     motorRightBack.setPower(forward * power_multiplier);
                     motorLeftFront.setPower(forward * power_multiplier);
                     motorLeftBack.setPower(forward * power_multiplier);
-                } else if (Math.abs(x_component) > 0.1 || (Math.abs(y_component)>0.1)) {
-                    vectorCombine(x_component, y_component, turn_component);
+                } else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component)>0.1)) {
+                    vectorCombine(x_component, y_component, turn_component*(y_component/Math.abs(y_component)));
                 }
                 else {
                     motorRightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -700,11 +721,7 @@ public class Teleop2020 extends LinearOpMode {
 //            }
 
 
-                if (gamepad1.right_trigger > 0) {
-                    powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR - (gamepad1.right_trigger * 2 / 3);
-                    //Subtract from 1 to make the trigger give a reduction in power
-                    //Multiply by 2/3 to not completely reduce the power
-                }
+
 
                 if (gamepad1.b) {
                     if (powerReductionFactor == 0.8)
@@ -755,7 +772,7 @@ public class Teleop2020 extends LinearOpMode {
 //            }
 
                 if (gamepad1.dpad_left) { //GRABBER OPEN FOR COLLECTION
-                    sideArm.setPosition(0.7);
+                    sideArm.setPosition(0.65);
                     sideArmBase.setPosition(0.9);
                 }
 
@@ -766,7 +783,7 @@ public class Teleop2020 extends LinearOpMode {
                     }
                 }
                 if (gamepad1.dpad_right) { //GRABBER OPEN FOR COLLECTION
-                    sideArm.setPosition(0.8);
+                    sideArm.setPosition(0.7);
                     sideArmBase.setPosition(0.7);
                 }
 
@@ -777,11 +794,11 @@ public class Teleop2020 extends LinearOpMode {
                 }
 
                 if (gamepad2.dpad_down) {               //GRABBED POSITION
-                    grab_front.setPosition(0.2); //More than 90 degrees to add pressure
-                    grab_back.setPosition(0.5);
+                    grab_front.setPosition(0.4); //More than 90 degrees to add pressure
+                    grab_back.setPosition(0.6);
                 }
                 if (gamepad2.dpad_up) {               //OPEN FOR COLLECTION POSITION
-                    grab_front.setPosition(0.7);
+                    grab_front.setPosition(0.8);
                     grab_back.setPosition(0.5);
                 }
                 if (gamepad2.dpad_left) {               //Dropping

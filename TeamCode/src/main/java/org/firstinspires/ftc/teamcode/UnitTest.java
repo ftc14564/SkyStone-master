@@ -93,7 +93,7 @@ public class UnitTest extends Autonomous2020 {
             }
 
             if(gamepad2.right_bumper){
-                gyroTurnREV(1, 45);
+                gyroTurnREV(1, 270);
             }
             if(gamepad2.left_bumper){
                 gyroTurnREV(1, -45);
@@ -102,20 +102,20 @@ public class UnitTest extends Autonomous2020 {
                 where_x =0;
                 where_y=0;
                 isBlueSide = true;
-                EncoderGoto(5,5);
-                EncoderGoto(0,0);
+                EncoderGoto(5,5, 1);
+                EncoderGoto(0,0, 1);
                 gyroTurnDirection(FldDirection.Face_Fld_Foundation);
-                EncoderGoto(-5,-5);
+                EncoderGoto(-5,-5, 1);
 
             }
             if(gamepad2.dpad_down){
                 where_x =0;
                 where_y=0;
                 isBlueSide = false;
-                EncoderGoto(5,5);
-                EncoderGoto(0,0);
+                EncoderGoto(5,5, 1);
+                EncoderGoto(0,0, 1);
                 gyroTurnDirection(FldDirection.Face_Fld_Foundation);
-                EncoderGoto(-5,-5);
+                EncoderGoto(-5,-5, 1);
             }
 
             if(gamepad2.dpad_right){

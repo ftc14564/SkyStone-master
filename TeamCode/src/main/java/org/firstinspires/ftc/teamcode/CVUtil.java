@@ -139,7 +139,19 @@ public class CVUtil {
 
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
-        //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HSV);
+        System.out.println("LOOK HERE : BEFORE ERROR");
+        try{
+//            StoneWrangler stoneWrangler = new StoneWrangler();
+//            stoneWrangler.analyze(mat);
+//            Mat sMat = stoneWrangler.getVisualization();
+        } catch (Exception e){
+            System.out.println(e.toString() + "HEY LOOK HERE");
+
+        }
+        System.out.println("LOOK HERE : AFTER ERROR");
+
+
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2HSV);
         Imgproc.blur(mat, blurredMat, new Size(7, 7));
         Imgproc.cvtColor(blurredMat, hsvMat, Imgproc.COLOR_BGR2HSV);
 
@@ -212,13 +224,13 @@ public class CVUtil {
 
 //        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
 //        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
-            System.out.println("Mat Empty Ashi" + mat.empty());
+//            System.out.println("Mat Empty Ashi" + mat.empty());
             String filePath = new SimpleDateFormat("'/sdcard/FIRST/pic'yyyyMMddHHmmss'.png'").format(new Date());
-
+//
             Date currentDate = new Date();
             long diffInMS = Math.abs(currentDate.getTime() - dtLastTimePic.getTime());
-            if (! mat.empty()) {
-                if(diffInMS > 2000) {
+            if (!mat.empty()) {
+                if (diffInMS > 2000) {
                     Imgcodecs.imwrite(filePath, mat);
                     System.out.println("Ashi Writing frame as" + filePath);
                     dtLastTimePic = new Date();
@@ -230,7 +242,7 @@ public class CVUtil {
 
         }
 
-
+//
 //        Mat detectColor (Mat srcImg){
 //            Mat blurImg = new Mat();
 //            Mat hsvImage = new Mat();
@@ -257,5 +269,6 @@ public class CVUtil {
 
 
     }
-}
+    }
+
 
