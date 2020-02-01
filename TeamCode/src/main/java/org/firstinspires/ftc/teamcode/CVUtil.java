@@ -8,6 +8,7 @@ import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.LoaderCallbackInterface;
@@ -120,7 +121,7 @@ public class CVUtil {
 
     Date dtLastTimePic = new Date();
 
-    void updateFrame(Bitmap bm, Frame frame) {
+    Point updateFrame(Bitmap bm, Frame frame) {
 
 
         Image img = frame.getImage(0);
@@ -132,6 +133,8 @@ public class CVUtil {
         Mat morphOutput = new Mat();
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
+        Point centerPoint = new Point(0, 0);
+
 
 
         Mat mat = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
@@ -218,9 +221,11 @@ public class CVUtil {
 
             double centerX = (rectPoints[0].x + rectPoints[1].x + rectPoints[2].x + rectPoints[3].x) / 4;
             double centerY = (rectPoints[0].y + rectPoints[1].y + rectPoints[2].y + rectPoints[3].y) / 4;
-            Point centerPoint = new Point(centerX, centerY);
+            centerPoint = new Point(centerX, centerY);
 
-            Imgproc.circle(mat, centerPoint, 5, new Scalar(0, 0, 255), 5);
+            System.out.println("Point X " + centerX +  "  Y " + centerY);
+
+            //Imgproc.circle(mat, centerPoint, 5, new Scalar(0, 0, 255), 5);
 
 //        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
 //        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
@@ -231,14 +236,15 @@ public class CVUtil {
             long diffInMS = Math.abs(currentDate.getTime() - dtLastTimePic.getTime());
             if (!mat.empty()) {
                 if (diffInMS > 2000) {
-                    Imgcodecs.imwrite(filePath, mat);
-                    System.out.println("Ashi Writing frame as" + filePath);
-                    dtLastTimePic = new Date();
+                    //   Imgcodecs.imwrite(filePath, mat);
+                    //   System.out.println("Ashi Writing frame as" + filePath);
+                    //   dtLastTimePic = new Date();
                 }
             }
 
             mat.release();
             System.out.println("Got Frame");
+
 
         }
 
@@ -267,8 +273,10 @@ public class CVUtil {
 //
 //        }
 
+        return centerPoint;
+    }
 
-    }
-    }
+
+}
 
 

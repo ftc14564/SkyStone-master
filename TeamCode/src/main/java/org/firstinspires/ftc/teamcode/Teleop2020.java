@@ -87,7 +87,7 @@ public class Teleop2020 extends LinearOpMode {
     protected static boolean USE_VUFORIA = false;
 
 
-    protected static boolean DEBUG = false;
+    protected static final boolean DEBUG = true;
 
 
     protected static final double LIFT_NON_SLIP_POWER = 0.2;
@@ -101,11 +101,17 @@ public class Teleop2020 extends LinearOpMode {
     private DistanceSensor sensorRange_rb;
     private DistanceSensor sensorRange_lf;
     private DistanceSensor sensorRange_lb;
+    private DistanceSensor sensorRange_ffl;
+    private DistanceSensor sensorRange_ffr;
+
+
 
     Rev2mDistanceSensor distanceSensor_rf;
     Rev2mDistanceSensor distanceSensor_rb;
     Rev2mDistanceSensor distanceSensor_lf;
     Rev2mDistanceSensor distanceSensor_lb;
+    Rev2mDistanceSensor distanceSensor_ffl;
+    Rev2mDistanceSensor distanceSensor_ffr;
 
     ColorSensor sensorColor;
     DistanceSensor sensorDistance;
@@ -215,6 +221,8 @@ public class Teleop2020 extends LinearOpMode {
 
         telemetry.addData("Init: start ", "");
 
+        if(DEBUG) System.out.println(" 14564dbg : Init start ");
+
 
         sensorRange_rf = hardwareMap.get(DistanceSensor.class, "2m_rf");
         distanceSensor_rf = (Rev2mDistanceSensor)sensorRange_rf;
@@ -224,6 +232,11 @@ public class Teleop2020 extends LinearOpMode {
         distanceSensor_lf = (Rev2mDistanceSensor)sensorRange_lf;
         sensorRange_lb = hardwareMap.get(DistanceSensor.class, "2m_lb");
         distanceSensor_lb = (Rev2mDistanceSensor)sensorRange_lb;
+
+        sensorRange_ffl = hardwareMap.get(DistanceSensor.class, "ffLeft");
+        distanceSensor_ffl = (Rev2mDistanceSensor)sensorRange_ffl;
+        sensorRange_ffr = hardwareMap.get(DistanceSensor.class, "ffRight");
+        distanceSensor_ffr = (Rev2mDistanceSensor)sensorRange_ffr;
 
         strafing = false;
 
@@ -277,29 +290,33 @@ public class Teleop2020 extends LinearOpMode {
         motorRightBack.setPower(driveSpeed);
         motorRightFront.setPower(driveSpeed);
 
-        //webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        vu_parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-        vu_parameters.cameraDirection = FRONT;
+        if(USE_VUFORIA) {
+            if(DEBUG) System.out.println(" 14564dbg : Init Vuforia");
 
-        vu_parameters.vuforiaLicenseKey = VUFORIA_KEY;
+            //webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+            cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            vu_parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
-        /**
-         * We also indicate which camera on the RC we wish to use.
-         */
-        //vu_parameters.cameraName = webcamName;
+            // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+            vu_parameters.cameraDirection = FRONT;
 
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(vu_parameters);
+            vu_parameters.vuforiaLicenseKey = VUFORIA_KEY;
+
+            /**
+             * We also indicate which camera on the RC we wish to use.
+             */
+            //vu_parameters.cameraName = webcamName;
+
+            //  Instantiate the Vuforia engine
+            vuforia = ClassFactory.getInstance().createVuforia(vu_parameters);
 
 
-        // Load the data sets for the trackable objects. These particular data
-        // sets are stored in the 'assets' part of our application.
-        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
-        stoneTarget = targetsSkyStone.get(0);
-        stoneTarget.setName("Stone Target");
+            // Load the data sets for the trackable objects. These particular data
+            // sets are stored in the 'assets' part of our application.
+            targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+            stoneTarget = targetsSkyStone.get(0);
+            stoneTarget.setName("Stone Target");
 //        VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
 //        blueRearBridge.setName("Blue Rear Bridge");
 //        VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
@@ -325,14 +342,14 @@ public class Teleop2020 extends LinearOpMode {
 //        VuforiaTrackable rear2 = targetsSkyStone.get(12);
 //        rear2.setName("Rear Perimeter 2");
 
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
-        allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(targetsSkyStone);
-        stoneTarget.setLocation(OpenGLMatrix
-                .translation(0, 0, stoneZ)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
+            // For convenience, gather together all the trackable objects in one easily-iterable collection */
+            allTrackables = new ArrayList<VuforiaTrackable>();
+            allTrackables.addAll(targetsSkyStone);
+            stoneTarget.setLocation(OpenGLMatrix
+                    .translation(0, 0, stoneZ)
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
-        //Set the position of the bridge support targets with relation to origin (center of field)
+            //Set the position of the bridge support targets with relation to origin (center of field)
 //        blueFrontBridge.setLocation(OpenGLMatrix
 //                .translation(-bridgeX, bridgeY, bridgeZ)
 //                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
@@ -381,31 +398,33 @@ public class Teleop2020 extends LinearOpMode {
 //        rear2.setLocation(OpenGLMatrix
 //                .translation(halfField, -quadField, mmTargetHeight)
 //                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
-        if (CAMERA_CHOICE == BACK) {
-            phoneYRotate = -90;
-        } else {
-            phoneYRotate = 90;
-        }
+            if (CAMERA_CHOICE == BACK) {
+                phoneYRotate = -90;
+            } else {
+                phoneYRotate = 90;
+            }
 
-        // Rotate the phone vertical about the X axis if it's in portrait mode
-        if (PHONE_IS_PORTRAIT) {
-            phoneXRotate = 90;
-        }
+            // Rotate the phone vertical about the X axis if it's in portrait mode
+            if (PHONE_IS_PORTRAIT) {
+                phoneXRotate = 90;
+            }
 
 
-        robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
+            robotFromCamera = OpenGLMatrix
+                    .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 
-        /**  Let all the trackable listeners know where the phone is.  */
-        for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
-        }
+            /**  Let all the trackable listeners know where the phone is.  */
+            for (VuforiaTrackable trackable : allTrackables) {
+                ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, vu_parameters.cameraDirection);
+            }
 
-        vuforia.setFrameQueueCapacity(1);
+            vuforia.setFrameQueueCapacity(1);
 
-        if(USE_VUFORIA)
             targetsSkyStone.activate();
+        }
+
+        if(DEBUG) System.out.println(" 14564dbg : Init IMU");
 
 
         parameters = new BNO055IMU.Parameters();
@@ -427,11 +446,19 @@ public class Teleop2020 extends LinearOpMode {
         // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
         // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
         // and named "imu".
+        if(DEBUG) System.out.println(" 14564dbg : Init IMU 1");
+
         imu = hardwareMap.get(BNO055IMU.class, "imu");
+        if(DEBUG) System.out.println(" 14564dbg : Init IMU 2");
+
         imu.initialize(parameters);
+        if(DEBUG) System.out.println(" 14564dbg : Init IMU 3");
 
         telemetry.addData("Init: Thread Done ", "");
         telemetry.update();
+
+        if(DEBUG) System.out.println(" 14564dbg : Init Done");
+
     }
 
 
@@ -577,8 +604,8 @@ public class Teleop2020 extends LinearOpMode {
         extend.setPower(0);
     }
     public void grabCollection() {
-            grab_front.setPosition(1);
-            grab_back.setPosition(0.5);
+        grab_front.setPosition(0.8);
+        grab_back.setPosition(0.5);
     }
 
     public void closeGrabber() {
@@ -631,17 +658,25 @@ public class Teleop2020 extends LinearOpMode {
     public void runOpMode() {
 
         double liftTarget = 0;
+
+        if(DEBUG) System.out.println(" 14564dbg : Opmode start ");
+
         teleopInitFn();
+        if(DEBUG) System.out.println(" 14564dbg : Init done ");
 
         waitForStart();
+        if(DEBUG) System.out.println(" 14564dbg : Starting  ...  ");
+
 
         lift.setPower(0);
         liftPosition = 2;
 
-        vuforia.setFrameQueueCapacity(1);
-        vuforia.enableConvertFrameToBitmap();
-        CVUtil cvUtil = new CVUtil();
-        cvUtil.initCv(hardwareMap.appContext);
+        if(USE_VUFORIA) {
+            vuforia.setFrameQueueCapacity(1);
+            vuforia.enableConvertFrameToBitmap();
+            CVUtil cvUtil = new CVUtil();
+            cvUtil.initCv(hardwareMap.appContext);
+        }
 
 
         // run until the end of the match (driver presses STOP)
@@ -782,7 +817,7 @@ public class Teleop2020 extends LinearOpMode {
                         sideArm.setPosition(0.2 + i/2);
                     }
                 }
-                if (gamepad1.dpad_right) { //GRABBER OPEN FOR COLLECTION
+                if (gamepad1.dpad_right) { //DROP BLOCK
                     sideArm.setPosition(0.7);
                     sideArmBase.setPosition(0.7);
                 }

@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
@@ -65,12 +67,35 @@ public class UnitTest extends Autonomous2020 {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() && !isStopRequested()) {
 
+            idle();
+
+            boolean makeparalleltest = true;
+            if (makeparalleltest){
+
+               makeParallelRight(20);
+                makeParallelFront(10);
+                makeParallelLeft(20);
+                makeParallelFront(10);
+                    //break;
+
+            }
+//            telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+//            telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
 //            telemetry.addData(" rf", distanceSensor_rf.getDistance(DistanceUnit.CM));
 //            telemetry.addData(" rb", distanceSensor_rb.getDistance(DistanceUnit.CM));
-            telemetry.addData("rf:", motorRightFront.getCurrentPosition());
-            telemetry.addData("lf:", motorLeftFront.getCurrentPosition());
-            telemetry.addData("rb:", motorRightBack.getCurrentPosition());
-            telemetry.addData("lb:", motorLeftBack.getCurrentPosition());
+//            telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
+//            telemetry.addData(" lb", distanceSensor_lb.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println( "2m rf" + distanceSensor_rf.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println("2m rb" + distanceSensor_rb.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println("2m lf" + distanceSensor_lf.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println("2m lb" +  distanceSensor_lb.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println("2m ffr" + distanceSensor_ffr.getDistance(DistanceUnit.CM));
+//            if(DEBUG) System.out.println("2m ffl" +  distanceSensor_ffl.getDistance(DistanceUnit.CM));
+
+//            telemetry.addData("rf:", motorRightFront.getCurrentPosition());
+//            telemetry.addData("lf:", motorLeftFront.getCurrentPosition());
+//            telemetry.addData("rb:", motorRightBack.getCurrentPosition());
+//            telemetry.addData("lb:", motorLeftBack.getCurrentPosition());
 
             telemetry.update();
 
@@ -212,6 +237,9 @@ public class UnitTest extends Autonomous2020 {
 //
 //            telemetry.update();
         }
+
+        if(DEBUG) System.out.println("14564dbg Stopped ");
+
 
     }
 }

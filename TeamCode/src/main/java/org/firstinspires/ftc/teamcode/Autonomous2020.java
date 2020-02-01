@@ -80,7 +80,7 @@ public class Autonomous2020 extends Teleop2020  {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-    double P_TURN_COEFF = 0.05;
+    double P_TURN_COEFF = 0.025;
     double TURN_THRESHOLD = 1;
 
     public void gyroTurnREV(double speed, double angle) {
@@ -92,29 +92,27 @@ public class Autonomous2020 extends Teleop2020  {
         if(DEBUG)  System.out.println("14564dbg gyroTurnREV: " + angle);
 
 
-        //Reverse direction needed for Tetrix motors
-        angle = angle*-1;
-
         Orientation prev_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         int stall_counter = 0;
-        while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 5)) {
+        if(Math.abs(prev_angles.firstAngle - angle) > 10) {
+            while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF, 5)) {
 
-            Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            if( prev_angles.firstAngle == new_angles.firstAngle) {
-                stall_counter++;
+                Orientation new_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                if (prev_angles.firstAngle == new_angles.firstAngle) {
+                    stall_counter++;
+                } else {
+                    stall_counter = 0;
+                    prev_angles = new_angles;
+                }
+
+                if (stall_counter > 10)
+                    break;
+
+                telemetry.addData("-->", "inside while loop :-(");
+                telemetry.update();
+                idle();
             }
-            else {
-                stall_counter = 0;
-                prev_angles = new_angles;
-            }
-
-            if (stall_counter > 10)
-                break;
-
-            telemetry.addData("-->", "inside while loop :-(");
-            telemetry.update();
-            idle();
         }
         //sleep(100);
         while (opModeIsActive() && !isStopRequested() && !onTargetAngleREV(speed, angle, P_TURN_COEFF / 5, 1)) {
@@ -194,7 +192,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         double robotError;
 
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         robotError = targetAngle - angles.firstAngle;
 
@@ -202,8 +200,10 @@ public class Autonomous2020 extends Teleop2020  {
 
         while (robotError <= -180) robotError += 360;
 
-        telemetry.addData("Robot Error", "%5.2f", robotError);
-        telemetry.update();
+//        telemetry.addData("Robot Error", "%5.2f", robotError);
+//        telemetry.update();
+        if(DEBUG)  System.out.println("14564dbg gyroTurnREV: Error " + robotError + " angles " + angles) ;
+
 
         return robotError;
 
@@ -941,109 +941,211 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
+    double DSRead(Rev2mDistanceSensor ds) {
+
+        if(opModeIsActive() && !isStopRequested())
+            return ds.getDistance(DistanceUnit.CM);
+        else
+            return 0 ;
+
+    }
 
     public void makeParallelLeft(double distance_from_wall) {
         double sensor_gap = 32.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        if (distanceSensor_lb.getDistance(DistanceUnit.CM) < (distanceSensor_lf.getDistance(DistanceUnit.CM))) {
-            double theta;
-            //telemetry.addData(" test ", 1);
+        double dis1 = DSRead(distanceSensor_lb) / 2.54;
+        double dis2 = DSRead(distanceSensor_lf) / 2.54;
+        double dist = (dis1 + dis2)/2;
 
-            double diff1 = (distanceSensor_lf.getDistance(DistanceUnit.CM)) - (distanceSensor_lb.getDistance(DistanceUnit.CM));
-            double diff2 = (distanceSensor_lf.getDistance(DistanceUnit.CM)) - (distanceSensor_lb.getDistance(DistanceUnit.CM));
-            double diff3 = (distanceSensor_lf.getDistance(DistanceUnit.CM)) - (distanceSensor_lb.getDistance(DistanceUnit.CM));
-            double diff = (diff1 + diff2 + diff3) / 3;
-            double temp = diff / sensor_gap;
-            //telemetry.addData(" test ", 2);
-            //telemetry.update();
-            theta = Math.asin(temp) * 180 / 3.141592;
-            telemetry.addData(" lb", distanceSensor_lb.getDistance(DistanceUnit.CM));
-            telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
-            telemetry.addData(" theta", theta);
-            telemetry.update();
-            if (theta > 1) {
-                gyroTurnREV(1, angles.firstAngle + theta);
+        if(DEBUG) System.out.println("14564dbg MP L: Angle " + angles + " lb " + dis1 + " lf " + dis2);
+
+        if((dist -  distance_from_wall) < 75) {
+            if (DSRead(distanceSensor_lb) < DSRead(distanceSensor_lf)) {
+                double theta;
+                //telemetry.addData(" test ", 1);
+
+                double diff1 = DSRead(distanceSensor_lf) - DSRead(distanceSensor_lb);
+                double diff2 = DSRead(distanceSensor_lf) - DSRead(distanceSensor_lb);
+                double diff3 = DSRead(distanceSensor_lf) - DSRead(distanceSensor_lb);
+                double diff = (diff1 + diff2 + diff3) / 3;
+                double temp = diff / sensor_gap;
+                //telemetry.addData(" test ", 2);
+                //telemetry.update();
+                theta = Math.asin(temp) * 180 / 3.141592;
+//                telemetry.addData(" lb", distanceSensor_lb.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta", theta);
+//                telemetry.update();
+                if(DEBUG) System.out.println("14564dbg MP L: theta" + theta);
+
+                if (theta > 1) {
+                    gyroTurnREV(1, angles.firstAngle + theta);
+                }
+
+            } else {
+                double teta;
+                double diff1 = DSRead(distanceSensor_lb) - DSRead(distanceSensor_lf);
+                double diff2 = DSRead(distanceSensor_lb) - DSRead(distanceSensor_lf);
+                double diff3 = DSRead(distanceSensor_lb) - DSRead(distanceSensor_lf);
+                double diff = (diff1 + diff2 + diff3) / 3;
+                double temp = diff / sensor_gap;
+                teta = Math.asin(temp) * 180 / 3.141592;
+                if(DEBUG) System.out.println("14564dbg MP L: theta" + teta);
+
+                if (teta > 1) {
+                    gyroTurnREV(1, angles.firstAngle - teta);
+                }
+//                telemetry.addData(" lb_", distanceSensor_lb.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" lf_", distanceSensor_lf.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta_", teta);
+//                telemetry.update();
             }
-
-        } else {
-            double teta;
-            double diff1 = (distanceSensor_lb.getDistance(DistanceUnit.CM)) - (distanceSensor_lf.getDistance(DistanceUnit.CM));
-            double diff2 = (distanceSensor_lb.getDistance(DistanceUnit.CM)) - (distanceSensor_lf.getDistance(DistanceUnit.CM));
-            double diff3 = (distanceSensor_lb.getDistance(DistanceUnit.CM)) - (distanceSensor_lf.getDistance(DistanceUnit.CM));
-            double diff = (diff1 + diff2 + diff3) / 3;
-            double temp = diff / sensor_gap;
-            teta = Math.asin(temp) * 180 / 3.141592;
-            if (teta > 1) {
-                gyroTurnREV(1, angles.firstAngle - teta);
+            dis1 = DSRead(distanceSensor_lb) / 2.54;
+            dis2 = DSRead(distanceSensor_lf) / 2.54;
+            dist = (dis1 + dis2)/2;
+        }
+        if(distance_from_wall > 0) {
+            if (dist < distance_from_wall) {
+                EncoderMoveDist(0.8, (distance_from_wall - dist), true);
+            } else if (dist > distance_from_wall) {
+                if ((dist - distance_from_wall) > 24) {
+                    simpleStrafe(-0.8);
+                    makeParallelLeft(distance_from_wall);
+                } else
+                    EncoderMoveDist(0.8, -1 * (dist - distance_from_wall), true);
             }
-            telemetry.addData(" lb_", distanceSensor_lb.getDistance(DistanceUnit.CM));
-            telemetry.addData(" lf_", distanceSensor_lf.getDistance(DistanceUnit.CM));
-            telemetry.addData(" theta_", teta);
-            telemetry.update();
         }
-
-        double dis = distanceSensor_lb.getDistance(DistanceUnit.CM) / 2.54;
-        if (dis < distance_from_wall) {
-            EncoderMoveDist(1, (distance_from_wall-dis),true);
-        } else if (dis > distance_from_wall) {
-            EncoderMoveDist(1,-1*(dis-distance_from_wall),true);
-        }
-
     }
 
     public void makeParallelRight(double distance_from_wall) {
 
         double sensor_gap = 32.5;
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double dis1 = DSRead(distanceSensor_rb) / 2.54;
+        double dis2 = DSRead(distanceSensor_rf) / 2.54;
+        double dist = (dis1 + dis2)/2;
 
-        if (distanceSensor_rb.getDistance(DistanceUnit.CM) < (distanceSensor_rf.getDistance(DistanceUnit.CM))) {
-            double theta;
-            //telemetry.addData(" test ", 1);
+        if(DEBUG) System.out.println("14564dbg MP R: Angle " + angles + " rb " + dis1 + " rf " + dis2);
 
-            double diff1 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff2 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff3 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff4 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff5 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff6 = (distanceSensor_rf.getDistance(DistanceUnit.CM)) - (distanceSensor_rb.getDistance(DistanceUnit.CM));
-            double diff = (diff1 + diff2 + diff3 + diff4 + diff5 + diff6) / 6;
-            double temp = diff / sensor_gap;
-            //telemetry.addData(" test ", 2);
-            //telemetry.update();
-            theta = Math.asin(temp) * 180 / 3.141592;
-            telemetry.addData(" lb", distanceSensor_lb.getDistance(DistanceUnit.CM));
-            telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
-            telemetry.addData(" theta", theta);
-            telemetry.update();
-            if (theta > 1) {
+        if((dist -  distance_from_wall) < 75) {
+            if (DSRead(distanceSensor_rb) < DSRead((distanceSensor_rf))) {
+                double theta;
+                //telemetry.addData(" test ", 1);
 
-                gyroTurnREV(1, angles.firstAngle - theta);
+                double diff1 = DSRead(distanceSensor_rf) - DSRead(distanceSensor_rb);
+                double diff2 = DSRead(distanceSensor_rf) - DSRead(distanceSensor_rb);
+                double diff3 = DSRead(distanceSensor_rf) - DSRead(distanceSensor_rb);
+
+                double diff = (diff1 + diff2 + diff3 ) / 3;
+                double temp = diff / sensor_gap;
+                //telemetry.addData(" test ", 2);
+                //telemetry.update();
+                theta = Math.asin(temp) * 180 / 3.141592;
+//                telemetry.addData(" lb", distanceSensor_rb.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" lf", distanceSensor_rf.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta", theta);
+//                telemetry.update();
+                if (theta > 1) {
+
+                    gyroTurnREV(1, angles.firstAngle - theta);
+                }
+
+            } else {
+                double teta;
+                double diff1 = DSRead(distanceSensor_rb) - DSRead(distanceSensor_rf);
+                double diff2 = DSRead(distanceSensor_rb) - DSRead(distanceSensor_rf);
+                double diff3 = DSRead(distanceSensor_rb) - DSRead(distanceSensor_rf);
+                double diff = (diff1 + diff2 + diff3) / 3;
+                double temp = diff / sensor_gap;
+                teta = Math.asin(temp) * 180 / 3.141592;
+                if (teta > 1) {
+                    gyroTurnREV(1, angles.firstAngle + teta);
+                }
+//                telemetry.addData(" rb_", distanceSensor_rb.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" rf_", distanceSensor_rf.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta_", teta);
+//                telemetry.update();
             }
-
-        } else {
-            double teta;
-            double diff1 = (distanceSensor_rb.getDistance(DistanceUnit.CM)) - (distanceSensor_rf.getDistance(DistanceUnit.CM));
-            double diff2 = (distanceSensor_rb.getDistance(DistanceUnit.CM)) - (distanceSensor_rf.getDistance(DistanceUnit.CM));
-            double diff3 = (distanceSensor_rb.getDistance(DistanceUnit.CM)) - (distanceSensor_rf.getDistance(DistanceUnit.CM));
-            double diff = (diff1 + diff2 + diff3) / 3;
-            double temp = diff / sensor_gap;
-            teta = Math.asin(temp) * 180 / 3.141592;
-            if (teta > 1) {
-                gyroTurnREV(1, angles.firstAngle + teta);
-            }
-            telemetry.addData(" rb_", distanceSensor_rb.getDistance(DistanceUnit.CM));
-            telemetry.addData(" rf_", distanceSensor_rf.getDistance(DistanceUnit.CM));
-            telemetry.addData(" theta_", teta);
-            telemetry.update();
+            dis1 = DSRead(distanceSensor_rb) / 2.54;
+            dis2 = DSRead(distanceSensor_rf) / 2.54;
+            dist = (dis1 + dis2)/2;
         }
-
-        double dis = distanceSensor_rb.getDistance(DistanceUnit.CM) / 2.54;
-        if (dis < distance_from_wall) {
-            EncoderMoveDist(1,-1*(distance_from_wall-dis),true);
-        } else if (dis > distance_from_wall) {
-            EncoderMoveDist(1,dis-distance_from_wall,true);
+        if(distance_from_wall > 0) {
+            if (dist < distance_from_wall) {
+                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), true);
+            } else if (dist > distance_from_wall) {
+                if ((dist - distance_from_wall) > 24) {
+                    simpleStrafe(0.8);
+                    makeParallelRight(distance_from_wall);
+                } else
+                    EncoderMoveDist(0.8, dist - distance_from_wall, true);
+            }
         }
     }
+
+    public void makeParallelFront(double distance_from_wall) {
+
+        double sensor_gap = 35.5;
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double dis1 = DSRead(distanceSensor_ffl) / 2.54;
+        double dis2 = DSRead(distanceSensor_ffr) / 2.54;
+        double dist = (dis1 + dis2)/2;
+        if((dist -  distance_from_wall) < 75) {
+            if (DSRead(distanceSensor_ffl) < DSRead(distanceSensor_ffr)) {
+                double theta;
+                //telemetry.addData(" test ", 1);
+
+                double diff1 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+                double diff2 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+                double diff3 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+
+                double diff = (diff1 + diff2 + diff3 ) / 3;
+                double temp = diff / sensor_gap;
+                //telemetry.addData(" test ", 2);
+                //telemetry.update();
+                theta = Math.asin(temp) * 180 / 3.141592;
+//                telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta", theta);
+//                telemetry.update();
+                if (theta > 1) {
+
+                    gyroTurnREV(1, angles.firstAngle + theta);
+                }
+
+            } else {
+                double teta;
+                double diff1 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+                double diff2 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+                double diff3 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+                double diff = (diff1 + diff2 + diff3) / 3;
+                double temp = diff / sensor_gap;
+                teta = Math.asin(temp) * 180 / 3.141592;
+                if (teta > 1) {
+                    gyroTurnREV(1, angles.firstAngle - teta);
+                }
+//                telemetry.addData(" ffl_", distanceSensor_ffl.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" ffr_", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+//                telemetry.addData(" theta_", teta);
+//                telemetry.update();
+            }
+            dis1 = DSRead(distanceSensor_ffl) / 2.54;
+            dis2 = DSRead(distanceSensor_ffr) / 2.54;
+            dist = (dis1 + dis2)/2;
+        }
+        if(distance_from_wall > 0) {
+            if (dist < distance_from_wall) {
+                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), false);
+            } else if (dist > distance_from_wall) {
+                if ((dist - distance_from_wall) > 24) {
+                    simpleStrafe(0.8);
+                    makeParallelFront(distance_from_wall);
+                } else
+                    EncoderMoveDist(0.8, dist - distance_from_wall, false);
+            }
+        }
+    }
+
     class extendThread implements Runnable {
         @Override
         public void run() {
@@ -1256,7 +1358,7 @@ public class Autonomous2020 extends Teleop2020  {
         foundation.setPosition(0);
         EncoderStrafe(-25);
         EncoderStraight(-18);
-        EncoderStrafe(-24);
+//        EncoderStrafe(-24);
         //park after 12 seconds
 //        sleep(12000);
 
@@ -1335,12 +1437,14 @@ public class Autonomous2020 extends Teleop2020  {
 
             EncoderGoto(60, where_y, 1);
 
+            gyroTurnDirection(FldDirection.Face_Fld_Foundation);
 
-            if (isBlueSide) {
-                makeParallelLeft(20);
-            } else {
-                makeParallelRight(20);
-            }
+
+//            if (isBlueSide) {
+//                makeParallelLeft(20);
+//            } else {
+//                makeParallelRight(20);
+//            }
 
             if(firstSkyStone_X < 32) {
                 EncoderGoto(20, where_y, 1);

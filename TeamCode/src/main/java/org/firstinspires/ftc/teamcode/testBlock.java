@@ -21,6 +21,7 @@ import com.vuforia.Tracker;
 import com.vuforia.TrackerManager;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Image;
+import org.opencv.core.Point;
 
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -110,7 +111,7 @@ public class testBlock extends LinearOpMode {
 
     int pixyCounter;
     boolean isPixyObjectSeen;
-    boolean pixyContinue = true;
+    boolean pixyContinue = false;
 
 
     float power = 0;
@@ -1158,21 +1159,23 @@ Bytes    16-bit word    Description
 
         targetsSkyStone.activate();
 
-        CVUtil cvUtil = new CVUtil();
-        cvUtil.initCv(hardwareMap.appContext);
+        StoneWrangler stoneWrangler = new StoneWrangler();
+
+       // CVUtil cvUtil = new CVUtil();
+        //cvUtil.initCv(hardwareMap.appContext);
 
         VuforiaLocalizer.CloseableFrame frame;
 
 
         int count = 0;
-        Boolean doCV = false;
+        Boolean doCV = true;
         while (!isStopRequested()) {
 
             if(doCV) {
                 try {
 
-                    telemetry.addData("Trying to get OpenCV Frame", "none");
-                    telemetry.update();
+                    //telemetry.addData("Trying to get OpenCV Frame", "none");
+                    //telemetry.update();
 
                     frame = vuforia.getFrameQueue().take();
 
@@ -1188,16 +1191,24 @@ Bytes    16-bit word    Description
                                 bm.copyPixelsFromBuffer(rgb.getPixels());
 
 //                            cvUtil.detectColor(mat);
-                                cvUtil.updateFrame(bm, frame);
+//                            //Point p = cvUtil.updateFrame(bm, frame);
 
+                                stoneWrangler.analyze(mat);
+                                double stone_x = stoneWrangler.getStonePixelX();
+                                double stome_y = stoneWrangler.getStonePixelY();
+
+                                telemetry.addData("Open CV Tray X", stone_x);
+                                telemetry.addData("Open CV Tray Y", stome_y);
+                                telemetry.update();
+                                System.out.println(" 14564dbg StoneWrangler X " + stone_x + " y " + stome_y);
 
                             }
                         }
                     }
 
 
-                    telemetry.addData("Open CV Got Frame", count++);
-                    telemetry.update();
+                    //telemetry.addData("Open CV Got Frame", count++);
+                    //telemetry.update();
 
 
                 } catch (InterruptedException e) {

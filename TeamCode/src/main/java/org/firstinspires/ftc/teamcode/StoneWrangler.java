@@ -7,7 +7,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.*;
 
 class StoneWrangler {
-    static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }  // load OpenCV library
+    static { System.loadLibrary("opencv_java3"); }  // load OpenCV library
 
     private MatOfPoint2f calibrationFramePoints;
     private MatOfPoint2f calibrationWorldPoints;
