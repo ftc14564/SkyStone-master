@@ -72,11 +72,17 @@ public class UnitTest extends Autonomous2020 {
             boolean makeparalleltest = true;
             if (makeparalleltest){
 
-               makeParallelRight(20);
-                makeParallelFront(10);
-                makeParallelLeft(20);
-                makeParallelFront(10);
-                    //break;
+                //gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                DSMove(1, 20, 30, false, false, true);
+                //gyroTurnDirection(FldDirection.Face_Fld_Audience);
+                DSMove(1, 20, 10, false,true, true);
+
+//               makeParallelRight(20);
+//                makeParallelFront(10);
+//                makeParallelLeft(20);
+//                makeParallelFront(10);
+               // sleep(2000);
+               //     break;
 
             }
 //            telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));

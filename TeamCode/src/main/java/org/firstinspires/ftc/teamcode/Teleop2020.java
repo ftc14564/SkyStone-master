@@ -102,7 +102,7 @@ public class Teleop2020 extends LinearOpMode {
     private DistanceSensor sensorRange_lf;
     private DistanceSensor sensorRange_lb;
     private DistanceSensor sensorRange_ffl;
-    private DistanceSensor sensorRange_ffr;
+    private DistanceSensor sensorRange_bbr;
 
 
 
@@ -111,7 +111,7 @@ public class Teleop2020 extends LinearOpMode {
     Rev2mDistanceSensor distanceSensor_lf;
     Rev2mDistanceSensor distanceSensor_lb;
     Rev2mDistanceSensor distanceSensor_ffl;
-    Rev2mDistanceSensor distanceSensor_ffr;
+    Rev2mDistanceSensor distanceSensor_bbr;
 
     ColorSensor sensorColor;
     DistanceSensor sensorDistance;
@@ -143,6 +143,7 @@ public class Teleop2020 extends LinearOpMode {
 
     double where_x = 0;
     double where_y = 0;
+    double ds_prev = 120;
     FldDirection where_head = FldDirection.Face_Fld_Center;
     boolean isBlueSide = true;
 
@@ -235,8 +236,8 @@ public class Teleop2020 extends LinearOpMode {
 
         sensorRange_ffl = hardwareMap.get(DistanceSensor.class, "ffLeft");
         distanceSensor_ffl = (Rev2mDistanceSensor)sensorRange_ffl;
-        sensorRange_ffr = hardwareMap.get(DistanceSensor.class, "ffRight");
-        distanceSensor_ffr = (Rev2mDistanceSensor)sensorRange_ffr;
+        sensorRange_bbr = hardwareMap.get(DistanceSensor.class, "bbRight");
+        distanceSensor_bbr = (Rev2mDistanceSensor)sensorRange_bbr;
 
         strafing = false;
 

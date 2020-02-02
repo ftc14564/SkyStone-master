@@ -52,7 +52,9 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.core.Scalar;
 
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
@@ -1178,6 +1180,7 @@ Bytes    16-bit word    Description
                     //telemetry.update();
 
                     frame = vuforia.getFrameQueue().take();
+                    Date dtLastTimePic = new Date();
 
                     long numImages = frame.getNumImages();
                     for (int i = 0; i < numImages; i++) {
@@ -1190,10 +1193,11 @@ Bytes    16-bit word    Description
                                         Bitmap.Config.RGB_565);
                                 bm.copyPixelsFromBuffer(rgb.getPixels());
 
+
 //                            cvUtil.detectColor(mat);
 //                            //Point p = cvUtil.updateFrame(bm, frame);
 
-                                stoneWrangler.analyze(mat);
+                                //stoneWrangler.analyze(mat);
                                 double stone_x = stoneWrangler.getStonePixelX();
                                 double stome_y = stoneWrangler.getStonePixelY();
 
@@ -1201,6 +1205,18 @@ Bytes    16-bit word    Description
                                 telemetry.addData("Open CV Tray Y", stome_y);
                                 telemetry.update();
                                 System.out.println(" 14564dbg StoneWrangler X " + stone_x + " y " + stome_y);
+
+                                String filePath = new SimpleDateFormat("'/sdcard/FIRST/pic'yyyyMMddHHmmss'.png'").format(new Date());
+                                Date currentDate = new Date();
+                                long diffInMS = Math.abs(currentDate.getTime() - dtLastTimePic.getTime());
+                                //mat = stoneWrangler.getVisualization();
+                                if (!mat.empty()) {
+                                    if (diffInMS > 2000) {
+                                           Imgcodecs.imwrite(filePath, mat);
+                                           System.out.println("14564dbg Writing frame as" + filePath);
+                                           dtLastTimePic = new Date();
+                                    }
+                                }
 
                             }
                         }

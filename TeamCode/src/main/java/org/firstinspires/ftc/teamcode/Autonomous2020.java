@@ -80,7 +80,7 @@ public class Autonomous2020 extends Teleop2020  {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-    double P_TURN_COEFF = 0.025;
+    double P_TURN_COEFF = 0.05;
     double TURN_THRESHOLD = 1;
 
     public void gyroTurnREV(double speed, double angle) {
@@ -236,254 +236,6 @@ public class Autonomous2020 extends Teleop2020  {
             if(dir == FldDirection.Face_Fld_Drivers)
                 gyroTurnREV(1,180);
         }
-
-    }
-    public void Rotate(double power, int direction, double angle) {
-
-        //angle -=angle*.35;
-        power /= 1.5;
-
-        imu.initialize(parameters);
-        if (direction == -1.0) {
-            // LEFT
-            //Clockwise
-            motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        } else {
-            // RIGHT
-            //Counter Clockwise
-            motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-
-        motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
-        motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
-        motorRightBack.setMode(STOP_AND_RESET_ENCODER);
-        motorRightFront.setMode(STOP_AND_RESET_ENCODER);
-
-        motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
-        motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
-        motorRightBack.setMode(RUN_WITHOUT_ENCODER);
-        motorRightFront.setMode(RUN_WITHOUT_ENCODER);
-
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-        telemetry.addData("Robot turning", "Yay!");
-        telemetry.update();
-        //sleep(150);
-
-        int counter = 0;
-
-        if (direction == 1) {
-
-            // RIGHT
-            telemetry.addData("Robot turning right: ", angle);
-            telemetry.update();
-            //sleep(150);
-            while (opModeIsActive() && !isStopRequested() && (Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle))))) < angle)) {
-                telemetry.update();
-                telemetry.addData("turning (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-                telemetry.update();
-
-
-                double _power = 1.5 * power * ((angle - Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle)))))) / angle);
-
-                if (_power < 0.3) _power = 0.3;
-
-                motorLeftFront.setPower(_power);
-                motorRightBack.setPower(_power);
-                motorRightFront.setPower(_power);
-                motorLeftBack.setPower(_power);
-
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-            }
-            stopWheels();
-        } else {
-
-            // LEFT
-            telemetry.addData("Robot turning left: ", angle);
-            telemetry.update();
-            //sleep(150);
-
-            while (opModeIsActive() && !isStopRequested() && (((Math.abs(Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle))))) < angle)) {
-                telemetry.addData("turning (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-                telemetry.update();
-
-                double _power = 1.5 * power * ((angle - Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle)))))) / angle);
-                if (_power < 0.3) _power = 0.3;
-                motorLeftFront.setPower(_power);
-                motorRightBack.setPower(_power);
-                motorRightFront.setPower(_power);
-                motorLeftBack.setPower(_power);
-
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            }
-            stopWheels();
-
-        }
-        //stopRobot and change modes back to normal
-        telemetry.addData("turned (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-        telemetry.update();
-
-        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-
-    }
-    public void dummyRotate(double power, int direction, double angle){
-        telemetry.addData("Rotating :D - Neel HIGH IQ", "ROTATING");
-    }
-    public void dummyStrafeRight(double power, int direction, float value){
-        telemetry.addData("strafing right :D - Neel high iq", "Move right :(");
-    }
-    public void dummyStrafeLeft(double power, int direction, float value){
-        telemetry.addData("strafing left :D - Neel high iq", "Move Left :-(");
-    }
-    public void dummyStraight(double power, int direction, float value){
-        telemetry.addData("Moving straight upwards :D - Neel high iq","MMMMMOVE up por favor");
-    }
-    public void center (float x, float y, double angle){
-        dummyRotate(1,-1,angle);
-        if (x<0){
-            dummyStrafeLeft(0.5, -1, Math.abs(x));
-        }
-        if(x>0){
-            dummyStrafeRight(0.5,1,Math.abs(x));
-        }
-        if(y>0){
-            dummyStraight(0.75,1,Math.abs(y)-6);
-        }
-    }
-
-//    public void dummyState1Grab(){
-//        testFront = 90;
-//        testBack = 90;
-//        testTop = 0;
-//        //testFrontt.SetPosition
-//    }
-//    public void dummyState2Open(){
-//        testFront = 180;
-//        testBack = 90;
-//        testTop = 0;
-//    }
-//    public void dummyState3TurnedGrab(){
-//        testFront = 90;
-//        testBack = 90;
-//        testTop = 90;
-//    }
-//    public void dummyState4Folded(){
-//        testFront = 10;
-//        testBack = 10;
-//        testTop = 0;
-//    }
-    public void SlowerRotate(double power, int direction, double angle) {
-
-        //angle -=angle*.35;
-        power /= 3;
-
-        imu.initialize(parameters);
-        if (direction == -1.0) {
-            // LEFT
-            //Clockwise
-            motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        } else {
-            // RIGHT
-            //Counter Clockwise
-            motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
-            motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-
-        motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
-        motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
-        motorRightBack.setMode(STOP_AND_RESET_ENCODER);
-        motorRightFront.setMode(STOP_AND_RESET_ENCODER);
-
-        motorLeftBack.setMode(RUN_WITHOUT_ENCODER);
-        motorLeftFront.setMode(RUN_WITHOUT_ENCODER);
-        motorRightBack.setMode(RUN_WITHOUT_ENCODER);
-        motorRightFront.setMode(RUN_WITHOUT_ENCODER);
-
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-        telemetry.addData("Robot turning", "Yay!");
-        telemetry.update();
-        //sleep(150);
-
-        int counter = 0;
-
-        if (direction == 1) {
-
-            // RIGHT
-            telemetry.addData("Robot turning right: ", angle);
-            telemetry.update();
-            //sleep(150);
-            while (opModeIsActive() && !isStopRequested() && (Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle))))) < angle) &&
-                    counter++ < 50) {
-                //counter++;
-                /*if(System.currentTimeMillis()-startTime > 29500 ){
-                    break;
-                }*/
-                telemetry.update();
-                telemetry.addData("turning (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-                telemetry.update();
-
-
-                double _power = 1.5 * power * ((angle - Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle)))))) / angle);
-
-                // if(_power < 0.3) _power = 0.3;
-
-                motorLeftFront.setPower(_power);
-                motorRightBack.setPower(_power);
-                motorRightFront.setPower(_power);
-                motorLeftBack.setPower(_power);
-
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-
-            }
-            stopWheels();
-        } else {
-
-            // LEFT
-            telemetry.addData("Robot turning left: ", angle);
-            telemetry.update();
-            //sleep(150);
-
-            while (opModeIsActive() && !isStopRequested() && (((Math.abs(Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle))))) < angle) &&
-                    counter++ < 50) {
-                telemetry.addData("turning (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-                telemetry.update();
-
-                double _power = 1.5 * power * ((angle - Math.abs(((Double.parseDouble(formatAngle(angles.angleUnit, angles.firstAngle)))))) / angle);
-                //  if(_power < 0.3) _power = 0.3;
-                motorLeftFront.setPower(_power);
-                motorRightBack.setPower(_power);
-                motorRightFront.setPower(_power);
-                motorLeftBack.setPower(_power);
-
-                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            }
-            stopWheels();
-
-        }
-        //stopRobot and change modes back to normal
-        telemetry.addData("turned (imu degrees)", formatAngle(angles.angleUnit, angles.firstAngle));
-        telemetry.update();
-
-        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -728,6 +480,107 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
+    //Distance Sensor Move
+    double P_DS_COEFF = 0.1;
+    double P_DS_TURN_COEFF = 0.1;
+    double P_DS_ERR_MARGIN = 2;
+
+    public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop) {
+
+        if (DEBUG) System.out.println("14564dbg DSMove: fwd " + fwd_dist + " side " + side_dist +
+                                      " useLeftSide " + useLeftSide + " reverse " + driveReverse + " brake " + brakeStop);
+
+        Rev2mDistanceSensor ds1;
+        Rev2mDistanceSensor ds2;
+        Rev2mDistanceSensor ff1;
+
+        //if d1 is larger than d2 we want to go clockwise
+        if (useLeftSide) {
+            ds1 = distanceSensor_lb;
+            ds2 = distanceSensor_lf;
+        } else {
+            ds1 = distanceSensor_rf;
+            ds2 = distanceSensor_rb;
+        }
+
+        if(driveReverse) {
+            ff1 = distanceSensor_bbr;
+        }
+        else {
+            ff1 = distanceSensor_ffl;
+        }
+
+        double fd1 = DSRead(ff1);
+        double sd1 = DSRead(ds1);
+        double sd2 = DSRead(ds2);
+
+
+        double counter = 0;
+
+        int stall_counter = 0;
+        double prev_pos = motorLeftFront.getCurrentPosition();
+
+
+        while (opModeIsActive() && !isStopRequested()) {
+
+            idle();
+
+            counter++;
+
+            double fwd_error = fd1 - fwd_dist ;
+            double side_error;
+            if (useLeftSide)
+                side_error = -1 * (sd1 - side_dist);
+            else
+                side_error = sd1 - side_dist;
+
+            if ((Math.abs(fwd_error) < P_DS_ERR_MARGIN) && (Math.abs(side_error) < P_DS_ERR_MARGIN)) {
+                if(brakeStop) {
+                    stopWheels();
+                }
+                break;
+            }
+
+            double fwd_pwr = Range.clip(fwd_error * P_DS_COEFF, -1, 1);
+            double side_pwr = Range.clip(side_error * P_DS_COEFF, -1, 1);
+
+            double turn_pwr = (sd1-sd2) * P_DS_TURN_COEFF;
+
+            if(driveReverse) {
+                fwd_pwr = -1 * fwd_pwr;
+            }
+
+            while(Math.abs(fwd_pwr) < 0.2) {
+                fwd_pwr *= 1.2;
+            }
+
+            if (DEBUG) System.out.println("14564dbg DSMove: fwd_err " + fwd_error + " side_err " + side_error + " turn " + turn_pwr);
+
+            //vectorCombine(side_pwr, fwd_pwr, turn_pwr);
+
+            fd1 = DSRead(ff1);
+
+            if (DEBUG) System.out.println("14564dbg DSMove: fd1  " + fd1);
+
+            sd1 = DSRead(ds1);
+            if((counter%3) == 0)
+                sd2 = DSRead(ds2);
+
+            double curr_pos = motorLeftFront.getCurrentPosition();
+            if (prev_pos == curr_pos) {
+                stall_counter++;
+            } else {
+                stall_counter = 0;
+                prev_pos = curr_pos;
+            }
+
+            if (stall_counter > 10) {
+                if (DEBUG) System.out.println("14564dbg DSMove: Stall detected");
+                break;
+            }
+        }
+    }
+
     public void straight(double power, int direction, double distance) {
 
 //        distance /= 2.25;
@@ -943,18 +796,24 @@ public class Autonomous2020 extends Teleop2020  {
 
     double DSRead(Rev2mDistanceSensor ds) {
 
-        if(opModeIsActive() && !isStopRequested())
-            return ds.getDistance(DistanceUnit.CM);
-        else
+        if(opModeIsActive() && !isStopRequested()) {
+            double dist = ds.getDistance(DistanceUnit.CM);
+            if (dist > 180 )
+                dist = ds_prev;
+            else
+                ds_prev = dist;
+
+            return dist / 2.54;
+        } else
             return 0 ;
 
     }
 
     public void makeParallelLeft(double distance_from_wall) {
-        double sensor_gap = 32.5;
+        double sensor_gap = 16.5;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double dis1 = DSRead(distanceSensor_lb) / 2.54;
-        double dis2 = DSRead(distanceSensor_lf) / 2.54;
+        double dis1 = DSRead(distanceSensor_lb);
+        double dis2 = DSRead(distanceSensor_lf);
         double dist = (dis1 + dis2)/2;
 
         if(DEBUG) System.out.println("14564dbg MP L: Angle " + angles + " lb " + dis1 + " lf " + dis2);
@@ -1000,8 +859,8 @@ public class Autonomous2020 extends Teleop2020  {
 //                telemetry.addData(" theta_", teta);
 //                telemetry.update();
             }
-            dis1 = DSRead(distanceSensor_lb) / 2.54;
-            dis2 = DSRead(distanceSensor_lf) / 2.54;
+            dis1 = DSRead(distanceSensor_lb);
+            dis2 = DSRead(distanceSensor_lf);
             dist = (dis1 + dis2)/2;
         }
         if(distance_from_wall > 0) {
@@ -1019,10 +878,10 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void makeParallelRight(double distance_from_wall) {
 
-        double sensor_gap = 32.5;
+        double sensor_gap = 13.26;
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double dis1 = DSRead(distanceSensor_rb) / 2.54;
-        double dis2 = DSRead(distanceSensor_rf) / 2.54;
+        double dis1 = DSRead(distanceSensor_rb);
+        double dis2 = DSRead(distanceSensor_rf);
         double dist = (dis1 + dis2)/2;
 
         if(DEBUG) System.out.println("14564dbg MP R: Angle " + angles + " rb " + dis1 + " rf " + dis2);
@@ -1066,8 +925,8 @@ public class Autonomous2020 extends Teleop2020  {
 //                telemetry.addData(" theta_", teta);
 //                telemetry.update();
             }
-            dis1 = DSRead(distanceSensor_rb) / 2.54;
-            dis2 = DSRead(distanceSensor_rf) / 2.54;
+            dis1 = DSRead(distanceSensor_rb);
+            dis2 = DSRead(distanceSensor_rf);
             dist = (dis1 + dis2)/2;
         }
         if(distance_from_wall > 0) {
@@ -1083,68 +942,68 @@ public class Autonomous2020 extends Teleop2020  {
         }
     }
 
-    public void makeParallelFront(double distance_from_wall) {
-
-        double sensor_gap = 35.5;
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double dis1 = DSRead(distanceSensor_ffl) / 2.54;
-        double dis2 = DSRead(distanceSensor_ffr) / 2.54;
-        double dist = (dis1 + dis2)/2;
-        if((dist -  distance_from_wall) < 75) {
-            if (DSRead(distanceSensor_ffl) < DSRead(distanceSensor_ffr)) {
-                double theta;
-                //telemetry.addData(" test ", 1);
-
-                double diff1 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
-                double diff2 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
-                double diff3 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
-
-                double diff = (diff1 + diff2 + diff3 ) / 3;
-                double temp = diff / sensor_gap;
-                //telemetry.addData(" test ", 2);
-                //telemetry.update();
-                theta = Math.asin(temp) * 180 / 3.141592;
-//                telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
-//                telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
-//                telemetry.addData(" theta", theta);
-//                telemetry.update();
-                if (theta > 1) {
-
-                    gyroTurnREV(1, angles.firstAngle + theta);
-                }
-
-            } else {
-                double teta;
-                double diff1 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
-                double diff2 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
-                double diff3 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
-                double diff = (diff1 + diff2 + diff3) / 3;
-                double temp = diff / sensor_gap;
-                teta = Math.asin(temp) * 180 / 3.141592;
-                if (teta > 1) {
-                    gyroTurnREV(1, angles.firstAngle - teta);
-                }
-//                telemetry.addData(" ffl_", distanceSensor_ffl.getDistance(DistanceUnit.CM));
-//                telemetry.addData(" ffr_", distanceSensor_ffr.getDistance(DistanceUnit.CM));
-//                telemetry.addData(" theta_", teta);
-//                telemetry.update();
-            }
-            dis1 = DSRead(distanceSensor_ffl) / 2.54;
-            dis2 = DSRead(distanceSensor_ffr) / 2.54;
-            dist = (dis1 + dis2)/2;
-        }
-        if(distance_from_wall > 0) {
-            if (dist < distance_from_wall) {
-                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), false);
-            } else if (dist > distance_from_wall) {
-                if ((dist - distance_from_wall) > 24) {
-                    simpleStrafe(0.8);
-                    makeParallelFront(distance_from_wall);
-                } else
-                    EncoderMoveDist(0.8, dist - distance_from_wall, false);
-            }
-        }
-    }
+//    public void makeParallelFront(double distance_from_wall) {
+//
+//        double sensor_gap = 13.97;
+//        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//        double dis1 = DSRead(distanceSensor_ffl);
+//        double dis2 = DSRead(distanceSensor_ffr);
+//        double dist = (dis1 + dis2)/2;
+//        if((dist -  distance_from_wall) < 75) {
+//            if (DSRead(distanceSensor_ffl) < DSRead(distanceSensor_ffr)) {
+//                double theta;
+//                //telemetry.addData(" test ", 1);
+//
+//                double diff1 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+//                double diff2 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+//                double diff3 = DSRead(distanceSensor_ffr) - DSRead(distanceSensor_ffl);
+//
+//                double diff = (diff1 + diff2 + diff3 ) / 3;
+//                double temp = diff / sensor_gap;
+//                //telemetry.addData(" test ", 2);
+//                //telemetry.update();
+//                theta = Math.asin(temp) * 180 / 3.141592;
+////                telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
+////                telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+////                telemetry.addData(" theta", theta);
+////                telemetry.update();
+//                if (theta > 1) {
+//
+//                    gyroTurnREV(1, angles.firstAngle + theta);
+//                }
+//
+//            } else {
+//                double teta;
+//                double diff1 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+//                double diff2 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+//                double diff3 = DSRead(distanceSensor_ffl) - DSRead(distanceSensor_ffr);
+//                double diff = (diff1 + diff2 + diff3) / 3;
+//                double temp = diff / sensor_gap;
+//                teta = Math.asin(temp) * 180 / 3.141592;
+//                if (teta > 1) {
+//                    gyroTurnREV(1, angles.firstAngle - teta);
+//                }
+////                telemetry.addData(" ffl_", distanceSensor_ffl.getDistance(DistanceUnit.CM));
+////                telemetry.addData(" ffr_", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+////                telemetry.addData(" theta_", teta);
+////                telemetry.update();
+//            }
+//            dis1 = DSRead(distanceSensor_ffl);
+//            dis2 = DSRead(distanceSensor_ffr);
+//            dist = (dis1 + dis2)/2;
+//        }
+//        if(distance_from_wall > 0) {
+//            if (dist < distance_from_wall) {
+//                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), false);
+//            } else if (dist > distance_from_wall) {
+//                if ((dist - distance_from_wall) > 24) {
+//                    simpleStrafe(0.8);
+//                    makeParallelFront(distance_from_wall);
+//                } else
+//                    EncoderMoveDist(0.8, dist - distance_from_wall, false);
+//            }
+//        }
+//    }
 
     class extendThread implements Runnable {
         @Override
@@ -1210,7 +1069,6 @@ public class Autonomous2020 extends Teleop2020  {
                 vu_x = (translation.get(1))/mmPerInch;
                 vu_y = (translation.get(0))/mmPerInch;
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-                center(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
 
                 blockSeen = true;
                 telemetry.addData("reached here", "yes");
