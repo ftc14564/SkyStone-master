@@ -556,7 +556,7 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (DEBUG) System.out.println("14564dbg DSMove: fwd_err " + fwd_error + " side_err " + side_error + " turn " + turn_pwr);
 
-            //vectorCombine(side_pwr, fwd_pwr, turn_pwr);
+            vectorCombine(side_pwr, fwd_pwr, turn_pwr);
 
             fd1 = DSRead(ff1);
 
