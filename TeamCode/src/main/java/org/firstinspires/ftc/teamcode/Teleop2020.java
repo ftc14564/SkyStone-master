@@ -143,7 +143,7 @@ public class Teleop2020 extends LinearOpMode {
 
     double where_x = 0;
     double where_y = 0;
-    double ds_prev = 120;
+    double ds_prev_read = 120;
     FldDirection where_head = FldDirection.Face_Fld_Center;
     boolean isBlueSide = true;
 

@@ -563,7 +563,7 @@ public class Autonomous2020 extends Teleop2020  {
             if (DEBUG) System.out.println("14564dbg DSMove: fd1  " + fd1);
 
             sd1 = DSRead(ds1);
-            if((counter%3) == 0)
+            if((counter%3) == 1)
                 sd2 = DSRead(ds2);
 
             double curr_pos = motorLeftFront.getCurrentPosition();
@@ -797,16 +797,9 @@ public class Autonomous2020 extends Teleop2020  {
     double DSRead(Rev2mDistanceSensor ds) {
 
         if(opModeIsActive() && !isStopRequested()) {
-            double dist = ds.getDistance(DistanceUnit.CM);
-            if (dist > 180 )
-                dist = ds_prev;
-            else
-                ds_prev = dist;
-
-            return dist / 2.54;
+           return ds.getDistance(DistanceUnit.INCH);
         } else
             return 0 ;
-
     }
 
     public void makeParallelLeft(double distance_from_wall) {

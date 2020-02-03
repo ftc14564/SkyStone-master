@@ -73,9 +73,11 @@ public class UnitTest extends Autonomous2020 {
             if (makeparalleltest){
 
                 //gyroTurnDirection(FldDirection.Face_Fld_Foundation);
-                DSMove(1, 20, 30, false, false, true);
+                DSMove(1, 20, 24, false, false, false);
                 //gyroTurnDirection(FldDirection.Face_Fld_Audience);
-                DSMove(1, 20, 10, false,true, true);
+                //DSMove(1, 20, 10, true,false, true);
+
+                DSMove(1, 20, 24, false,true, false);
 
 //               makeParallelRight(20);
 //                makeParallelFront(10);
