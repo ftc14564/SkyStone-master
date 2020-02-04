@@ -57,6 +57,7 @@ public class UnitTest extends Autonomous2020 {
 
         initFn();
 
+        isBlueSide = false;
         //int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         //final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
@@ -69,24 +70,58 @@ public class UnitTest extends Autonomous2020 {
 
             idle();
 
-            boolean makeparalleltest = true;
+
+            boolean makeparalleltest = false;
+            boolean gyroDirectionTest = false;
+            boolean foundationTest = true;
+            boolean dsMoverTest = false;
+
+            if(gyroDirectionTest){
+                isBlueSide = false;
+
+                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                gyroTurnDirection(FldDirection.Face_Fld_Drivers);
+                gyroTurnDirection(FldDirection.Face_Fld_Audience);
+                gyroTurnDirection(FldDirection.Face_Fld_Center);
+                sleep(2000);
+
+                isBlueSide = true;
+
+                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                gyroTurnDirection(FldDirection.Face_Fld_Drivers);
+                gyroTurnDirection(FldDirection.Face_Fld_Audience);
+                gyroTurnDirection(FldDirection.Face_Fld_Center);
+
+                break;
+            }
+
             if (makeparalleltest){
 
-                //gyroTurnDirection(FldDirection.Face_Fld_Foundation);
-                DSMove(1, 20, 24, false, false, false);
-                //gyroTurnDirection(FldDirection.Face_Fld_Audience);
-                //DSMove(1, 20, 10, true,false, true);
-
-                DSMove(1, 20, 24, false,true, false);
-
-//               makeParallelRight(20);
+               makeParallelRight(20);
 //                makeParallelFront(10);
 //                makeParallelLeft(20);
 //                makeParallelFront(10);
                // sleep(2000);
-               //     break;
+                    break;
 
             }
+
+            if (dsMoverTest){
+                //gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+                DSMove(1, 50, 24, false, false, false);
+                //gyroTurnDirection(FldDirection.Face_Fld_Audience);
+                //DSMove(1, 20, 10, true,false, true);
+                DSMove(1, 20, 24, false,true, false);
+            }
+
+            if (foundationTest){
+                isBlueSide = true;
+
+                DS_MoveFoundation();
+                break;
+
+            }
+
 //            telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
 //            telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
 //            telemetry.addData(" rf", distanceSensor_rf.getDistance(DistanceUnit.CM));

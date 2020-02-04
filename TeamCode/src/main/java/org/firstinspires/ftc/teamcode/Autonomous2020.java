@@ -91,7 +91,6 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(DEBUG)  System.out.println("14564dbg gyroTurnREV: " + angle);
 
-
         Orientation prev_angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         int stall_counter = 0;
@@ -216,25 +215,30 @@ public class Autonomous2020 extends Teleop2020  {
     public void gyroTurnDirection(FldDirection dir) {
         where_head = dir;
 
+
         if(isBlueSide) {
             if(dir == FldDirection.Face_Fld_Center)
                 gyroTurnREV(1,0);
             if(dir == FldDirection.Face_Fld_Foundation)
-                gyroTurnREV(1,270);
-            if(dir == FldDirection.Face_Fld_Audience)
                 gyroTurnREV(1,90);
+            if(dir == FldDirection.Face_Fld_Audience)
+                gyroTurnREV(1,270);
             if(dir == FldDirection.Face_Fld_Drivers)
                 gyroTurnREV(1,180);
+            if(dir == FldDirection.Face_Fld_Driver_Diag)
+                gyroTurnREV(1,225);
         }
         else {
             if(dir == FldDirection.Face_Fld_Center)
                 gyroTurnREV(1,0);
             if(dir == FldDirection.Face_Fld_Foundation)
-                gyroTurnREV(1,90);
-            if(dir == FldDirection.Face_Fld_Audience)
                 gyroTurnREV(1,270);
+            if(dir == FldDirection.Face_Fld_Audience)
+                gyroTurnREV(1,90);
             if(dir == FldDirection.Face_Fld_Drivers)
                 gyroTurnREV(1,180);
+            if(dir == FldDirection.Face_Fld_Driver_Diag)
+                gyroTurnREV(1,135);
         }
 
     }
@@ -541,8 +545,8 @@ public class Autonomous2020 extends Teleop2020  {
                 break;
             }
 
-            double fwd_pwr = Range.clip(fwd_error * P_DS_COEFF, -1, 1);
-            double side_pwr = Range.clip(side_error * P_DS_COEFF, -1, 1);
+            double fwd_pwr = Range.clip(fwd_error * P_DS_COEFF*speed, -1, 1);
+            double side_pwr = Range.clip(side_error * P_DS_COEFF*speed, -1, 1);
 
             double turn_pwr = (sd1-sd2) * P_DS_TURN_COEFF;
 
@@ -579,6 +583,54 @@ public class Autonomous2020 extends Teleop2020  {
                 break;
             }
         }
+    }
+
+    public void DS_MoveFoundation(){
+        Rev2mDistanceSensor bb1;
+
+
+
+        foundation.setPosition(FOUNDATION_UP);
+        gyroTurnDirection(FldDirection.Face_Fld_Drivers);
+        Boolean useLeftSide = true;
+        if(isBlueSide) {
+            useLeftSide = false;
+        }
+
+        DSMove(1, 24, 20, useLeftSide,false, true);
+
+        bb1 = distanceSensor_bbr;
+
+        double distToFoundation = DSRead(bb1);
+        if (distToFoundation > 20){
+            distToFoundation = 20;
+        }
+
+        EncoderMoveDist(0.5, -(distToFoundation+5), false);
+        //grabbing foundation
+        foundation.setPosition(FOUNDATION_DOWN);
+        sleep(600);
+        //TO DO : CALL AGAIN IF MISSED
+
+        EncoderMoveDist(0.8, 15,false);
+        gyroTurnDirection(FldDirection.Face_Fld_Driver_Diag);
+        EncoderStraight(20);
+
+        gyroTurnDirection(FldDirection.Face_Fld_Audience);
+        foundation.setPosition(FOUNDATION_UP);
+        EncoderMoveDist(0.75, -25,false);
+
+        //DSMove(0.75, 10, 26, useLeftSide, true, true);
+
+        EncoderMoveDist(1, 25,false);
+        if(isBlueSide)
+            makeParallelRight(26);
+        else
+            makeParallelLeft(26);
+
+        EncoderMoveDist(0.75, 20,false);
+
+
     }
 
     public void straight(double power, int direction, double distance) {

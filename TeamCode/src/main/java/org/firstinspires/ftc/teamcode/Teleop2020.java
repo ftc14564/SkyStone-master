@@ -78,6 +78,8 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
     protected static final double LIFT_JUMP_RESOLUTION_DOWN = 1;
     protected static final double LIFT_JUMP_RESOLUTION_UP = 3;
+    protected static final double FOUNDATION_UP = 0;
+    protected static final double FOUNDATION_DOWN = 0.7;
 
     protected static final double LIFT_MAX_INCH = 16;
 
@@ -134,7 +136,8 @@ public class Teleop2020 extends LinearOpMode {
         Face_Fld_Center,
         Face_Fld_Foundation,
         Face_Fld_Audience,
-        Face_Fld_Drivers
+        Face_Fld_Drivers,
+        Face_Fld_Driver_Diag
     }
 
     boolean vuInitDone = false;
@@ -145,7 +148,7 @@ public class Teleop2020 extends LinearOpMode {
     double where_y = 0;
     double ds_prev_read = 120;
     FldDirection where_head = FldDirection.Face_Fld_Center;
-    boolean isBlueSide = true;
+    boolean isBlueSide = false;
 
     BNO055IMU imu;
     Orientation angles;
@@ -882,11 +885,11 @@ public class Teleop2020 extends LinearOpMode {
 //            }
 
                 if (gamepad1.x) {  //position up
-                    foundation.setPosition(0);
+                    foundation.setPosition(FOUNDATION_UP);
 
                 }
                 if (gamepad1.y) {   //position down
-                    foundation.setPosition(0.7);
+                    foundation.setPosition(FOUNDATION_DOWN);
                 }
 
 
