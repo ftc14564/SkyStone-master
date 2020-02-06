@@ -489,7 +489,7 @@ public class Autonomous2020 extends Teleop2020  {
     double P_DS_TURN_COEFF = 0.1;
     double P_DS_ERR_MARGIN = 2;
 
-    public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop) {
+    public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop, double turnDelta) {
 
         if (DEBUG) System.out.println("14564dbg DSMove: fwd " + fwd_dist + " side " + side_dist +
                                       " useLeftSide " + useLeftSide + " reverse " + driveReverse + " brake " + brakeStop);
@@ -532,6 +532,10 @@ public class Autonomous2020 extends Teleop2020  {
             counter++;
 
             double fwd_error = fd1 - fwd_dist ;
+
+            if((!brakeStop) && (fwd_error < 0))
+                break;
+
             double side_error;
             if (useLeftSide)
                 side_error = -1 * (sd1 - side_dist);
@@ -548,7 +552,7 @@ public class Autonomous2020 extends Teleop2020  {
             double fwd_pwr = Range.clip(fwd_error * P_DS_COEFF*speed, -1, 1);
             double side_pwr = Range.clip(side_error * P_DS_COEFF*speed, -1, 1);
 
-            double turn_pwr = (sd1-sd2) * P_DS_TURN_COEFF;
+            double turn_pwr = (sd1-sd2) * P_DS_TURN_COEFF + turnDelta;
 
             if(driveReverse) {
                 fwd_pwr = -1 * fwd_pwr;
@@ -597,7 +601,7 @@ public class Autonomous2020 extends Teleop2020  {
             useLeftSide = false;
         }
 
-        DSMove(1, 24, 20, useLeftSide,false, true);
+        DSMove(1, 24, 20, useLeftSide,false, true, 0);
 
         bb1 = distanceSensor_bbr;
 

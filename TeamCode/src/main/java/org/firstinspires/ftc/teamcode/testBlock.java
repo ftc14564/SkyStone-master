@@ -1170,7 +1170,7 @@ Bytes    16-bit word    Description
 
 
         int count = 0;
-        Boolean doCV = true;
+        Boolean doCV = false;
         while (!isStopRequested()) {
 
             if(doCV) {
@@ -1204,20 +1204,25 @@ Bytes    16-bit word    Description
                                 telemetry.addData("Open CV Tray X", stone_x);
                                 telemetry.addData("Open CV Tray Y", stome_y);
                                 telemetry.update();
-                                System.out.println(" 14564dbg StoneWrangler X " + stone_x + " y " + stome_y);
+                                System.out.println(" 14564dbg Stone Wrangler X " + stone_x + " y " + stome_y);
 
                                 String filePath = new SimpleDateFormat("'/sdcard/FIRST/pic'yyyyMMddHHmmss'.png'").format(new Date());
                                 Date currentDate = new Date();
                                 long diffInMS = Math.abs(currentDate.getTime() - dtLastTimePic.getTime());
                                 //mat = stoneWrangler.getVisualization();
                                 if (!mat.empty()) {
-                                    if (diffInMS > 2000) {
-                                           Imgcodecs.imwrite(filePath, mat);
-                                           System.out.println("14564dbg Writing frame as" + filePath);
-                                           dtLastTimePic = new Date();
+                                    if (diffInMS > 20) {
+                                        Imgcodecs.imwrite(filePath, mat);
+                                        System.out.println("14564dbg Writing frame as" + filePath);
+                                        dtLastTimePic = currentDate;
                                     }
                                 }
+                                else {
+                                    System.out.println("14564dbg mat is empty");
+                                }
 
+                            } else {
+                                System.out.println("14564dbg rgb is null");
                             }
                         }
                     }
@@ -1241,7 +1246,7 @@ Bytes    16-bit word    Description
             targetVisible = false;
             for (VuforiaTrackable trackable : allTrackables) {
                 if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                    telemetry.addData("Visible Target", trackable.getName());
+                    telemetry.addData("Visible Target ", trackable.getName());
                     targetVisible = true;
 
                     // getUpdatedRobotLocation() will return null if no new information is available since

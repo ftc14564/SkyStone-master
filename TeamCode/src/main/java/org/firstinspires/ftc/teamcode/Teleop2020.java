@@ -78,8 +78,33 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double REV_CORE_HEX_TICKS_PER_INCH = 47.127;
     protected static final double LIFT_JUMP_RESOLUTION_DOWN = 1;
     protected static final double LIFT_JUMP_RESOLUTION_UP = 3;
-    protected static final double FOUNDATION_UP = 0;
-    protected static final double FOUNDATION_DOWN = 0.7;
+    protected static final double FOUNDATION_UP = 0.1;
+    protected static final double FOUNDATION_DOWN = 0.67;
+    protected static final double SIDE_ARM_OPEN = 0.5;
+    protected static final double SIDE_ARM_HOME = 0;
+    protected static final double SIDE_ARM_BASE_HOME = 0.9;
+    protected static final double SIDE_ARM_LIFTED = 0.2;
+    protected static final double SIDE_ARM_BASE_LIFTED = 0.7;
+    protected static final double SIDE_ARM_DROP = 0.1;
+    protected static final double SIDE_ARM_BASE_THROW = 0.6;
+    protected static final double SIDE_ARM_GRAB = 0.8;
+    protected static final double SIDE_ARM_BASE_GRAB = 0.8;
+
+    enum SideArmState {
+        HOME,
+        PRE_GRAB,
+        GRAB,
+        GRAB_HOLD_HIGH,
+        THROW
+    }
+
+
+
+
+
+
+
+
 
     protected static final double LIFT_MAX_INCH = 16;
 
@@ -502,15 +527,17 @@ public class Teleop2020 extends LinearOpMode {
         motorLeftBack.setPower(c - turn);
         motorRightBack.setPower(d + turn);
 
-        telemetry.addData("x:", x);
-        telemetry.addData("y:", y);
+        if(DEBUG) System.out.println("vectorCombine a " + " b " + b + " c " + c + " d " + d );
 
-        telemetry.addData("a:", a);
-        telemetry.addData("b:", b);
-        telemetry.addData("c:", c);
-        telemetry.addData("d:", d);
-
-        telemetry.update();
+//        telemetry.addData("x:", x);
+//        telemetry.addData("y:", y);
+//
+//        telemetry.addData("a:", a);
+//        telemetry.addData("b:", b);
+//        telemetry.addData("c:", c);
+//        telemetry.addData("d:", d);
+//
+//        telemetry.update();
     }
 
     public void setLiftPosition(double position){
@@ -568,6 +595,7 @@ public class Teleop2020 extends LinearOpMode {
 
         lift.setMode(RUN_WITHOUT_ENCODER);
         lift.setDirection(DcMotorSimple.Direction.FORWARD);
+
         double ticks = inches * REV_CORE_HEX_TICKS_PER_INCH;
 
         if ((Math.abs(lift.getCurrentPosition()) < Math.abs(ticks))) {
@@ -657,6 +685,42 @@ public class Teleop2020 extends LinearOpMode {
         }
     }
 
+
+    public void sideArmSetState(SideArmState state)
+    {
+
+
+        if (state == SideArmState.HOME) { //GRABBER OPEN FOR COLLECTION
+            sideArm.setPosition(SIDE_ARM_HOME);
+            sideArmBase.setPosition(SIDE_ARM_BASE_HOME);
+        }
+
+        if (state == SideArmState.PRE_GRAB) { //GRABBER OPEN FOR COLLECTION
+            sideArm.setPosition(SIDE_ARM_OPEN);
+            sideArmBase.setPosition(SIDE_ARM_BASE_HOME);
+        }
+
+        if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND
+            sideArm.setPosition(SIDE_ARM_GRAB);
+            sideArmBase.setPosition(SIDE_ARM_BASE_GRAB);
+        }
+
+        if(state == SideArmState.GRAB_HOLD_HIGH){  //BLOCK LIFTED OFF GROUND
+            sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - 0.1);
+            for (double i = 0.0 ; i<0.35;i+=0.05) {
+                sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - (0.1+i));
+                sideArm.setPosition(SIDE_ARM_GRAB - i*4/5);
+            }
+        }
+
+        if (state == SideArmState.THROW) { //DROP BLOCK
+            sideArm.setPosition(SIDE_ARM_DROP);
+            sideArmBase.setPosition(SIDE_ARM_BASE_THROW);
+        }
+
+
+
+    }
 
     @Override
     public void runOpMode() {
@@ -810,27 +874,27 @@ public class Teleop2020 extends LinearOpMode {
 //                 grab_back.setPosition(1);
 //            }
 
-                if (gamepad1.dpad_left) { //GRABBER OPEN FOR COLLECTION
-                    sideArm.setPosition(0.65);
-                    sideArmBase.setPosition(0.9);
-                }
+                if (gamepad1.dpad_left) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
+                    if (gamepad1.left_trigger > 0.5) {
+                        sideArmSetState(SideArmState.HOME);
 
-                if(gamepad1.dpad_up){  //BLOCK LIFTED OFF GROUND
-                    for (double i = 0.0 ; i<0.4;i+=0.05) {
-                        sideArmBase.setPosition(0.7 - i);
-                        sideArm.setPosition(0.2 + i/2);
+                    } else {
+                        sideArmSetState(SideArmState.PRE_GRAB);
                     }
                 }
-                if (gamepad1.dpad_right) { //DROP BLOCK
-                    sideArm.setPosition(0.7);
-                    sideArmBase.setPosition(0.7);
+
+                if(gamepad1.dpad_down){  //BLOCK GRAB
+                    sideArmSetState(SideArmState.GRAB);
+                }
+                if(gamepad1.dpad_up) {  //BLOCK HOLD HIGH
+                    sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
                 }
 
-                if(gamepad1.dpad_down){  //BLOCK GRABBED BUT ON GROUND
-                    sideArmBase.setPosition(1);
-                    sideArm.setPosition(0.2);
-
+                if(gamepad1.dpad_right) {  //BLOCK HOLD HIGH
+                    sideArmSetState(SideArmState.THROW);
                 }
+
+
 
                 if (gamepad2.dpad_down) {               //GRABBED POSITION
                     grab_front.setPosition(0.4); //More than 90 degrees to add pressure
@@ -849,7 +913,6 @@ public class Teleop2020 extends LinearOpMode {
                     grab_front.setPosition(0.7);           //AND LIFT TO NOT HIT BLOCK
                     grab_back.setPosition(0.4);
 
-                    lift.setDirection(DcMotorSimple.Direction.FORWARD);
                     liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);
 
                 }
@@ -932,6 +995,8 @@ public class Teleop2020 extends LinearOpMode {
             lift.setPower(0);
             lift_assist.setPower(0);
             telemetry.addData("lift encoder value", lift.getCurrentPosition());
+
+
 
 
         }
