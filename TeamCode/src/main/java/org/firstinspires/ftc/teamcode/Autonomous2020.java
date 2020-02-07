@@ -217,28 +217,28 @@ public class Autonomous2020 extends Teleop2020  {
     {
         double angle = 0;
         if(isBlueSide) {
-            if(head == FldDirection.Face_Fld_Center)
-                angle = 0;
-            if(head == FldDirection.Face_Fld_Foundation)
-                angle = 90;
             if(head == FldDirection.Face_Fld_Audience)
-                angle = 270;
-            if(head == FldDirection.Face_Fld_Drivers)
-                angle = 180;
-            if(head == FldDirection.Face_Fld_Driver_Diag)
-                angle = 45;
-        }
-        else {
-            if(head == FldDirection.Face_Fld_Center)
                 angle = 0;
-            if(head == FldDirection.Face_Fld_Foundation)
-                angle = 270;
-            if(head == FldDirection.Face_Fld_Audience)
+            if(head == FldDirection.Face_Fld_Center)
                 angle = 90;
             if(head == FldDirection.Face_Fld_Drivers)
+                angle = 270;
+            if(head == FldDirection.Face_Fld_Foundation)
                 angle = 180;
             if(head == FldDirection.Face_Fld_Driver_Diag)
                 angle = 315;
+        }
+        else {
+            if(head == FldDirection.Face_Fld_Foundation)
+                angle = 0;
+            if(head == FldDirection.Face_Fld_Drivers)
+                angle = 270;
+            if(head == FldDirection.Face_Fld_Center)
+                angle = 90;
+            if(head == FldDirection.Face_Fld_Audience)
+                angle = 180;
+            if(head == FldDirection.Face_Fld_Driver_Diag)
+                angle = 225;
         }
 
         return angle;
