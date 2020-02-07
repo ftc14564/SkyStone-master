@@ -65,7 +65,7 @@ public class Teleop2020 extends LinearOpMode {
 
     double basePower = 0.2;
     protected static final double DEFAULT_POWER_REDUCTION_FACTOR = 0.4;
-    double powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
+    protected double powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
     double turnPowerFactor = 0.6;
     float power = 0;
     float track = 0;
@@ -108,7 +108,13 @@ public class Teleop2020 extends LinearOpMode {
 
     protected static final double LIFT_MAX_INCH = 16;
 
-    protected static final double CAM_OFFSET = -4;
+    protected static final double CAM_SIDE_ARM_OFFSET = -4;
+    protected static final double CAM_TO_FF = 9;
+    protected static final double CAM_TO_BB = 9;
+
+
+    protected static final double FF_DS_TO_SIDE_ARM = 3.5;
+    protected static final double BB_DS_TO_SIDE_ARM = 14.5;
 
 
     protected static boolean USE_VUFORIA = false;
@@ -169,11 +175,13 @@ public class Teleop2020 extends LinearOpMode {
     double vu_y = 0;
     double vu_x = 0;
 
-    double where_x = 0;
-    double where_y = 0;
+    double where_cam_x = 0;
+    double where_cam_y = 0;
     double ds_prev_read = 120;
     FldDirection where_head = FldDirection.Face_Fld_Center;
     boolean isBlueSide = false;
+
+    protected double running_counter = 0;
 
     BNO055IMU imu;
     Orientation angles;
@@ -510,6 +518,24 @@ public class Teleop2020 extends LinearOpMode {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
+
+    public void vectorCombineSimple(double x, double y, double turn) {
+
+
+        double a = powerReductionFactor*(x + y) ;
+        double b = powerReductionFactor*(y - x) ;
+        double c = -powerReductionFactor*(y - x) ;
+        double d = -powerReductionFactor*(x + y) ;
+
+        motorLeftFront.setPower(a + turn);
+        motorRightFront.setPower(b - turn);
+        motorLeftBack.setPower(c - turn);
+        motorRightBack.setPower(d + turn);
+
+        if(DEBUG) System.out.println("14564dbg vectorCombineSimple a " + a + " b " + b + " c " + c + " d " + d );
+
+    }
+
     public void vectorCombine(double x, double y, double turn) {
 
 
@@ -527,7 +553,7 @@ public class Teleop2020 extends LinearOpMode {
         motorLeftBack.setPower(c - turn);
         motorRightBack.setPower(d + turn);
 
-        if(DEBUG) System.out.println("vectorCombine a " + " b " + b + " c " + c + " d " + d );
+        if(DEBUG) System.out.println("14564dbg vectorCombine a " + a + " b " + b + " c " + c + " d " + d );
 
 //        telemetry.addData("x:", x);
 //        telemetry.addData("y:", y);

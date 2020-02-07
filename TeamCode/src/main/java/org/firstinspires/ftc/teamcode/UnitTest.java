@@ -73,8 +73,91 @@ public class UnitTest extends Autonomous2020 {
 
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
-            boolean foundationTest = true;
+            boolean foundationTest = false;
             boolean dsMoverTest = false;
+            boolean encoderMove_test = false;
+            boolean encoderMoveStrafe_test = true;
+
+
+
+            if(encoderMoveStrafe_test) {
+
+                isBlueSide = false;
+                where_head = FldDirection.Face_Fld_Center;
+                powerReductionFactor = 1;
+
+                if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
+                EncoderStrafe(5);
+                if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
+
+                EncoderStrafe(-5);
+
+
+                sleep(1000);
+                if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
+
+                EncoderStrafe(10);
+                if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
+
+                EncoderStrafe(-10);
+                sleep(1000);
+
+                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
+
+                EncoderStrafe(25);
+                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
+
+                EncoderStrafe(-25);
+                sleep(1000);
+
+                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
+                EncoderStrafe(75);
+                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
+
+                EncoderStrafe(-75);
+
+                break;
+            }
+
+            if(encoderMove_test) {
+
+                isBlueSide = false;
+                where_head = FldDirection.Face_Fld_Center;
+                powerReductionFactor = 1;
+
+                if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
+                EncoderStraight(5);
+                if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
+
+                EncoderStraight(-5);
+
+
+                sleep(1000);
+                if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
+
+                EncoderStraight(10);
+                if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
+
+                EncoderStraight(-10);
+                sleep(1000);
+
+                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
+
+                EncoderStraight(25);
+                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
+
+                EncoderStraight(-25);
+                sleep(1000);
+
+                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
+                EncoderStraight(75);
+                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
+
+                EncoderStraight(-75);
+
+                break;
+            }
+
 
             if(gyroDirectionTest){
                 isBlueSide = false;
@@ -193,8 +276,8 @@ public class UnitTest extends Autonomous2020 {
                 gyroTurnREV(1, -45);
             }
             if(gamepad2.dpad_up){
-                where_x =0;
-                where_y=0;
+                where_cam_x =0;
+                where_cam_y=0;
                 isBlueSide = true;
                 EncoderGoto(5,5, 1);
                 EncoderGoto(0,0, 1);
@@ -203,8 +286,8 @@ public class UnitTest extends Autonomous2020 {
 
             }
             if(gamepad2.dpad_down){
-                where_x =0;
-                where_y=0;
+                where_cam_x =0;
+                where_cam_y=0;
                 isBlueSide = false;
                 EncoderGoto(5,5, 1);
                 EncoderGoto(0,0, 1);
