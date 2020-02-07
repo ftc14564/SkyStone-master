@@ -8,7 +8,7 @@ public class Blue_w_foundation extends Autonomous2020 {
     @Override
     public void runOpMode() {
 
-        runAutonomous(true, true);
+        runAutonomousDS(true, true);
     }
 
 }

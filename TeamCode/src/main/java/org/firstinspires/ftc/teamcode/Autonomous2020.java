@@ -226,7 +226,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(dir == FldDirection.Face_Fld_Drivers)
                 gyroTurnREV(1,180);
             if(dir == FldDirection.Face_Fld_Driver_Diag)
-                gyroTurnREV(1,225);
+                gyroTurnREV(1,45);
         }
         else {
             if(dir == FldDirection.Face_Fld_Center)
@@ -238,7 +238,7 @@ public class Autonomous2020 extends Teleop2020  {
             if(dir == FldDirection.Face_Fld_Drivers)
                 gyroTurnREV(1,180);
             if(dir == FldDirection.Face_Fld_Driver_Diag)
-                gyroTurnREV(1,135);
+                gyroTurnREV(1,315);
         }
 
     }
@@ -590,49 +590,51 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void DS_MoveFoundation(){
-        Rev2mDistanceSensor bb1;
+        Rev2mDistanceSensor ff1;
 
 
 
         foundation.setPosition(FOUNDATION_UP);
-        gyroTurnDirection(FldDirection.Face_Fld_Drivers);
-        Boolean useLeftSide = true;
+        gyroTurnDirection(FldDirection.Face_Fld_Center);
+        Boolean useLeftSide = false;
         if(isBlueSide) {
-            useLeftSide = false;
+            useLeftSide = true;
         }
 
-        DSMove(1, 24, 20, useLeftSide,false, true, 0);
+        DSMove(0.8, 26, 20, useLeftSide,true, true, 0);
 
-        bb1 = distanceSensor_bbr;
+        ff1 = distanceSensor_ffl;
 
-        double distToFoundation = DSRead(bb1);
-        if (distToFoundation > 20){
-            distToFoundation = 20;
+        double distToFoundation = DSRead(ff1);
+        if (distToFoundation > 10){
+            distToFoundation = 10;
         }
 
-        EncoderMoveDist(0.5, -(distToFoundation+5), false);
+        if(DEBUG) System.out.println("14564dbg Foundation Dist " + distToFoundation );
+
+        EncoderMoveDist(0.5, (distToFoundation+1), false);
         //grabbing foundation
         foundation.setPosition(FOUNDATION_DOWN);
         sleep(600);
         //TO DO : CALL AGAIN IF MISSED
 
-        EncoderMoveDist(0.8, 15,false);
+        EncoderMoveDist(0.8, -15,false);
         gyroTurnDirection(FldDirection.Face_Fld_Driver_Diag);
-        EncoderStraight(20);
+        EncoderStraight(-20);
 
-        gyroTurnDirection(FldDirection.Face_Fld_Audience);
+        gyroTurnDirection(FldDirection.Face_Fld_Foundation);
         foundation.setPosition(FOUNDATION_UP);
-        EncoderMoveDist(0.75, -25,false);
+        EncoderMoveDist(0.75, 25,false);
 
         //DSMove(0.75, 10, 26, useLeftSide, true, true);
 
-        EncoderMoveDist(1, 25,false);
         if(isBlueSide)
-            makeParallelRight(26);
-        else
             makeParallelLeft(26);
+        else
+            makeParallelRight(26);
 
-        EncoderMoveDist(0.75, 20,false);
+
+        EncoderMoveDist(0.75, -55,false);
 
 
     }
@@ -853,7 +855,13 @@ public class Autonomous2020 extends Teleop2020  {
     double DSRead(Rev2mDistanceSensor ds) {
 
         if(opModeIsActive() && !isStopRequested()) {
-           return ds.getDistance(DistanceUnit.INCH);
+            double dist = ds.getDistance(DistanceUnit.INCH);
+            if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+            if (dist > 300) {
+                dist = ds.getDistance(DistanceUnit.INCH);
+                if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+            }
+            return dist ;
         } else
             return 0 ;
     }
@@ -1390,6 +1398,174 @@ public class Autonomous2020 extends Teleop2020  {
         }
     }
 
+
+
+    Boolean vuFindBlockSideCam(Boolean isBlueSide) {
+        boolean blockSeen = false;
+
+        int i = 0;
+        int moveCount = 0;
+        int retryCount = 0;
+        while (!isStopRequested()) {
+            //START
+            i++;
+            //telemetry.addData("first step called %d times", i);
+
+            // check all the trackable targets to see which one (if any) is visible.
+            targetVisible = false;
+            for (VuforiaTrackable trackable : allTrackables) {
+                if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                    telemetry.addData("Visible Target", trackable.getName());
+                    targetVisible = true;
+
+                    // getUpdatedRobotLocation() will return null if no new information is available since
+                    // the last time that call was made, or if the trackable is not currently visible.
+                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                    if (robotLocationTransform != null) {
+                        lastLocation = robotLocationTransform;
+                    }
+                    break;
+                }
+            }
+
+
+            // Provide feedback as to where the robot is located (if we know).
+            if (targetVisible) {
+                // express position (translation) of robot in inches.
+                VectorF translation = lastLocation.getTranslation();
+                telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+                telemetry.update();
+
+                // express the rotation of the robot in degrees.
+                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+                vu_x = (translation.get(1))/mmPerInch;
+                vu_y = (translation.get(0))/mmPerInch;
+                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+                blockSeen = true;
+                telemetry.addData("reached here", "yes");
+                if(DEBUG) System.out.println("14564dbg seen retry count: " + retryCount);
+
+                double blockDist = vu_x + CAM_OFFSET;
+
+                EncoderMoveDist(0.8, blockDist,false);
+
+                break;
+
+            }
+            else if (retryCount < 5) {
+                retryCount++;
+                if(DEBUG)  System.out.println("14564dbg retry count: " + retryCount);
+                sleep(200);
+                continue;
+            }
+            else {
+                moveCount++;
+                telemetry.addData("No Visible Target", "none");
+                if(isBlueSide){
+                    EncoderMoveDist(0.8, 16,false);
+                }else{
+                    EncoderMoveDist(0.8, -16,false);
+                }
+
+                retryCount=0;
+                if(moveCount > 0)
+                    break;
+                //sleep(1000);
+            }
+
+            telemetry.update();
+
+        }
+
+        return blockSeen;
+    }
+
+
+
+    public void grabAndDropBlock_SideArm() {
+
+
+        makeParallelRight(32);
+
+
+        sideArmSetState(SideArmState.GRAB);
+        sleep(2000);
+        sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+        sleep(2000);
+
+        EncoderStrafe(18);
+
+        if(isBlueSide) {
+            EncoderStraight(-72);
+            gyroTurnDirection(FldDirection.Face_Fld_Audience);
+        }
+        else {
+            EncoderStraight(72);
+        }
+
+
+        DSMove(1, 24, 32, false,false, true, 0);
+        sideArmSetState(SideArmState.THROW);
+        sleep(400);
+
+        EncoderStrafe(6);
+
+
+    }
+
+
+    public void runAutonomousDS(Boolean isBlue, Boolean doFoundation) {
+
+
+        USE_VUFORIA = true;
+
+        isBlueSide = isBlue;
+
+        if(isBlue) {
+            where_head = FldDirection.Face_Fld_Audience;
+        }
+        else {
+            where_head = FldDirection.Face_Fld_Foundation;
+        }
+        where_y = 18;
+        where_x = 36;
+
+
+        Boolean returnForSecond = true;
+        Boolean doParking = true;
+
+        initFn();
+
+        waitForStart();
+
+
+        if(isBlueSide) {
+            DSMove(1, 27, 32, false, false, true, 0);
+        }
+        else {
+            DSMove(1, 27, 32, false, true, true, 0);
+        }
+
+
+        vuFindBlockSideCam(isBlueSide);
+
+
+        double firstSkyStone_X = where_x;
+
+        grabAndDropBlock_SideArm();
+
+
+        if(doFoundation) {
+            DS_MoveFoundation();
+        }
+
+        if (returnForSecond) {
+        }
+
+    }
 
 
 

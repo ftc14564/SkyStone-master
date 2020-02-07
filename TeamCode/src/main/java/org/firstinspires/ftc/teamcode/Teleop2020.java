@@ -108,7 +108,7 @@ public class Teleop2020 extends LinearOpMode {
 
     protected static final double LIFT_MAX_INCH = 16;
 
-    protected static final double CAM_OFFSET = 5;
+    protected static final double CAM_OFFSET = -4;
 
 
     protected static boolean USE_VUFORIA = false;
@@ -890,7 +890,7 @@ public class Teleop2020 extends LinearOpMode {
                     sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
                 }
 
-                if(gamepad1.dpad_right) {  //BLOCK HOLD HIGH
+                if(gamepad1.dpad_right) {  //BLOCK THROW
                     sideArmSetState(SideArmState.THROW);
                 }
 

@@ -8,7 +8,7 @@ public class Red_w_foundation extends Autonomous2020 {
     @Override
     public void runOpMode() {
 
-        runAutonomous(false, true);
+        runAutonomousDS(false, true);
     }
 
 }

@@ -73,8 +73,8 @@ public class UnitTest extends Autonomous2020 {
 
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
-            boolean foundationTest = false;
-            boolean dsMoverTest = true;
+            boolean foundationTest = true;
+            boolean dsMoverTest = false;
 
             if(gyroDirectionTest){
                 isBlueSide = false;
@@ -111,28 +111,37 @@ public class UnitTest extends Autonomous2020 {
                // DSMove(1, 50, 24, false, false, false);
                 //gyroTurnDirection(FldDirection.Face_Fld_Audience);
                 //DSMove(1, 20, 10, true,false, true);
+                sideArmSetState(SideArmState.PRE_GRAB);
                 DSMove(1, 21, 32, false,true, true, 0);
 
-                sleep(1000);
-                DSMove(1, 30, 15, false,false, false,0.2 );
-                DSMove(1, 24, 32, false,false, true, -0.2);
-                sleep(1000);
-                DSMove(1, 30, 15, false,true, false, -0.2);
-                DSMove(1, 13, 32, false,true, true, 0.2);
-                sleep(1000);
-                DSMove(1, 30, 15, false,false, false, 0.2);
-                DSMove(1, 24, 32, false,false, true, -0.2);
-                sleep(1000);
-                DSMove(1, 30, 15, false,true, false, -0.2);
-                DSMove(1, 5, 32, false,true, true, 0.2);
-                sleep(1000);
-                DSMove(1, 30, 15, false,false, false, 0.2);
-                DSMove(1, 24, 32, false,false, true, -0.2);
+                sideArmSetState(SideArmState.GRAB);
+                sleep(600);
+                sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+                sleep(600);
+
+                DSMove(1, 30, 15, false,false, false,0 );
+                DSMove(1, 24, 32, false,false, true, 0);
+                sideArmSetState(SideArmState.THROW);
+                sleep(300);
+
+
+                DSMove(1, 30, 15, false,true, false, 0);
+                sideArmSetState(SideArmState.PRE_GRAB);
+                DSMove(1, 13, 32, false,true, true, 0);
+//                sleep(1000);
+//                DSMove(1, 30, 15, false,false, false, 0.2);
+//                DSMove(1, 24, 32, false,false, true, -0.2);
+//                sleep(1000);
+//                DSMove(1, 30, 15, false,true, false, -0.2);
+//                DSMove(1, 5, 32, false,true, true, 0.2);
+//                sleep(1000);
+//                DSMove(1, 30, 15, false,false, false, 0.2);
+//                DSMove(1, 24, 32, false,false, true, -0.2);
                 break;
             }
 
             if (foundationTest){
-                isBlueSide = true;
+                isBlueSide = false;
 
                 DS_MoveFoundation();
                 break;
