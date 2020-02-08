@@ -106,7 +106,7 @@ public class Teleop2020 extends LinearOpMode {
 
 
 
-    protected static final double LIFT_MAX_INCH = 18.1;
+    protected static final double LIFT_MAX_INCH = 17.8;
 
     protected static final double CAM_SIDE_ARM_OFFSET = -4;
     protected static final double CAM_TO_FF = 7.5;
@@ -574,9 +574,14 @@ public class Teleop2020 extends LinearOpMode {
         telemetry.addData("TargetLift Value", position);
 
         liftPrevPosition = lift.getCurrentPosition();
+
+        if (Math.abs(position) > (LIFT_MAX_INCH*REV_CORE_HEX_TICKS_PER_INCH))
+            position = LIFT_MAX_INCH*REV_CORE_HEX_TICKS_PER_INCH;
+
         double stall_counter = 0;
         while ((lift.getCurrentPosition() < (position - coarseMargin)) && !isStopRequested()){
             idle();
+            stopWheels();
             if(DEBUG) System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
             lift.setPower(1);
             lift_assist.setPower(1);
@@ -597,7 +602,7 @@ public class Teleop2020 extends LinearOpMode {
         while ((lift.getCurrentPosition() < (position - fineMargin)) && !isStopRequested()){
             while((lift.getCurrentPosition() != liftPrevPosition) && !isStopRequested()) {
                 if(DEBUG) System.out.println("B: prev:"+ liftPrevPosition + "curr:" + lift.getCurrentPosition() + "pow:" + liftStallPower);
-
+                stopWheels();
                 lift.setPower(liftStallPower);
                 lift_assist.setPower(liftStallPower);
                 idle();
@@ -888,6 +893,7 @@ public class Teleop2020 extends LinearOpMode {
 
                 if (gamepad2.a){
                     liftStallPower = LIFT_NON_SLIP_POWER;
+                    stopWheels();
                     setLiftPosition(Math.abs(0));
                     liftTarget = 0;
                     powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
@@ -941,16 +947,16 @@ public class Teleop2020 extends LinearOpMode {
                 }
                 if (gamepad2.dpad_up) {               //OPEN FOR COLLECTION POSITION
                     grab_front.setPosition(0.8);
-                    grab_back.setPosition(0.5);
+                    grab_back.setPosition(0.55);
                 }
                 if (gamepad2.dpad_left) {               //Dropping
                     grab_front.setPosition(1);
-                    grab_back.setPosition(0.4);
+                    grab_back.setPosition(0.52);
                 }
 
                 if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
                     grab_front.setPosition(0.7);           //AND LIFT TO NOT HIT BLOCK
-                    grab_back.setPosition(0.4);
+                    grab_back.setPosition(0.52);
 
                     liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);
 
@@ -970,8 +976,8 @@ public class Teleop2020 extends LinearOpMode {
 
                 if (gamepad2.left_bumper) {
 
-                    grab_back.setPosition(0);
-                    grab_front.setPosition(0);
+                    grab_back.setPosition(1);
+                    grab_front.setPosition(1);
 
                 }
 
@@ -1000,21 +1006,21 @@ public class Teleop2020 extends LinearOpMode {
                     liftTarget = liftTarget + (LIFT_JUMP_RESOLUTION_UP * REV_CORE_HEX_TICKS_PER_INCH);
                 }
 
-            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*3) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH) && (gamepad2.left_stick_y < 0.2)) {
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*3) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH) && (gamepad2.left_stick_y < - 0.2)) {
 
                 liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*3;
             }
-            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*8) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.left_stick_y > -0.2)) {
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*8) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.left_stick_y > 0.2)) {
 
                 liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*8;
             }
-            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*13) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y < 0.2)) {
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*13) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y < -0.2)) {
 
                 liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*13;
             }
-            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*18) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y > -0.2)) {
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*17) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y > 0.2)) {
 
-                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*18;
+                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*17;
             }
 
                 if (gamepad2.x) {

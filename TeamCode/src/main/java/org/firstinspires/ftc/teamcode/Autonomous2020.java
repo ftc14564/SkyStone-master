@@ -711,11 +711,12 @@ public class Autonomous2020 extends Teleop2020  {
 
         //DSMove(0.75, 10, 26, useLeftSide, true, true);
 
-        if(isBlueSide)
+        if(isBlueSide) {
             makeParallelLeft(24);
-        else
+        }
+        else {
             makeParallelRight(24);
-
+        }
 
         EncoderStraight(-55);
 
@@ -1018,7 +1019,7 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void makeParallelRight(double distance_from_wall) {
 
-        double sensor_gap = 13.26;
+        double sensor_gap = 14.5;
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double dis1 = DSRead(distanceSensor_rb);
         double dis2 = DSRead(distanceSensor_rf);
@@ -1489,6 +1490,8 @@ public class Autonomous2020 extends Teleop2020  {
         int i = 0;
         int moveCount = 0;
         int retryCount = 0;
+        targetsSkyStone.activate();
+
         while (!isStopRequested()) {
             //START
             i++;
@@ -1537,7 +1540,9 @@ public class Autonomous2020 extends Teleop2020  {
 
 
                 EncoderMoveDist(1, blockDist, false, false, 0);
-                EncoderMoveDist(1, vu_y, true, false, 0);
+                EncoderMoveDist(1, vu_y-1, true, false, 0);
+                where_cam_x += blockDist;
+                where_cam_y += vu_y-1;
 
 //                if(isBlueSide) {
 //                    DSMove(0.6, (where_cam_x-CAM_TO_FF) + blockDist, 32, false, false, true, 0);
@@ -1558,23 +1563,21 @@ public class Autonomous2020 extends Teleop2020  {
                 continue;
             }
             else {
-                moveCount++;
-                telemetry.addData("No Visible Target", "none");
-                if(isBlueSide){
-                    EncoderMoveDist(0.6, 8,false, false, 0);
-                }else{
-                    EncoderMoveDist(0.6, -16,false, false, 0);
-                }
-                EncoderMoveDist(0.8, -10, true, false, 0);
-
-
-                retryCount=0;
-                if(moveCount > 0)
+//                moveCount++;
+//                telemetry.addData("No Visible Target", "none");
+//                if(isBlueSide){
+//                    EncoderMoveDist(0.6, 8,false, false, 0);
+//                }else{
+//                    EncoderMoveDist(0.6, -16,false, false, 0);
+//                }
+//                EncoderMoveDist(0.8, -10, true, false, 0);
+//
+//
+//                retryCount=0;
+//                if(moveCount > 0)
                     break;
                 //sleep(1000);
             }
-
-            telemetry.update();
 
         }
 
@@ -1596,15 +1599,14 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
         sleep(600);
 
-        //EncoderStrafe(12);
-        makeParallelRight(22);
+        EncoderStrafe(12);
+        makeParallelRight(20);
 
 
 
         if(isBlueSide) {
             EncoderMoveDist(1, -84,false, true, 0);
 
-            gyroTurnDirection(FldDirection.Face_Fld_Audience);
             DSMove(1, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
 
         }
@@ -1640,12 +1642,13 @@ public class Autonomous2020 extends Teleop2020  {
         else {
             where_head = FldDirection.Face_Fld_Foundation;
         }
-        where_cam_y = 18;
-        where_cam_x = 40;
+
 
 
         Boolean returnForSecond = true;
-        Boolean doParking = true;
+        if(doFoundation)
+            returnForSecond = false;
+
 
         initFn();
 
@@ -1654,15 +1657,39 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetState(SideArmState.PRE_GRAB);
 
         if(isBlueSide) {
+            where_cam_y = 18;
+            where_cam_x = 40;
             DSMove(1, where_cam_x-CAM_TO_FF, 15, false, false, true, 0, false);
         }
         else {
+            where_cam_y = 18;
+            where_cam_x = 40;
             DSMove(1, where_cam_x-CAM_TO_BB, 15, false, true, true, 0, false);
         }
 
         sleep(200);
-        vuFindBlockSideCam(isBlueSide);
+        Boolean isBlockSeen = vuFindBlockSideCam(isBlueSide);
 
+        if(!isBlockSeen){
+
+
+            if(isBlueSide) {
+                where_cam_y = 32;
+                where_cam_x = (28 - CAM_TO_FF) + CAM_SIDE_ARM_OFFSET;
+                if(where_cam_x < 1)
+                    where_cam_x = 1;
+
+                DSMove(1, where_cam_x, where_cam_y, false, false, true, 0, false);
+            }
+            else {
+                where_cam_y = 32;
+                where_cam_x = (28 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
+                if(where_cam_x < 1)
+                    where_cam_x = 1;
+
+                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
+            }
+        }
 
         double firstSkyStone_X = where_cam_x;
 
@@ -1674,6 +1701,34 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
         if (returnForSecond) {
+
+            if(isBlueSide) {
+                EncoderMoveDist(1, 96,false, true, 0);
+                where_cam_y = 32;
+                where_cam_x = (firstSkyStone_X - 24 - CAM_TO_FF) - CAM_SIDE_ARM_OFFSET;
+                if(where_cam_x < 1)
+                    where_cam_x = 1;
+                DSMove(1, where_cam_x, where_cam_y, false, false, true, 0, false);
+
+            }
+            else {
+                EncoderMoveDist(1, -96,false, true, 0);
+
+                where_cam_y = 32;
+                where_cam_x = (firstSkyStone_X -24 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
+                if(where_cam_x < 1)
+                    where_cam_x = 1;
+                if(DEBUG) System.out.println("14564dbg second wwherex " + where_cam_x + " where " + where_cam_y);
+                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
+
+            }
+            grabAndDropBlock_SideArm();
+
+            if(isBlue)
+                EncoderStraight(55);
+
+            else
+                EncoderStraight(-55);
         }
 
     }
