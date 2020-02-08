@@ -106,11 +106,11 @@ public class Teleop2020 extends LinearOpMode {
 
 
 
-    protected static final double LIFT_MAX_INCH = 16;
+    protected static final double LIFT_MAX_INCH = 18.1;
 
     protected static final double CAM_SIDE_ARM_OFFSET = -4;
-    protected static final double CAM_TO_FF = 9;
-    protected static final double CAM_TO_BB = 9;
+    protected static final double CAM_TO_FF = 7.5;
+    protected static final double CAM_TO_BB = 10.5;
 
 
     protected static final double FF_DS_TO_SIDE_ARM = 3.5;
@@ -168,7 +168,7 @@ public class Teleop2020 extends LinearOpMode {
         Face_Fld_Foundation,
         Face_Fld_Audience,
         Face_Fld_Drivers,
-        Face_Fld_Driver_Diag
+        Face_Fld_Center_Foundation
     }
 
     boolean vuInitDone = false;
@@ -522,15 +522,15 @@ public class Teleop2020 extends LinearOpMode {
     public void vectorCombineSimple(double x, double y, double turn) {
 
 
-        double a = powerReductionFactor*(x + y) ;
-        double b = powerReductionFactor*(y - x) ;
-        double c = -powerReductionFactor*(y - x) ;
-        double d = -powerReductionFactor*(x + y) ;
+        double a = powerReductionFactor*(x + y) + turn;
+        double b = powerReductionFactor*(y - x) - turn;
+        double c = -powerReductionFactor*(y - x) - turn;
+        double d = -powerReductionFactor*(x + y) + turn;
 
-        motorLeftFront.setPower(a + turn);
-        motorRightFront.setPower(b - turn);
-        motorLeftBack.setPower(c - turn);
-        motorRightBack.setPower(d + turn);
+        motorLeftFront.setPower(a);
+        motorRightFront.setPower(b);
+        motorLeftBack.setPower(c);
+        motorRightBack.setPower(d);
 
         if(DEBUG) System.out.println("14564dbg vectorCombineSimple a " + a + " b " + b + " c " + c + " d " + d );
 
@@ -573,13 +573,26 @@ public class Teleop2020 extends LinearOpMode {
 
         telemetry.addData("TargetLift Value", position);
 
+        liftPrevPosition = lift.getCurrentPosition();
+        double stall_counter = 0;
         while ((lift.getCurrentPosition() < (position - coarseMargin)) && !isStopRequested()){
             idle();
             if(DEBUG) System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
             lift.setPower(1);
             lift_assist.setPower(1);
-            position-=1; //to avoid getting stuck at top position
+
+            if (liftPrevPosition == lift.getCurrentPosition()) {
+                stall_counter++;
+            } else {
+                stall_counter = 0;
+                liftPrevPosition = lift.getCurrentPosition();
+            }
+            if (stall_counter > 3) {
+                position = liftPrevPosition;
+                break;
+            }
         }
+        position+=1+fineMargin;
 
         while ((lift.getCurrentPosition() < (position - fineMargin)) && !isStopRequested()){
             while((lift.getCurrentPosition() != liftPrevPosition) && !isStopRequested()) {
@@ -986,6 +999,24 @@ public class Teleop2020 extends LinearOpMode {
 
                     liftTarget = liftTarget + (LIFT_JUMP_RESOLUTION_UP * REV_CORE_HEX_TICKS_PER_INCH);
                 }
+
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*3) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH) && (gamepad2.left_stick_y < 0.2)) {
+
+                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*3;
+            }
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*8) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.left_stick_y > -0.2)) {
+
+                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*8;
+            }
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*13) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y < 0.2)) {
+
+                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*13;
+            }
+            if (((lift.getCurrentPosition() + REV_CORE_HEX_TICKS_PER_INCH*18) < LIFT_MAX_INCH * REV_CORE_HEX_TICKS_PER_INCH)  && (gamepad2.right_stick_y > -0.2)) {
+
+                liftTarget =  liftTarget +  REV_CORE_HEX_TICKS_PER_INCH*18;
+            }
+
                 if (gamepad2.x) {
                     liftTarget = liftTarget - (LIFT_JUMP_RESOLUTION_DOWN * REV_CORE_HEX_TICKS_PER_INCH);
                 }

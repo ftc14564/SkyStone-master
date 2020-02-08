@@ -105,7 +105,7 @@ public class Autonomous2020 extends Teleop2020  {
                     prev_angles = new_angles;
                 }
 
-                if (stall_counter > 10)
+                if (stall_counter > 3)
                     break;
 
                 telemetry.addData("-->", "inside while loop :-(");
@@ -125,7 +125,7 @@ public class Autonomous2020 extends Teleop2020  {
                 prev_angles = new_angles;
             }
 
-            if (stall_counter > 10)
+            if (stall_counter > 3)
                 break;
 
             telemetry.addData("-->", "inside while loop :-(");
@@ -225,8 +225,8 @@ public class Autonomous2020 extends Teleop2020  {
                 angle = 270;
             if(head == FldDirection.Face_Fld_Foundation)
                 angle = 180;
-            if(head == FldDirection.Face_Fld_Driver_Diag)
-                angle = 315;
+            if(head == FldDirection.Face_Fld_Center_Foundation)
+                angle = 135;
         }
         else {
             if(head == FldDirection.Face_Fld_Foundation)
@@ -237,8 +237,8 @@ public class Autonomous2020 extends Teleop2020  {
                 angle = 90;
             if(head == FldDirection.Face_Fld_Audience)
                 angle = 180;
-            if(head == FldDirection.Face_Fld_Driver_Diag)
-                angle = 225;
+            if(head == FldDirection.Face_Fld_Center_Foundation)
+                angle = 45;
         }
 
         return angle;
@@ -249,55 +249,54 @@ public class Autonomous2020 extends Teleop2020  {
 
         double angle = get_where_angle(dir);
 
-
                 gyroTurnREV(1,angle);
     }
 
     public void EncoderStraight(double dist){
-        EncoderMoveDist(1, dist,false);
+        EncoderMoveDist(1, dist,false, false, 0);
     }
 
     public void EncoderGoto(double x, double y, double power) {
         if (!isBlueSide) {
             if (where_head == FldDirection.Face_Fld_Center) {
-                EncoderMoveDist(power, y - where_cam_y, false);
-                EncoderMoveDist(power, x - where_cam_x, true);
+                EncoderMoveDist(power, y - where_cam_y, false, false, 0);
+                EncoderMoveDist(power, x - where_cam_x, true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Foundation) {
-                EncoderMoveDist(power, x - where_cam_x, false);
-                EncoderMoveDist(power, -1 * (y - where_cam_y), true);
+                EncoderMoveDist(power, x - where_cam_x, false, false, 0);
+                EncoderMoveDist(power, -1 * (y - where_cam_y), true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Drivers) {
-                EncoderMoveDist(power, -1 * (y - where_cam_y), false);
-                EncoderMoveDist(power, -1 * (x - where_cam_x), true);
+                EncoderMoveDist(power, -1 * (y - where_cam_y), false, false, 0);
+                EncoderMoveDist(power, -1 * (x - where_cam_x), true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Audience) {
-                EncoderMoveDist(power, -1 * (x - where_cam_x), false);
-                EncoderMoveDist(power, y - where_cam_y, true);
+                EncoderMoveDist(power, -1 * (x - where_cam_x), false, false, 0);
+                EncoderMoveDist(power, y - where_cam_y, true, false, 0);
             }
         }
         if (isBlueSide) {
             if (where_head == FldDirection.Face_Fld_Center) {
-                EncoderMoveDist(power, y - where_cam_y, false);
-                EncoderMoveDist(power, -1*(x - where_cam_x), true);
+                EncoderMoveDist(power, y - where_cam_y, false, false, 0);
+                EncoderMoveDist(power, -1*(x - where_cam_x), true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Audience) {
-                EncoderMoveDist(power, -1*(x - where_cam_x), false);
-                EncoderMoveDist(power, -1 * (y - where_cam_y), true);
+                EncoderMoveDist(power, -1*(x - where_cam_x), false, false, 0);
+                EncoderMoveDist(power, -1 * (y - where_cam_y), true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Drivers) {
-                EncoderMoveDist(power, -1 * (y - where_cam_y), false);
-                EncoderMoveDist(power, x - where_cam_x, true);
+                EncoderMoveDist(power, -1 * (y - where_cam_y), false, false, 0);
+                EncoderMoveDist(power, x - where_cam_x, true, false, 0);
             } else if (where_head == FldDirection.Face_Fld_Foundation) {
-                EncoderMoveDist(power, x - where_cam_x, false);
-                EncoderMoveDist(power, y - where_cam_y, true);
+                EncoderMoveDist(power, x - where_cam_x, false, false, 0);
+                EncoderMoveDist(power, y - where_cam_y, true, false, 0);
             }
         }
     }
 
     public void EncoderStrafe(double dist){
-        EncoderMoveDist(1, dist,true);
+        EncoderMoveDist(1, dist,true, false, 0);
     }
 
     double P_FWD_COEFF = -0.003;
     double FWD_THRESHOLD = 1;
 
-    public void EncoderMoveDist(double speed, double distance, Boolean strafe) {
+    public void EncoderMoveDist(double speed, double distance, Boolean strafe, Boolean gyroCorrection, double turnFactor) {
 
         if(DEBUG) System.out.println("14564dbg EncoderMoveDist: " + distance + "Starfe: " + strafe);
 
@@ -351,6 +350,11 @@ public class Autonomous2020 extends Teleop2020  {
         }
         distance *= -1;
 
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+
         motorLeftBack.setMode(STOP_AND_RESET_ENCODER);
         motorLeftFront.setMode(STOP_AND_RESET_ENCODER);
         motorRightBack.setMode(STOP_AND_RESET_ENCODER);
@@ -374,8 +378,8 @@ public class Autonomous2020 extends Teleop2020  {
 
         //first pass at high speed (if going large dist)
         int stall_counter = 0;
-        if(Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*24) {
-            while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe)) {
+        if(Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) {
+            while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe, gyroCorrection, turnFactor)) {
                 if (prev_pos == motorLeftFront.getCurrentPosition()) {
                     stall_counter++;
                 } else {
@@ -391,7 +395,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         //second pass at low speed for fine granined distance
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF/2, TICKS_PER_INCH_STRAIGHT/2, strafe)) {
+        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF/2, TICKS_PER_INCH_STRAIGHT/4, strafe, gyroCorrection, turnFactor)) {
             if (prev_pos == motorLeftFront.getCurrentPosition()) {
                 stall_counter++;
             }
@@ -408,7 +412,7 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
-    boolean onTargetDist(double speed, double distance, double PCoeff, double distThreshold, Boolean strafe) {
+    boolean onTargetDist(double speed, double distance, double PCoeff, double distThreshold, Boolean strafe, Boolean gyroCorrection, double turnFactor) {
         double error;
         double steer;
         boolean onTarget = false;
@@ -433,21 +437,23 @@ public class Autonomous2020 extends Teleop2020  {
         double weightConstant = 0.98;//this constant will depend on the robot. you need to test experimentally to see which is best
 
 
-        double turn_pwr = 0;
-        if((running_counter++ % 3) == 0) {
-            double curr_angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, DEGREES).firstAngle;
-            turn_pwr = (get_where_angle(where_head) - curr_angle) * 0.1;
+        double turn_pwr = turnFactor;
+        if(gyroCorrection) {
+            if ((running_counter++ % 3) == 0) {
+                double curr_angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, DEGREES).firstAngle;
+                turn_pwr = (get_where_angle(where_head) - curr_angle) * 0.1;
 
-            if(DEBUG) System.out.println("14564dbg where_head: " + where_head + " " + get_where_angle(where_head));
-            if(DEBUG) System.out.println("14564dbg curr_angle: " + curr_angle);
-
-
-            turn_pwr = turn_pwr * -1;
-
+                if (DEBUG)
+                    System.out.println("14564dbg where_head: " + where_head + " " + get_where_angle(where_head));
+                if (DEBUG) System.out.println("14564dbg curr_angle: " + curr_angle);
 
 
-            if(DEBUG) System.out.println("14564dbg turn_pwr: " + turn_pwr);
+                turn_pwr = turn_pwr * -1;
 
+
+                if (DEBUG) System.out.println("14564dbg turn_pwr: " + turn_pwr);
+
+            }
         }
 
         if(strafe) {
@@ -457,7 +463,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         }
         else {
-            while (Math.abs(weightConstant * power) < 0.25)
+            while (Math.abs(weightConstant * power) < 0.2)
                 weightConstant *= 1.2;
         }
 
@@ -546,14 +552,20 @@ public class Autonomous2020 extends Teleop2020  {
     double P_DS_TURN_COEFF = 0.1;
     double P_DS_ERR_MARGIN = 2;
 
-    public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop, double turnDelta) {
+    public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop, double turnDelta, Boolean useFwdEncode) {
 
         if (DEBUG) System.out.println("14564dbg DSMove: fwd " + fwd_dist + " side " + side_dist +
-                                      " useLeftSide " + useLeftSide + " reverse " + driveReverse + " brake " + brakeStop);
+                                      " useLeftSide " + useLeftSide + " reverse " + driveReverse + " brake " + brakeStop + " turnDelta " + turnDelta + " useFdEncode " + useFwdEncode);
 
         Rev2mDistanceSensor ds1;
         Rev2mDistanceSensor ds2;
         Rev2mDistanceSensor ff1;
+
+        motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+
 
         //if d1 is larger than d2 we want to go clockwise
         if (useLeftSide) {
@@ -579,8 +591,12 @@ public class Autonomous2020 extends Teleop2020  {
         double counter = 0;
 
         int stall_counter = 0;
-        double prev_pos = motorLeftFront.getCurrentPosition();
+        double prev_pos = motorLeftFront.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
+        double curr_pos = prev_pos;
+        double target_pos = curr_pos - (fwd_dist);
 
+
+        double fwd_error = 0;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -588,7 +604,14 @@ public class Autonomous2020 extends Teleop2020  {
 
             counter++;
 
-            double fwd_error = fd1 - fwd_dist ;
+            if(useFwdEncode) {
+
+                fwd_error = curr_pos - target_pos;
+
+            }
+            else {
+                fwd_error = fd1 - fwd_dist;
+            }
 
             if((!brakeStop) && (fwd_error < 0))
                 break;
@@ -621,7 +644,7 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (DEBUG) System.out.println("14564dbg DSMove: fwd_err " + fwd_error + " side_err " + side_error + " turn " + turn_pwr);
 
-            vectorCombine(side_pwr, fwd_pwr, turn_pwr);
+            vectorCombineSimple(side_pwr, fwd_pwr, turn_pwr);
 
             fd1 = DSRead(ff1);
 
@@ -631,7 +654,7 @@ public class Autonomous2020 extends Teleop2020  {
             if((counter%3) == 1)
                 sd2 = DSRead(ds2);
 
-            double curr_pos = motorLeftFront.getCurrentPosition();
+            curr_pos = motorLeftFront.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
             if (prev_pos == curr_pos) {
                 stall_counter++;
             } else {
@@ -658,7 +681,7 @@ public class Autonomous2020 extends Teleop2020  {
             useLeftSide = true;
         }
 
-        DSMove(0.8, 26, 20, useLeftSide,true, true, 0);
+        DSMove(0.8, 28, 18, useLeftSide,true, true, 0, false);
 
         ff1 = distanceSensor_ffl;
 
@@ -669,29 +692,32 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(DEBUG) System.out.println("14564dbg Foundation Dist " + distToFoundation );
 
-        EncoderMoveDist(0.5, (distToFoundation+1), false);
+        EncoderStraight( distToFoundation+1);
         //grabbing foundation
         foundation.setPosition(FOUNDATION_DOWN);
         sleep(600);
         //TO DO : CALL AGAIN IF MISSED
 
-        EncoderMoveDist(0.8, -15,false);
-        gyroTurnDirection(FldDirection.Face_Fld_Driver_Diag);
-        EncoderStraight(-20);
+        EncoderMoveDist(1, -15,false, false, 0);
+
+        EncoderMoveDist(1, -15,false, false, 0.35);
+
+        gyroTurnDirection(FldDirection.Face_Fld_Center_Foundation);
+        EncoderMoveDist(1, -30,false, false, 0);
 
         gyroTurnDirection(FldDirection.Face_Fld_Foundation);
         foundation.setPosition(FOUNDATION_UP);
-        EncoderMoveDist(0.75, 25,false);
+        EncoderMoveDist(0.8, 25,false, false, 0);
 
         //DSMove(0.75, 10, 26, useLeftSide, true, true);
 
         if(isBlueSide)
-            makeParallelLeft(26);
+            makeParallelLeft(24);
         else
-            makeParallelRight(26);
+            makeParallelRight(24);
 
 
-        EncoderMoveDist(0.75, -55,false);
+        EncoderStraight(-55);
 
 
     }
@@ -979,13 +1005,13 @@ public class Autonomous2020 extends Teleop2020  {
         }
         if(distance_from_wall > 0) {
             if (dist < distance_from_wall) {
-                EncoderMoveDist(0.8, (distance_from_wall - dist), true);
+                EncoderMoveDist(0.8, (distance_from_wall - dist), true, false, 0);
             } else if (dist > distance_from_wall) {
                 if ((dist - distance_from_wall) > 24) {
                     simpleStrafe(-0.8);
                     makeParallelLeft(distance_from_wall);
                 } else
-                    EncoderMoveDist(0.8, -1 * (dist - distance_from_wall), true);
+                    EncoderMoveDist(0.8, -1 * (dist - distance_from_wall), true, false, 0);
             }
         }
     }
@@ -1045,13 +1071,13 @@ public class Autonomous2020 extends Teleop2020  {
         }
         if(distance_from_wall > 0) {
             if (dist < distance_from_wall) {
-                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), true);
+                EncoderMoveDist(0.8, -1 * (distance_from_wall - dist), true, false, 0);
             } else if (dist > distance_from_wall) {
                 if ((dist - distance_from_wall) > 24) {
                     simpleStrafe(0.8);
                     makeParallelRight(distance_from_wall);
                 } else
-                    EncoderMoveDist(0.8, dist - distance_from_wall, true);
+                    EncoderMoveDist(0.8, dist - distance_from_wall, true, false, 0);
             }
         }
     }
@@ -1291,7 +1317,7 @@ public class Autonomous2020 extends Teleop2020  {
 //            sleep(600);
 //        }
         //step back
-        EncoderMoveDist(0.6, -18,false);
+        EncoderMoveDist(0.6, -18,false, false, 0);
 
         //we always start from camera aligned with end of 5th block (i.e. 5*8 = 40 inch)
         //take to drop zone ( 2 tiles away towards the bridge )
@@ -1322,11 +1348,11 @@ public class Autonomous2020 extends Teleop2020  {
             EncoderStrafe(-6);
 
         foundation.setPosition(0);
-        EncoderMoveDist(0.5, -40,false);
+        EncoderMoveDist(0.5, -40,false, false, 0);
         foundation.setPosition(0.7);
         sleep(500);
         gyroTurnREV(1, 180);
-        EncoderMoveDist(0.5, -25,false);
+        EncoderMoveDist(0.5, -25,false, false, 0);
         foundation.setPosition(0);
         EncoderStrafe(-25);
         EncoderStraight(-18);
@@ -1507,20 +1533,27 @@ public class Autonomous2020 extends Teleop2020  {
 
                 double blockDist = vu_x + CAM_SIDE_ARM_OFFSET;
 
-                if(isBlueSide) {
-                    DSMove(1, (where_cam_x-CAM_TO_FF) + blockDist, 32, false, false, true, 0);
-                }
-                else {
-                    DSMove(1, (where_cam_x-CAM_TO_BB) + blockDist, 32, false, true, true, 0);
-                }
+                if(DEBUG) System.out.println("14564dbg vu vx_x " + vu_x + " blockDist: " + blockDist);
+
+
+                EncoderMoveDist(1, blockDist, false, false, 0);
+                EncoderMoveDist(1, vu_y, true, false, 0);
+
+//                if(isBlueSide) {
+//                    DSMove(0.6, (where_cam_x-CAM_TO_FF) + blockDist, 32, false, false, true, 0);
+//                }
+//                else {
+//                    DSMove(0.6, (where_cam_x-CAM_TO_BB) + blockDist, 32, false, true, true, 0);
+//                }
 
 
                 break;
 
+
             }
             else if (retryCount < 5) {
                 retryCount++;
-                if(DEBUG)  System.out.println("14564dbg retry count: " + retryCount);
+                if(DEBUG)  System.out.println("14564dbg vu retry count: " + retryCount);
                 sleep(200);
                 continue;
             }
@@ -1528,10 +1561,12 @@ public class Autonomous2020 extends Teleop2020  {
                 moveCount++;
                 telemetry.addData("No Visible Target", "none");
                 if(isBlueSide){
-                    EncoderMoveDist(0.8, 16,false);
+                    EncoderMoveDist(0.6, 8,false, false, 0);
                 }else{
-                    EncoderMoveDist(0.8, -16,false);
+                    EncoderMoveDist(0.6, -16,false, false, 0);
                 }
+                EncoderMoveDist(0.8, -10, true, false, 0);
+
 
                 retryCount=0;
                 if(moveCount > 0)
@@ -1542,6 +1577,8 @@ public class Autonomous2020 extends Teleop2020  {
             telemetry.update();
 
         }
+
+        targetsSkyStone.deactivate();
 
         return blockSeen;
     }
@@ -1555,21 +1592,25 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetState(SideArmState.GRAB);
-        sleep(2000);
+        sleep(600);
         sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
-        sleep(2000);
+        sleep(600);
 
-        EncoderStrafe(18);
+        //EncoderStrafe(12);
+        makeParallelRight(22);
+
+
 
         if(isBlueSide) {
-            EncoderStraight(-72);
+            EncoderMoveDist(1, -84,false, true, 0);
+
             gyroTurnDirection(FldDirection.Face_Fld_Audience);
-            DSMove(1, 24-BB_DS_TO_SIDE_ARM, 20, false, true, true, 0);
+            DSMove(1, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
 
         }
         else {
-            EncoderStraight(72);
-            DSMove(1, 24-FF_DS_TO_SIDE_ARM, 20, false, false, true, 0);
+            EncoderMoveDist(1, 84,false, true, 0);
+            DSMove(1, 24-FF_DS_TO_SIDE_ARM, 32, false, false, true, 0, false);
 
         }
 
@@ -1577,8 +1618,8 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetState(SideArmState.THROW);
         sleep(400);
 
-        EncoderStrafe(6);
-
+        EncoderStrafe(8);
+        sideArmSetState(SideArmState.HOME);
 
     }
 
@@ -1590,6 +1631,9 @@ public class Autonomous2020 extends Teleop2020  {
 
         isBlueSide = isBlue;
 
+        powerReductionFactor = 1;
+
+
         if(isBlue) {
             where_head = FldDirection.Face_Fld_Audience;
         }
@@ -1597,7 +1641,7 @@ public class Autonomous2020 extends Teleop2020  {
             where_head = FldDirection.Face_Fld_Foundation;
         }
         where_cam_y = 18;
-        where_cam_x = 36;
+        where_cam_x = 40;
 
 
         Boolean returnForSecond = true;
@@ -1610,13 +1654,13 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetState(SideArmState.PRE_GRAB);
 
         if(isBlueSide) {
-            DSMove(1, where_cam_x-CAM_TO_FF, 20, false, false, true, 0);
+            DSMove(1, where_cam_x-CAM_TO_FF, 15, false, false, true, 0, false);
         }
         else {
-            DSMove(1, where_cam_x-CAM_TO_BB, 20, false, true, true, 0);
+            DSMove(1, where_cam_x-CAM_TO_BB, 15, false, true, true, 0, false);
         }
 
-
+        sleep(200);
         vuFindBlockSideCam(isBlueSide);
 
 

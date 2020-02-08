@@ -69,26 +69,31 @@ public class UnitTest extends Autonomous2020 {
         while (opModeIsActive() && !isStopRequested()) {
 
             idle();
+            powerReductionFactor = 1;
 
 
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
-            boolean foundationTest = false;
+            boolean foundationTest = true;
             boolean dsMoverTest = false;
             boolean encoderMove_test = false;
-            boolean encoderMoveStrafe_test = true;
+            boolean encoderMoveStrafe_test = false;
 
 
 
             if(encoderMoveStrafe_test) {
 
                 isBlueSide = false;
-                where_head = FldDirection.Face_Fld_Center;
-                powerReductionFactor = 1;
+                where_head = FldDirection.Face_Fld_Foundation;
 
+                sideArmSetState(SideArmState.GRAB);
+                sleep(2000);
+                sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+                sleep(2000);
                 if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
                 EncoderStrafe(5);
                 if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
+
 
                 EncoderStrafe(-5);
 
@@ -102,19 +107,19 @@ public class UnitTest extends Autonomous2020 {
                 EncoderStrafe(-10);
                 sleep(1000);
 
-                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
-
-                EncoderStrafe(25);
-                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
-
-                EncoderStrafe(-25);
-                sleep(1000);
-
-                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
-                EncoderStrafe(75);
-                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
-
-                EncoderStrafe(-75);
+//                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
+//
+//                EncoderStrafe(25);
+//                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
+//
+//                EncoderStrafe(-25);
+//                sleep(1000);
+//
+//                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
+//                EncoderStrafe(75);
+//                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
+//
+//                EncoderStrafe(-75);
 
                 break;
             }
@@ -122,58 +127,80 @@ public class UnitTest extends Autonomous2020 {
             if(encoderMove_test) {
 
                 isBlueSide = false;
-                where_head = FldDirection.Face_Fld_Center;
-                powerReductionFactor = 1;
-
-                if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
-                EncoderStraight(5);
-                if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
-
-                EncoderStraight(-5);
+                where_head = FldDirection.Face_Fld_Foundation;
 
 
-                sleep(1000);
-                if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
 
-                EncoderStraight(10);
-                if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
+                EncoderMoveDist(1, -25,false, false, 0.35);
 
-                EncoderStraight(-10);
-                sleep(1000);
 
-                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
+//
+//                if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
+//                EncoderMoveDist(1,4,false, false, 0);
+//               // EncoderStraight(4);
+//                if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
+//                EncoderMoveDist(1,-4, false, false, 0);
+//
+//                gyroTurnDirection(FldDirection.Face_Fld_Center);
+//
+//                if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
+//                EncoderMoveDist(1,4,false, false, 0);
+//                // EncoderStraight(4);
+//                if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
+//                EncoderMoveDist(1,-4, false, false, 0);
+//                //EncoderStraight(-4);
 
-                EncoderStraight(25);
-                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
 
-                EncoderStraight(-25);
-                sleep(1000);
 
-                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
-                EncoderStraight(75);
-                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
 
-                EncoderStraight(-75);
+
+//                sleep(1000);
+//                if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
+//
+//                EncoderStraight(10);
+//                if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
+//
+//                EncoderStraight(-10);
+//                sleep(1000);
+//
+//                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
+//
+//                EncoderStraight(25);
+//                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
+//
+//                EncoderStraight(-25);
+//                sleep(1000);
+//
+//                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
+//                EncoderStraight(75);
+//                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
+//
+//                EncoderStraight(-75);
 
                 break;
             }
 
 
             if(gyroDirectionTest){
-                isBlueSide = false;
-
-                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
-                gyroTurnDirection(FldDirection.Face_Fld_Drivers);
-                gyroTurnDirection(FldDirection.Face_Fld_Audience);
-                gyroTurnDirection(FldDirection.Face_Fld_Center);
-                sleep(2000);
+//                isBlueSide = false;
+//
+//                gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+//                gyroTurnDirection(FldDirection.Face_Fld_Center);
+//                gyroTurnDirection(FldDirection.Face_Fld_Audience);
+//                gyroTurnDirection(FldDirection.Face_Fld_Drivers);
+//
+//                sleep(2000);
+//
+//                gyroTurnDirection(FldDirection.Face_Fld_Audience);
+//
+//                sleep(2000);
 
                 isBlueSide = true;
 
+                gyroTurnDirection(FldDirection.Face_Fld_Center);
                 gyroTurnDirection(FldDirection.Face_Fld_Foundation);
                 gyroTurnDirection(FldDirection.Face_Fld_Drivers);
                 gyroTurnDirection(FldDirection.Face_Fld_Audience);
-                gyroTurnDirection(FldDirection.Face_Fld_Center);
 
                 break;
             }
@@ -190,27 +217,36 @@ public class UnitTest extends Autonomous2020 {
             }
 
             if (dsMoverTest){
+
+
+                DSMove(1, 40, 20, false,false, true, 0, true);
+                DSMove(1, -40, 30, false,false, true, 0, true);
+
+
+
                 //gyroTurnDirection(FldDirection.Face_Fld_Foundation);
                // DSMove(1, 50, 24, false, false, false);
                 //gyroTurnDirection(FldDirection.Face_Fld_Audience);
                 //DSMove(1, 20, 10, true,false, true);
-                sideArmSetState(SideArmState.PRE_GRAB);
-                DSMove(1, 21, 32, false,true, true, 0);
-
-                sideArmSetState(SideArmState.GRAB);
-                sleep(600);
-                sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
-                sleep(600);
-
-                DSMove(1, 30, 15, false,false, false,0 );
-                DSMove(1, 24, 32, false,false, true, 0);
-                sideArmSetState(SideArmState.THROW);
-                sleep(300);
+ //               sideArmSetState(SideArmState.PRE_GRAB);
 
 
-                DSMove(1, 30, 15, false,true, false, 0);
-                sideArmSetState(SideArmState.PRE_GRAB);
-                DSMove(1, 13, 32, false,true, true, 0);
+//                DSMove(1, 21, 32, false,true, true, 0, false);
+
+//                sideArmSetState(SideArmState.GRAB);
+//                sleep(600);
+//                sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+//                sleep(600);
+//
+//                DSMove(1, 30, 15, false,false, false,0, false );
+//                DSMove(1, 24, 32, false,false, true, 0, false);
+//                sideArmSetState(SideArmState.THROW);
+//                sleep(300);
+//
+//
+//                DSMove(1, 30, 15, false,true, false, 0, false);
+//                sideArmSetState(SideArmState.PRE_GRAB);
+//                DSMove(1, 13, 32, false,true, true, 0, false);
 //                sleep(1000);
 //                DSMove(1, 30, 15, false,false, false, 0.2);
 //                DSMove(1, 24, 32, false,false, true, -0.2);
@@ -218,7 +254,7 @@ public class UnitTest extends Autonomous2020 {
 //                DSMove(1, 30, 15, false,true, false, -0.2);
 //                DSMove(1, 5, 32, false,true, true, 0.2);
 //                sleep(1000);
-//                DSMove(1, 30, 15, false,false, false, 0.2);
+//                DSMo ve(1, 30, 15, false,false, false, 0.2);
 //                DSMove(1, 24, 32, false,false, true, -0.2);
                 break;
             }
@@ -303,16 +339,16 @@ public class UnitTest extends Autonomous2020 {
             }
 
             if(gamepad1.dpad_up){
-                EncoderMoveDist(1,10,false);
+                EncoderMoveDist(1,10,false, false, 0);
             }
             if(gamepad1.dpad_down){
-                EncoderMoveDist(1,-10,false);
+                EncoderMoveDist(1,-10,false, false, 0);
             }
             if(gamepad1.dpad_right){
-                EncoderMoveDist(1,5,true);
+                EncoderMoveDist(1,5,true, false, 0);
             }
             if(gamepad1.dpad_left){
-                EncoderMoveDist(1,-5,true);
+                EncoderMoveDist(1,-5,true, false, 0);
             }
 
             
