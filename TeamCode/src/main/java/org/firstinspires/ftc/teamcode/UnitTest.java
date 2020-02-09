@@ -74,8 +74,8 @@ public class UnitTest extends Autonomous2020 {
 
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
-            boolean foundationTest = true;
-            boolean dsMoverTest = false;
+            boolean foundationTest = false;
+            boolean dsMoverTest = true;
             boolean encoderMove_test = false;
             boolean encoderMoveStrafe_test = false;
 
@@ -219,8 +219,8 @@ public class UnitTest extends Autonomous2020 {
             if (dsMoverTest){
 
 
-                DSMove(1, 40, 20, false,false, true, 0, true);
-                DSMove(1, -40, 30, false,false, true, 0, true);
+                DSMove(1, 10, 20, false,false, true, 0, false);
+                DSMove(1, 10, 20, false,true, true, 0, false);
 
 
 
@@ -256,7 +256,7 @@ public class UnitTest extends Autonomous2020 {
 //                sleep(1000);
 //                DSMo ve(1, 30, 15, false,false, false, 0.2);
 //                DSMove(1, 24, 32, false,false, true, -0.2);
-                break;
+                //break;
             }
 
             if (foundationTest){

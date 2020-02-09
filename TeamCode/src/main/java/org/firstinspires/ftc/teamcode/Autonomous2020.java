@@ -378,7 +378,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         //first pass at high speed (if going large dist)
         int stall_counter = 0;
-        if(Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) {
+        if((Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) || (strafe)){
             while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe, gyroCorrection, turnFactor)) {
                 if (prev_pos == motorLeftFront.getCurrentPosition()) {
                     stall_counter++;
@@ -441,7 +441,9 @@ public class Autonomous2020 extends Teleop2020  {
         if(gyroCorrection) {
             if ((running_counter++ % 3) == 0) {
                 double curr_angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, DEGREES).firstAngle;
-                turn_pwr = (get_where_angle(where_head) - Math.abs(curr_angle)) * 0.1;
+                if(curr_angle < -90)
+                    curr_angle += 360;
+                turn_pwr = (get_where_angle(where_head) - curr_angle) * 0.1;
 
                 if (DEBUG)
                     System.out.println("14564dbg where_head: " + where_head + " " + get_where_angle(where_head));
@@ -620,6 +622,11 @@ public class Autonomous2020 extends Teleop2020  {
             else
                 side_error = sd1 - side_dist;
 
+
+            if(side_error > 32)
+                side_error = 32;
+
+
             if ((Math.abs(fwd_error) < P_DS_ERR_MARGIN) && (Math.abs(side_error) < P_DS_ERR_MARGIN)) {
                 if(brakeStop) {
                     stopWheels();
@@ -631,6 +638,10 @@ public class Autonomous2020 extends Teleop2020  {
             double side_pwr = Range.clip(side_error * P_DS_COEFF*speed, -1, 1);
 
             double turn_pwr = (sd1-sd2) * P_DS_TURN_COEFF + turnDelta;
+
+            if((sd1-sd2) > 15)
+                turn_pwr = 0;
+
 
             if(driveReverse) {
                 fwd_pwr = -1 * fwd_pwr;
@@ -1670,12 +1681,12 @@ public class Autonomous2020 extends Teleop2020  {
         if(isBlueSide) {
             EncoderMoveDist(1, -84,false, true, 0);
 
-            DSMove(1, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
+            DSMove(0.5, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
 
         }
         else {
             EncoderMoveDist(1, 84,false, true, 0);
-            DSMove(1, 24-FF_DS_TO_SIDE_ARM, 32, false, false, true, 0, false);
+            DSMove(0.8, 24-FF_DS_TO_SIDE_ARM, 32, false, false, true, 0, false);
 
         }
 
@@ -1739,16 +1750,12 @@ public class Autonomous2020 extends Teleop2020  {
             if(isBlueSide) {
                 where_cam_y = 32;
                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
-                if(where_cam_x < 1)
-                    where_cam_x = 1;
 
                 DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
             }
             else {
                 where_cam_y = 32;
                 where_cam_x = 28 + CAM_SIDE_ARM_OFFSET;
-                if(where_cam_x < 1)
-                    where_cam_x = 1;
 
                 DSMove(1, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
             }
@@ -1769,20 +1776,19 @@ public class Autonomous2020 extends Teleop2020  {
             if(isBlueSide) {
                 EncoderMoveDist(1, 96,false, true, 0);
                 where_cam_y = 32;
+                where_cam_x = 20 - CAM_SIDE_ARM_OFFSET;
 
-                where_cam_x = (20 - CAM_TO_FF) + CAM_SIDE_ARM_OFFSET;
-
-                DSMove(1, where_cam_x, where_cam_y, false, false, true, 0, false);
+                DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
 
             }
             else {
                 EncoderMoveDist(1, -96,false, true, 0);
                 where_cam_y = 32;
-                where_cam_x = (20 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
+                where_cam_x = 20 + CAM_SIDE_ARM_OFFSET;
 
-                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
+                DSMove(0.6, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
             }
-            if(DEBUG) System.out.println("14564dbg second wwherex " + where_cam_x + " where " + where_cam_y);
+            if(DEBUG) System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
 
             grabAndDropBlock_SideArm();
 
@@ -1798,7 +1804,7 @@ public class Autonomous2020 extends Teleop2020  {
             makeParallelRight(21);
         }
 
-        EncoderMoveDist(1, -55,false, true, 0);
+        EncoderMoveDist(1, -60,false, true, 0);
 
     }
 
