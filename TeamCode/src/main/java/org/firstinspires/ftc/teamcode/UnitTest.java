@@ -126,12 +126,12 @@ public class UnitTest extends Autonomous2020 {
 
             if(encoderMove_test) {
 
-                isBlueSide = false;
+                isBlueSide = true;
                 where_head = FldDirection.Face_Fld_Foundation;
 
 
 
-                EncoderMoveDist(1, -25,false, false, 0.35);
+                EncoderMoveDist(1, -25,false, true, 0.35);
 
 
 //

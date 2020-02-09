@@ -25,6 +25,8 @@ public class DS_Test extends Autonomous2020 {
 
             telemetry.addData(" bbr", distanceSensor_bbr.getDistance(DistanceUnit.CM));
             telemetry.addData(" ffl", distanceSensor_ffl.getDistance(DistanceUnit.CM));
+            telemetry.addData(" ffr", distanceSensor_ffr.getDistance(DistanceUnit.CM));
+
             telemetry.addData(" rf", distanceSensor_rf.getDistance(DistanceUnit.CM));
             telemetry.addData(" rb", distanceSensor_rb.getDistance(DistanceUnit.CM));
             telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
@@ -36,6 +38,7 @@ public class DS_Test extends Autonomous2020 {
             if (DEBUG) System.out.println("14564dbg 2m ffr" + distanceSensor_bbr.getDistance(DistanceUnit.CM));
 
             if (DEBUG) System.out.println("14564dbg 2m ffl" + distanceSensor_ffl.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m ffr" + distanceSensor_ffr.getDistance(DistanceUnit.CM));
 
 
             Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);

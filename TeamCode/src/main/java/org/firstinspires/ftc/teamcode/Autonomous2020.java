@@ -441,15 +441,13 @@ public class Autonomous2020 extends Teleop2020  {
         if(gyroCorrection) {
             if ((running_counter++ % 3) == 0) {
                 double curr_angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, DEGREES).firstAngle;
-                turn_pwr = (get_where_angle(where_head) - curr_angle) * 0.1;
+                turn_pwr = (get_where_angle(where_head) - Math.abs(curr_angle)) * 0.1;
 
                 if (DEBUG)
                     System.out.println("14564dbg where_head: " + where_head + " " + get_where_angle(where_head));
                 if (DEBUG) System.out.println("14564dbg curr_angle: " + curr_angle);
 
-
                 turn_pwr = turn_pwr * -1;
-
 
                 if (DEBUG) System.out.println("14564dbg turn_pwr: " + turn_pwr);
 
@@ -580,7 +578,7 @@ public class Autonomous2020 extends Teleop2020  {
             ff1 = distanceSensor_bbr;
         }
         else {
-            ff1 = distanceSensor_ffl;
+            ff1 = distanceSensor_ffr;
         }
 
         double fd1 = DSRead(ff1);
@@ -1584,21 +1582,25 @@ public class Autonomous2020 extends Teleop2020  {
 
                 if(DEBUG) System.out.println("14564dbg vu vx_x " + vu_x + " blockDist: " + blockDist);
                 if(vu_x > 0){
-                    where_cam_x = 44 + CAM_SIDE_ARM_OFFSET ;
+                    if(isBlueSide)
+                        where_cam_x = 36 - CAM_SIDE_ARM_OFFSET ;
+                    else
+                        where_cam_x = 44 + CAM_SIDE_ARM_OFFSET ;
                 }
                 else{
-                    where_cam_x = 36 + CAM_SIDE_ARM_OFFSET;
+                    if(isBlueSide)
+                        where_cam_x = 44 - CAM_SIDE_ARM_OFFSET;
+                    else
+                        where_cam_x = 36 + CAM_SIDE_ARM_OFFSET;
                 }
 //                where_cam_x += blockDist;
                 where_cam_y += vu_y-1;
 
                 if(isBlueSide) {
-                    where_cam_x = where_cam_x - CAM_TO_FF;
-                    DSMove(1, where_cam_x  , 32, false, false, true, 0, false);
+                    DSMove(1, where_cam_x - CAM_TO_FF, 32, false, false, true, 0, false);
                 }
                 else {
-                    where_cam_x = where_cam_x - CAM_TO_BB;
-                    DSMove(1, where_cam_x , 32, false, true, true, 0, false);
+                    DSMove(1, where_cam_x - CAM_TO_BB, 32, false, true, true, 0, false);
 
                 }
 //                EncoderMoveDist(1, blockDist, false, false, 0);
@@ -1656,9 +1658,9 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetState(SideArmState.GRAB);
-        sleep(800);
+        sleep(400);
         sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
-        sleep(600);
+        sleep(400);
 
         EncoderStrafe(12);
         makeParallelRight(21);
@@ -1679,7 +1681,7 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetState(SideArmState.THROW);
-        sleep(400);
+        sleep(200);
 
         EncoderStrafe(8);
         sideArmSetState(SideArmState.HOME);
@@ -1736,19 +1738,19 @@ public class Autonomous2020 extends Teleop2020  {
 
             if(isBlueSide) {
                 where_cam_y = 32;
-                where_cam_x = (28 - CAM_TO_FF) + CAM_SIDE_ARM_OFFSET;
+                where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
                 if(where_cam_x < 1)
                     where_cam_x = 1;
 
-                DSMove(1, where_cam_x, where_cam_y, false, false, true, 0, false);
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
             }
             else {
                 where_cam_y = 32;
-                where_cam_x = (28 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
+                where_cam_x = 28 + CAM_SIDE_ARM_OFFSET;
                 if(where_cam_x < 1)
                     where_cam_x = 1;
 
-                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
+                DSMove(1, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
             }
         }
 
