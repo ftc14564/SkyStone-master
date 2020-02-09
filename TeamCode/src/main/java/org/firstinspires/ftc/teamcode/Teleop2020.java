@@ -86,7 +86,7 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double SIDE_ARM_LIFTED = 0.2;
     protected static final double SIDE_ARM_BASE_LIFTED = 0.7;
     protected static final double SIDE_ARM_DROP = 0.1;
-    protected static final double SIDE_ARM_BASE_THROW = 0.6;
+    protected static final double SIDE_ARM_BASE_THROW = 0.7;
     protected static final double SIDE_ARM_GRAB = 0.8;
     protected static final double SIDE_ARM_BASE_GRAB = 0.8;
 
@@ -94,6 +94,7 @@ public class Teleop2020 extends LinearOpMode {
         HOME,
         PRE_GRAB,
         GRAB,
+        GRAB_HOLD_LOW,
         GRAB_HOLD_HIGH,
         THROW
     }
@@ -749,16 +750,24 @@ public class Teleop2020 extends LinearOpMode {
             sideArmBase.setPosition(SIDE_ARM_BASE_GRAB);
         }
 
-        if(state == SideArmState.GRAB_HOLD_HIGH){  //BLOCK LIFTED OFF GROUND
+        if(state == SideArmState.GRAB_HOLD_LOW){  //BLOCK LIFTED OFF GROUND
             sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - 0.1);
-            for (double i = 0.0 ; i<0.35;i+=0.05) {
+            for (double i = 0.0 ; i<0.25;i+=0.05) {
+                sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - (0.1+i));
+                sideArm.setPosition(SIDE_ARM_GRAB - i*4/5);
+            }
+        }
+
+        if(state == SideArmState.GRAB_HOLD_HIGH){  //BLOCK LIFTED OFF GROUND
+            //sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - 0.1);
+            for (double i = 0 ; i<0.35;i+=0.05) {
                 sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - (0.1+i));
                 sideArm.setPosition(SIDE_ARM_GRAB - i*4/5);
             }
         }
 
         if (state == SideArmState.THROW) { //DROP BLOCK
-            sideArm.setPosition(SIDE_ARM_DROP);
+            sideArm.setPosition(SIDE_ARM_HOME);
             sideArmBase.setPosition(SIDE_ARM_BASE_THROW);
         }
 

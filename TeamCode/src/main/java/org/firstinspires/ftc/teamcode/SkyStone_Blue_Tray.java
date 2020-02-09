@@ -8,7 +8,7 @@ public class SkyStone_Blue_Tray extends Autonomous2020 {
     @Override
     public void runOpMode() {
 
-        runAutonomousTray(true);
+        runAutonomousTrayDS(true);
     }
 
 }

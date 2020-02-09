@@ -698,27 +698,27 @@ public class Autonomous2020 extends Teleop2020  {
         sleep(600);
         //TO DO : CALL AGAIN IF MISSED
 
-        EncoderMoveDist(1, -15,false, false, 0);
 
-        EncoderMoveDist(1, -15,false, false, 0.35);
+        if(isBlueSide) {
+            gyroTurnREV(1,get_where_angle(where_head)+10);
+        }
+        else {
+            gyroTurnREV(1,get_where_angle(where_head)-10);
+
+        }
+        EncoderMoveDist(1, -25,false, false, 0);
+
 
         gyroTurnDirection(FldDirection.Face_Fld_Center_Foundation);
-        EncoderMoveDist(1, -30,false, false, 0);
+        EncoderMoveDist(1, -20,false, false, 0);
 
         gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+        EncoderMoveDist(0.8, 20,false, false, 0);
         foundation.setPosition(FOUNDATION_UP);
-        EncoderMoveDist(0.8, 25,false, false, 0);
 
         //DSMove(0.75, 10, 26, useLeftSide, true, true);
 
-        if(isBlueSide) {
-            makeParallelLeft(24);
-        }
-        else {
-            makeParallelRight(24);
-        }
 
-        EncoderStraight(-55);
 
 
     }
@@ -1335,11 +1335,57 @@ public class Autonomous2020 extends Teleop2020  {
 //        tray_left.setPosition(0.8);
     }
 
-    public void runAutonomousTray(Boolean isBlueSide) {
+    public void runAutonomousTrayDS(Boolean isBlue) {
+
+        isBlueSide = isBlue;
+
+        powerReductionFactor = 1;
 
         initFn();
 
         waitForStart();
+
+
+        makeParallelRight(21);
+
+
+        if(isBlueSide) {
+            where_head = FldDirection.Face_Fld_Audience;
+        }
+        else {
+            where_head = FldDirection.Face_Fld_Foundation;
+        }
+
+        DS_MoveFoundation();
+
+        //park
+
+        if(isBlueSide) {
+            makeParallelLeft(6);
+        }
+        else {
+            makeParallelRight(6);
+        }
+
+        EncoderMoveDist(1, -55,false, true, 0);
+
+        if(isBlueSide) {
+            makeParallelLeft(1);
+        }
+        else {
+            makeParallelRight(1);
+        }
+
+
+    }
+
+        public void runAutonomousTray(Boolean isBlue) {
+
+        initFn();
+
+        waitForStart();
+
+        isBlueSide = isBlue;
 
         //assume that robot is aligned such that it's
         //exactly two tiles away from the bridge towards the tray
@@ -1537,12 +1583,27 @@ public class Autonomous2020 extends Teleop2020  {
                 double blockDist = vu_x + CAM_SIDE_ARM_OFFSET;
 
                 if(DEBUG) System.out.println("14564dbg vu vx_x " + vu_x + " blockDist: " + blockDist);
-
-
-                EncoderMoveDist(1, blockDist, false, false, 0);
-                EncoderMoveDist(1, vu_y-1, true, false, 0);
-                where_cam_x += blockDist;
+                if(vu_x > 0){
+                    where_cam_x = 44 + CAM_SIDE_ARM_OFFSET ;
+                }
+                else{
+                    where_cam_x = 36 + CAM_SIDE_ARM_OFFSET;
+                }
+//                where_cam_x += blockDist;
                 where_cam_y += vu_y-1;
+
+                if(isBlueSide) {
+                    where_cam_x = where_cam_x - CAM_TO_FF;
+                    DSMove(1, where_cam_x  , 32, false, false, true, 0, false);
+                }
+                else {
+                    where_cam_x = where_cam_x - CAM_TO_BB;
+                    DSMove(1, where_cam_x , 32, false, true, true, 0, false);
+
+                }
+//                EncoderMoveDist(1, blockDist, false, false, 0);
+//                EncoderMoveDist(1, vu_y-1, true, false, 0);
+//
 
 //                if(isBlueSide) {
 //                    DSMove(0.6, (where_cam_x-CAM_TO_FF) + blockDist, 32, false, false, true, 0);
@@ -1595,12 +1656,12 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetState(SideArmState.GRAB);
-        sleep(600);
+        sleep(800);
         sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
         sleep(600);
 
         EncoderStrafe(12);
-        makeParallelRight(20);
+        makeParallelRight(21);
 
 
 
@@ -1702,34 +1763,40 @@ public class Autonomous2020 extends Teleop2020  {
 
         if (returnForSecond) {
 
+
             if(isBlueSide) {
                 EncoderMoveDist(1, 96,false, true, 0);
                 where_cam_y = 32;
-                where_cam_x = (firstSkyStone_X - 24 - CAM_TO_FF) - CAM_SIDE_ARM_OFFSET;
-                if(where_cam_x < 1)
-                    where_cam_x = 1;
+
+                where_cam_x = (20 - CAM_TO_FF) + CAM_SIDE_ARM_OFFSET;
+
                 DSMove(1, where_cam_x, where_cam_y, false, false, true, 0, false);
 
             }
             else {
                 EncoderMoveDist(1, -96,false, true, 0);
-
                 where_cam_y = 32;
-                where_cam_x = (firstSkyStone_X -24 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
-                if(where_cam_x < 1)
-                    where_cam_x = 1;
-                if(DEBUG) System.out.println("14564dbg second wwherex " + where_cam_x + " where " + where_cam_y);
-                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
+                where_cam_x = (20 - CAM_TO_BB) + CAM_SIDE_ARM_OFFSET;
 
+                DSMove(1, where_cam_x, where_cam_y, false, true, true, 0, false);
             }
+            if(DEBUG) System.out.println("14564dbg second wwherex " + where_cam_x + " where " + where_cam_y);
+
             grabAndDropBlock_SideArm();
 
-            if(isBlue)
-                EncoderStraight(55);
-
-            else
-                EncoderStraight(-55);
         }
+
+
+        //park
+
+        if(isBlueSide) {
+            makeParallelLeft(21);
+        }
+        else {
+            makeParallelRight(21);
+        }
+
+        EncoderMoveDist(1, -55,false, true, 0);
 
     }
 
