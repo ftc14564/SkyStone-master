@@ -31,14 +31,14 @@ public class DS_Test extends Autonomous2020 {
             telemetry.addData(" rb", distanceSensor_rb.getDistance(DistanceUnit.CM));
             telemetry.addData(" lf", distanceSensor_lf.getDistance(DistanceUnit.CM));
             telemetry.addData(" lb", distanceSensor_lb.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m rf" + distanceSensor_rf.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m rb" + distanceSensor_rb.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m lf" + distanceSensor_lf.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m lb" + distanceSensor_lb.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m ffr" + distanceSensor_bbr.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m rf:" + distanceSensor_rf.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m rb:" + distanceSensor_rb.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m lf:" + distanceSensor_lf.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m lb:" + distanceSensor_lb.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m bbr:" + distanceSensor_bbr.getDistance(DistanceUnit.CM));
 
-            if (DEBUG) System.out.println("14564dbg 2m ffl" + distanceSensor_ffl.getDistance(DistanceUnit.CM));
-            if (DEBUG) System.out.println("14564dbg 2m ffr" + distanceSensor_ffr.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m ffl:" + distanceSensor_ffl.getDistance(DistanceUnit.CM));
+            if (DEBUG) System.out.println("14564dbg 2m ffr:" + distanceSensor_ffr.getDistance(DistanceUnit.CM));
 
 
             Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);

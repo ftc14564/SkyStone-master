@@ -219,8 +219,8 @@ public class UnitTest extends Autonomous2020 {
             if (dsMoverTest){
 
 
-                DSMove(1, 10, 20, false,false, true, 0, false);
-                DSMove(1, 10, 20, false,true, true, 0, false);
+                DSMove(1, 20, 20, false,false, true, 0, false);
+                DSMove(1, 20, 20, false,true, true, 0, false);
 
 
 
