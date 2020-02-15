@@ -7,14 +7,11 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImpl;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.vuforia.Frame;
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
@@ -59,8 +56,11 @@ public class Teleop2020 extends LinearOpMode {
     Servo grab_front;
     DcMotor extend;
     Servo foundation;
-    Servo sideArm;
-    Servo sideArmBase;
+    Servo sideArmWheelRight;
+    Servo sideArmMainRight;
+    Servo sideArmWheelLeft;
+    Servo sideArmMainLeft;
+
 
 
     double basePower = 0.2;
@@ -80,15 +80,28 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double LIFT_JUMP_RESOLUTION_UP = 3;
     protected static final double FOUNDATION_UP = 0.1;
     protected static final double FOUNDATION_DOWN = 0.67;
-    protected static final double SIDE_ARM_OPEN = 0.5;
-    protected static final double SIDE_ARM_HOME = 0;
-    protected static final double SIDE_ARM_BASE_HOME = 0.9;
+    protected static final double SIDE_ARM_WHEEL_OPEN_RIGHT = 0.5;
+    protected static final double SIDE_ARM_WHEEL_OPEN_LEFT = 0.5;
+    protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.6;
+    protected static final double SIDE_ARM_WHEEL_UP_LEFT = 0.4;
+
+    protected static final double SIDE_ARM_MAIN_UP_RIGHT = 1;
+    protected static final double SIDE_ARM_MAIN_UP_LEFT = 0.4;
+    protected static final double SIDE_ARM_MAIN_PRE_LEFT = 0.75;
+
+
     protected static final double SIDE_ARM_LIFTED = 0.2;
     protected static final double SIDE_ARM_BASE_LIFTED = 0.7;
     protected static final double SIDE_ARM_DROP = 0.1;
-    protected static final double SIDE_ARM_BASE_THROW = 0.6;
-    protected static final double SIDE_ARM_GRAB = 0.8;
-    protected static final double SIDE_ARM_BASE_GRAB = 0.8;
+    protected static final double SIDE_ARM_MAIN_DOWN_RIGHT = 0.6;
+    protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 1;
+
+    protected static final double SIDE_ARM_WHEEL_GRAB_RIGHT = 0;
+    protected static final double SIDE_ARM_WHEEL_GRAB_LEFT = 1;
+
+    protected static final double SIDE_ARM_MAIN_HALF_UP_RIGHT = 0.9;
+    protected static final double SIDE_ARM_MAIN_HALF_UP_LEFT = 0.6;
+
 
     enum SideArmState {
         HOME,
@@ -305,8 +318,11 @@ public class Teleop2020 extends LinearOpMode {
         grab_back = hardwareMap.servo.get("grab_back");
         foundation = hardwareMap.servo.get("foundation");
         armPosition = 0;
-        sideArm = hardwareMap.servo.get("sideArm");
-        sideArmBase = hardwareMap.servo.get("sideArmBase");
+        sideArmWheelRight = hardwareMap.servo.get("sideArmWheelRight");
+        sideArmMainRight = hardwareMap.servo.get("sideArmMainRight");
+        sideArmWheelLeft = hardwareMap.servo.get("sideArmWheelLeft");
+        sideArmMainLeft = hardwareMap.servo.get("sideArmMainLeft");
+
 
 
         //grab_front.setPosition(0.1);
@@ -733,47 +749,80 @@ public class Teleop2020 extends LinearOpMode {
             telemetry.addData("Open CV Exception", "none");
         }
     }
-
-
-    public void sideArmSetState(SideArmState state)
+    public void sideArmSetStateLeft(SideArmState state)
     {
 
 
         if (state == SideArmState.HOME) { //GRABBER OPEN FOR COLLECTION
-            sideArm.setPosition(SIDE_ARM_HOME);
-            sideArmBase.setPosition(SIDE_ARM_BASE_HOME);
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_UP_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_UP_LEFT);
         }
 
         if (state == SideArmState.PRE_GRAB) { //GRABBER OPEN FOR COLLECTION
-            sideArm.setPosition(SIDE_ARM_OPEN);
-            sideArmBase.setPosition(SIDE_ARM_BASE_HOME);
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_UP_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_PRE_LEFT);
         }
 
         if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND
-            sideArm.setPosition(SIDE_ARM_GRAB);
-            sideArmBase.setPosition(SIDE_ARM_BASE_GRAB);
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_GRAB_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_DOWN_LEFT);
         }
 
+
         if(state == SideArmState.GRAB_HOLD_LOW){  //BLOCK LIFTED OFF GROUND
-            sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - 0.1);
-            for (double i = 0.0 ; i<0.25;i+=0.05) {
-                sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - (0.1+i));
-                sideArm.setPosition(SIDE_ARM_GRAB - i*4/5);
-            }
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_OPEN_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_UP_LEFT);
         }
 
         if(state == SideArmState.GRAB_HOLD_HIGH){  //BLOCK LIFTED OFF GROUND
-            sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - 0.1);
-            for (double i = 0 ; i<0.35;i+=0.05) {
-                sideArmBase.setPosition(SIDE_ARM_BASE_GRAB - (0.1+i));
-                sideArm.setPosition(SIDE_ARM_GRAB - i*4/5);
-            }
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_GRAB_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_UP_LEFT);
+
         }
 
         if (state == SideArmState.THROW) { //DROP BLOCK
-            sideArm.setPosition(SIDE_ARM_HOME);
-            sleep(100);
-            sideArmBase.setPosition(SIDE_ARM_BASE_THROW);
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_UP_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_HALF_UP_LEFT);
+        }
+
+
+
+    }
+
+    public void sideArmSetStateRight(SideArmState state)
+    {
+
+
+        if (state == SideArmState.HOME) { //GRABBER OPEN FOR COLLECTION
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_UP_RIGHT);
+        }
+
+        if (state == SideArmState.PRE_GRAB) { //GRABBER OPEN FOR COLLECTION
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_DOWN_RIGHT);
+        }
+
+        if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_GRAB_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_DOWN_RIGHT);
+        }
+
+
+        if(state == SideArmState.GRAB_HOLD_LOW){  //BLOCK LIFTED OFF GROUND
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_OPEN_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_UP_RIGHT);
+        }
+
+        if(state == SideArmState.GRAB_HOLD_HIGH){  //BLOCK LIFTED OFF GROUND
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_GRAB_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_UP_RIGHT);
+
+        }
+
+        if (state == SideArmState.THROW) { //DROP BLOCK
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_HALF_UP_RIGHT);
         }
 
 
@@ -933,25 +982,48 @@ public class Teleop2020 extends LinearOpMode {
 //                 grab_back.setPosition(1);
 //            }
 
-                if (gamepad1.dpad_left) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
-                    if (gamepad1.left_trigger > 0.5) {
-                        sideArmSetState(SideArmState.HOME);
+                if (gamepad1.right_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
+                        sideArmSetStateRight(SideArmState.HOME);
+                }
+                if (gamepad1.left_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
+                    sideArmSetStateLeft(SideArmState.HOME);
 
-                    } else {
-                        sideArmSetState(SideArmState.PRE_GRAB);
+                }
+
+                if(gamepad1.right_trigger > 0.5) {
+                    if (gamepad1.dpad_down) {  //BLOCK GRAB
+                        sideArmSetStateRight(SideArmState.GRAB);
+                    }
+                    if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
+                        sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
+                    }
+
+                    if (gamepad1.dpad_right) {  //BLOCK THROW
+                        sideArmSetStateRight(SideArmState.THROW);
+                    }
+                    if (gamepad1.dpad_left) {  //BLOCK THROW
+                        sideArmSetStateRight(SideArmState.PRE_GRAB);
+                    }
+                }
+                if(gamepad1.left_trigger > 0.5) {
+                    if (gamepad1.dpad_down) {  //BLOCK GRAB
+                        sideArmSetStateLeft(SideArmState.GRAB);
+                    }
+                    if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
+                        sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
+                    }
+
+                    if (gamepad1.dpad_right) {  //BLOCK THROW
+                        sideArmSetStateLeft(SideArmState.THROW);
+                    }
+                    if (gamepad1.dpad_left) {  //BLOCK THROW
+                        sideArmSetStateLeft(SideArmState.PRE_GRAB);
                     }
                 }
 
-                if(gamepad1.dpad_down){  //BLOCK GRAB
-                    sideArmSetState(SideArmState.GRAB);
-                }
-                if(gamepad1.dpad_up) {  //BLOCK HOLD HIGH
-                    sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
-                }
 
-                if(gamepad1.dpad_right) {  //BLOCK THROW
-                    sideArmSetState(SideArmState.THROW);
-                }
+
+
 
 
 

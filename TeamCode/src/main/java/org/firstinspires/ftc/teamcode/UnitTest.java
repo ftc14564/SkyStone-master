@@ -86,9 +86,9 @@ public class UnitTest extends Autonomous2020 {
                 isBlueSide = false;
                 where_head = FldDirection.Face_Fld_Foundation;
 
-                sideArmSetState(SideArmState.GRAB);
+                sideArmSetStateLeft(SideArmState.GRAB);
                 sleep(2000);
-                sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+                sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
                 sleep(2000);
                 if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
                 EncoderStrafe(5);

@@ -1671,9 +1671,9 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void grabAndJustDrop_SideArm(){
-        sideArmSetState(SideArmState.GRAB);
+        sideArmSetStateLeft(SideArmState.GRAB);
         sleep(400);
-        sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+        sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         sleep(400);
 
         double dist = 72 + CAM_TO_FF - where_cam_x + 2;
@@ -1690,9 +1690,9 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
 
-        sideArmSetState(SideArmState.THROW);
+        sideArmSetStateLeft(SideArmState.THROW);
         sleep(200);
-        sideArmSetState(SideArmState.HOME);
+        sideArmSetStateLeft(SideArmState.HOME);
 
 
         if(isBlueSide) {
@@ -1714,9 +1714,9 @@ public class Autonomous2020 extends Teleop2020  {
        // makeParallelRight(32);
 
 
-        sideArmSetState(SideArmState.GRAB);
+        sideArmSetStateLeft(SideArmState.GRAB);
         sleep(400);
-        sideArmSetState(SideArmState.GRAB_HOLD_HIGH);
+        sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         sleep(400);
 
         EncoderStrafe(12);
@@ -1737,11 +1737,11 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
 
-        sideArmSetState(SideArmState.THROW);
+        sideArmSetStateLeft(SideArmState.THROW);
         sleep(200);
 
         EncoderStrafe(8);
-        sideArmSetState(SideArmState.HOME);
+        sideArmSetStateLeft(SideArmState.HOME);
 
     }
 
@@ -1772,7 +1772,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         waitForStart();
 
-        sideArmSetState(SideArmState.PRE_GRAB);
+        sideArmSetStateLeft(SideArmState.PRE_GRAB);
 
         if (isBlueSide) {
             where_cam_y = 18;
