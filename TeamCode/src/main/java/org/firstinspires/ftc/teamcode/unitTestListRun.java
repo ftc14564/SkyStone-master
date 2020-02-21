@@ -19,8 +19,8 @@ public class unitTestListRun extends Autonomous2020 {
             EncoderStraight(-12);
             EncoderStrafe(12);
             EncoderStrafe(-12);
-            grab_front.setPosition(0.8);
-            grab_back.setPosition(0.5);
+            grab_right.setPosition(0.8);
+            grab_left.setPosition(0.5);
 
 
         }

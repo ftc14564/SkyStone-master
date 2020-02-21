@@ -58,6 +58,7 @@ public class UnitTest extends Autonomous2020 {
         initFn();
 
         isBlueSide = false;
+
         //int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         //final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
@@ -75,9 +76,10 @@ public class UnitTest extends Autonomous2020 {
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
             boolean foundationTest = false;
-            boolean dsMoverTest = true;
+            boolean dsMoverTest = false;
             boolean encoderMove_test = false;
             boolean encoderMoveStrafe_test = false;
+            boolean avgTest = true;
 
 
 
@@ -216,11 +218,32 @@ public class UnitTest extends Autonomous2020 {
 
             }
 
+            if (avgTest){
+                double rf = DSRead(distanceSensor_rf);
+
+            }
+
             if (dsMoverTest){
 
 
-                DSMove(1, 20, 20, false,false, true, 0, false);
-                DSMove(1, 20, 20, false,true, true, 0, false);
+//                makeParallelRight(28);
+                DSMove(0.5, 20, 20, false,false, true, 0, false);
+//                System.out.println("BBR " + getMovingAverage(distanceSensor_bbr));
+//                System.out.println("FFR " + getMovingAverage(distanceSensor_ffr));
+//                System.out.println("FFl " + getMovingAverage(distanceSensor_ffl));
+//                System.out.println("LB " + getMovingAverage(distanceSensor_lb));
+//                System.out.println("LF " + getMovingAverage(distanceSensor_lf));
+//                System.out.println("RB " + getMovingAverage(distanceSensor_rb));
+//                System.out.println("RF " + getMovingAverage(distanceSensor_rf));
+                DSMove(0.5, 20, 20, false,true, true, 0, false);
+//                System.out.println("BBR " + getMovingAverage(distanceSensor_bbr));
+//                System.out.println("FFR " + getMovingAverage(distanceSensor_ffr));
+//                System.out.println("FFl " + getMovingAverage(distanceSensor_ffl));
+//                System.out.println("LB " + getMovingAverage(distanceSensor_lb));
+//                System.out.println("LF " + getMovingAverage(distanceSensor_lf));
+//                System.out.println("RB " + getMovingAverage(distanceSensor_rb));
+//                System.out.println("RF " + getMovingAverage(distanceSensor_rf));//                break;
+//                DSMove(1, 20, 20, false,true, true, 0, false);
 
 
 
@@ -287,6 +310,14 @@ public class UnitTest extends Autonomous2020 {
 
             telemetry.update();
 
+            if (gamepad1.left_stick_button) {
+                intakeLeft.setPosition(0.5);
+                intakeRight.setPosition(0.5);
+            }
+            if (!(gamepad1.left_stick_x == 0)){
+                intakeLeft.setPosition(0.5+(gamepad1.left_stick_x * 0.5));
+                intakeRight.setPosition(0.5+(gamepad1.left_stick_x * -0.5));
+            }
             if (gamepad2.x) {
 //                armExtended(10);
                 grabCollection();

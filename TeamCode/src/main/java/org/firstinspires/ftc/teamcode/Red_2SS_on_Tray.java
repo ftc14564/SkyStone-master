@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@Autonomous(name = "Red_Two_SS")
-public class Red_Two_SS extends Autonomous2020 {
+@Autonomous(name = "Red_2SS_on_Tray")
+public class Red_2SS_on_Tray extends Autonomous2020 {
 
     @Override
     public void runOpMode() {
 
-        runAutonomousDS(false, false);
+        runAutonomousDS(false, false, false);
     }
 
 }

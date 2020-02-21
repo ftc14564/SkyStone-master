@@ -101,15 +101,20 @@ public class DS_Test extends Autonomous2020 {
         //Adds the two values to get the Y distance from the center of the robot to the wall
         return yPosition;
     }
-    public double expectedPosition(double heading){
+    public double expectedPosition(double heading, boolean isX){
         double sensorValue=0;
         double sensorAngle=0;
         double sensorAngleToCenter=0;
         double sensorToCenter=0;
-        if((!isBlueSide)&&((heading>-90)&&(heading<90))) {
-            sensorValue = distanceSensor_bbr.getDistance(DistanceUnit.INCH);
-            sensorAngle = 180;
-            sensorAngleToCenter = -150;
+        if((!isBlueSide)&&((heading>-45)&&(heading<45))) {
+            if(isX) {
+                sensorValue = distanceSensor_rb.getDistance(DistanceUnit.INCH);
+                sensorAngle = -90;
+            } else {
+                sensorValue = distanceSensor_bbr.getDistance(DistanceUnit.INCH);
+                sensorAngle = 180;
+                sensorAngleToCenter = -150;
+            }
             sensorToCenter = 8.5;
         }
         //-90 is the wall angle

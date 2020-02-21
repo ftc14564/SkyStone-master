@@ -549,8 +549,8 @@ public class Autonomous2020 extends Teleop2020  {
 
     //Distance Sensor Move
     double P_DS_COEFF = 0.01;
-    double P_DS_TURN_COEFF = 0.2;
-    double P_DS_ERR_MARGIN = 2;
+    double P_DS_TURN_COEFF = 0.075;
+    double P_DS_ERR_MARGIN = 1.5; //ORIGINALLY HAD A VALUE OF 2
 
     public void DSMove(double speed, double fwd_dist, double side_dist, Boolean useLeftSide, Boolean driveReverse, Boolean brakeStop, double turnDelta, Boolean useFwdEncode) {
 
@@ -662,6 +662,8 @@ public class Autonomous2020 extends Teleop2020  {
             }
 
             if (DEBUG) System.out.println("14564dbg DSMove: fwd_err " + fwd_error + " side_err " + side_error + " turn " + turn_pwr);
+            if (DEBUG) System.out.println("14564dbg DSMove: fwd_pwr " + fwd_pwr + "side_pwr" + side_pwr);
+
 
             vectorCombineSimple(side_pwr, fwd_pwr, turn_pwr);
 
@@ -955,18 +957,150 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
-    double DSRead(Rev2mDistanceSensor ds) {
-
+    double averagerf = 0;
+    double averagerb = 0;
+    double averagelf = 0;
+    double averagelb = 0;
+    double averageff1 = 0;
+    double averageffr = 0;
+    double averagebbr = 0;
+    int numberOfTimesRead = 30;
+    //making the movingAverage of the last x values a hash define
+    double getMovingAverage(Rev2mDistanceSensor ds){
         if(opModeIsActive() && !isStopRequested()) {
-            double dist = ds.getDistance(DistanceUnit.INCH);
-            if(DEBUG) System.out.println("14564dbg DSRead " + dist);
-            if (dist > 300) {
-                dist = ds.getDistance(DistanceUnit.INCH);
-                if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+            if (ds==distanceSensor_rf){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averagerf == 0){
+                    averagerf = dist;
+                }
+                averagerf = (((averagerf*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("RF " + averagerf);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averagerf;
             }
-            return dist ;
-        } else
-            return 0 ;
+            else if (ds==distanceSensor_rb){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averagerb == 0){
+                    averagerb = dist;
+                }
+                averagerb = (((averagerb*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("RB " + averagerb);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averagerb;
+            }
+            else if (ds==distanceSensor_lf){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averagelf == 0){
+                    averagelf = dist;
+                }
+                averagelf = (((averagelf*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("LF " + averagelf);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averagelf;
+            }
+            else if (ds==distanceSensor_lb){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averagelb == 0){
+                    averagelb = dist;
+                }
+                averagelb = (((averagelb*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("LB " + averagelb);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averagelb;
+            }
+            else if (ds==distanceSensor_ffl){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averageff1 == 0){
+                    averageff1 = dist;
+                }
+                averageff1 = (((averageff1*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("FFL " + averageff1);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averageff1;
+            }
+            else if (ds==distanceSensor_ffr){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averageffr == 0){
+                    averageffr = dist;
+                }
+                averageffr = (((averageffr*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("FFR " + averageffr);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averageffr;
+            }
+            else if (ds==distanceSensor_bbr){
+                double dist = ds.getDistance(DistanceUnit.INCH);
+                if (dist > 300 ) {
+                    dist = ds.getDistance(DistanceUnit.INCH);
+
+                    if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+                }
+                if(averagebbr == 0){
+                    averagebbr = dist;
+                }
+                averagebbr = (((averagebbr*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
+                if(DEBUG) System.out.print("BBR " + averagebbr);
+                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+
+
+
+                return averagebbr;
+            }
+
+
+        }
+        return 0;
+    }
+
+    double DSRead(Rev2mDistanceSensor ds) {
+        return getMovingAverage(ds);
     }
 
     public void makeParallelLeft(double distance_from_wall) {
@@ -1618,10 +1752,10 @@ public class Autonomous2020 extends Teleop2020  {
                 where_cam_y += vu_y-1;
 
                 if(isBlueSide) {
-                    DSMove(1, where_cam_x - CAM_TO_FF, 32, false, false, true, 0, false);
+                    DSMove(0.6, where_cam_x - CAM_TO_FF, 30.5, false, false, true, 0, false);
                 }
                 else {
-                    DSMove(1, where_cam_x - CAM_TO_BB, 32, false, true, true, 0, false);
+                    DSMove(0.6, where_cam_x - CAM_TO_BB, 30.5, false, true, true, 0, false);
 
                 }
 //                EncoderMoveDist(1, blockDist, false, false, 0);
@@ -1746,7 +1880,7 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
 
-    public void runAutonomousDS(Boolean isBlue, Boolean doFoundation) {
+    public void runAutonomousDS(Boolean isBlue, Boolean doFoundation, Boolean dropOnFloor) {
 
 
         USE_VUFORIA = true;
@@ -1791,39 +1925,38 @@ public class Autonomous2020 extends Teleop2020  {
 
 
             if (isBlueSide) {
-                where_cam_y = 32;
+                where_cam_y = 30.5;
                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
-
-                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+                DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
             } else {
-                where_cam_y = 32;
+                where_cam_y = 30.5;
                 where_cam_x = 28 + CAM_SIDE_ARM_OFFSET;
-
-                DSMove(1, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
+                DSMove(0.6, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
             }
         }
-
+        //TEST
+        //sleep(30000);
+       //TEST
         double firstSkyStone_X = where_cam_x;
 
+        grabAndDropBlock_SideArm();
 
         if (doFoundation) {
-            grabAndDropBlock_SideArm();
             DS_MoveFoundation();
 
         } else {
             if (returnForSecond) {
 
-
                 if (isBlueSide) {
 
-                    where_cam_y = 32;
-                    where_cam_x = firstSkyStone_X + 16 ;
+                    where_cam_y = 30.5;
+                    where_cam_x = firstSkyStone_X + 16 - 1 ;// minus 1 for buffer distance
 
                     DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
 
                 } else {
-                    where_cam_y = 32;
-                    where_cam_x = 20 + CAM_SIDE_ARM_OFFSET;
+                    where_cam_y = 30.5;
+                    where_cam_x = 20 + CAM_SIDE_ARM_OFFSET+ 1;// plus 1 for buffer distance
 
                     DSMove(0.6, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
                 }
@@ -1835,17 +1968,16 @@ public class Autonomous2020 extends Teleop2020  {
             }
 
 
-            //park
-
-            if (isBlueSide) {
-                makeParallelLeft(21);
-            } else {
-                makeParallelRight(21);
-            }
-
-            EncoderMoveDist(1, -60, false, true, 0);
-
         }
+        //park
+
+        if (isBlueSide) {
+            makeParallelLeft(23);
+        } else {
+            makeParallelRight(23);
+        }
+
+        EncoderMoveDist(1, -60, false, true, 0);
     }
 
 

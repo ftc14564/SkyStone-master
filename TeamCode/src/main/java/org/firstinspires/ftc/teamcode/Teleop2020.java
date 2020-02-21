@@ -52,9 +52,11 @@ public class Teleop2020 extends LinearOpMode {
     DcMotor motorLeftBack;
     DcMotor lift;
     DcMotor lift_assist;
-    Servo grab_back;
-    Servo grab_front;
     DcMotor extend;
+    Servo intakeLeft;
+    Servo intakeRight;
+    Servo grab_left;
+    Servo grab_right;
     Servo foundation;
     Servo sideArmWheelRight;
     Servo sideArmMainRight;
@@ -82,11 +84,11 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double FOUNDATION_DOWN = 0.67;
     protected static final double SIDE_ARM_WHEEL_OPEN_RIGHT = 0.5;
     protected static final double SIDE_ARM_WHEEL_OPEN_LEFT = 0.5;
-    protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.6;
+    protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.4;
     protected static final double SIDE_ARM_WHEEL_UP_LEFT = 0.4;
 
-    protected static final double SIDE_ARM_MAIN_UP_RIGHT = 1;
-    protected static final double SIDE_ARM_MAIN_UP_LEFT = 0.4;
+    protected static final double SIDE_ARM_MAIN_UP_RIGHT = 0.9;
+    protected static final double SIDE_ARM_MAIN_UP_LEFT = 0.45;
     protected static final double SIDE_ARM_MAIN_PRE_LEFT = 0.75;
 
 
@@ -94,10 +96,10 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double SIDE_ARM_BASE_LIFTED = 0.7;
     protected static final double SIDE_ARM_DROP = 0.1;
     protected static final double SIDE_ARM_MAIN_DOWN_RIGHT = 0.6;
-    protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 1;
+    protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 0.8;
 
     protected static final double SIDE_ARM_WHEEL_GRAB_RIGHT = 0;
-    protected static final double SIDE_ARM_WHEEL_GRAB_LEFT = 1;
+    protected static final double SIDE_ARM_WHEEL_GRAB_LEFT = 0;
 
     protected static final double SIDE_ARM_MAIN_HALF_UP_RIGHT = 0.9;
     protected static final double SIDE_ARM_MAIN_HALF_UP_LEFT = 0.6;
@@ -120,9 +122,9 @@ public class Teleop2020 extends LinearOpMode {
 
 
 
-    protected static final double LIFT_MAX_INCH = 17.8;
+    protected static final double LIFT_MAX_INCH = 16.5;
 
-    protected static final double CAM_SIDE_ARM_OFFSET = -4;
+    protected static final double CAM_SIDE_ARM_OFFSET = -5;
     protected static final double CAM_TO_FF = 7.5;
     protected static final double CAM_TO_BB = 10.5;
 
@@ -299,6 +301,10 @@ public class Teleop2020 extends LinearOpMode {
         lift = hardwareMap.dcMotor.get("lift");
         lift_assist = hardwareMap.dcMotor.get("lift_assist");
         lift.setMode(STOP_AND_RESET_ENCODER);
+        //TEMP
+        intakeLeft = hardwareMap.servo.get("intakeLeft");
+        intakeRight= hardwareMap.servo.get("intakeRight");
+        //TEMP
 
 
         motorRightFront = hardwareMap.dcMotor.get("right_front");
@@ -314,8 +320,8 @@ public class Teleop2020 extends LinearOpMode {
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD); // changed for 2020 config
         //        extend.setDirection(CRServo.Direction.REVERSE);
-        grab_front = hardwareMap.servo.get("grab_front");
-        grab_back = hardwareMap.servo.get("grab_back");
+        grab_right = hardwareMap.servo.get("grab_right");
+        grab_left = hardwareMap.servo.get("grab_left");
         foundation = hardwareMap.servo.get("foundation");
         armPosition = 0;
         sideArmWheelRight = hardwareMap.servo.get("sideArmWheelRight");
@@ -325,8 +331,8 @@ public class Teleop2020 extends LinearOpMode {
 
 
 
-        //grab_front.setPosition(0.1);
-        //grab_back.setPosition(0.1);
+        //grab_right.setPosition(0.1);
+        //grab_left.setPosition(0.1);
 
         extend = hardwareMap.dcMotor.get("extend");
 
@@ -603,7 +609,7 @@ public class Teleop2020 extends LinearOpMode {
         while ((lift.getCurrentPosition() < (position - coarseMargin)) && !isStopRequested()){
             idle();
             stopWheels();
-            if(DEBUG) System.out.println("A: pos:"+ position + "curr:" + lift.getCurrentPosition());
+            if(DEBUG) System.out.println(" 14564dbg A: pos:"+ position + "curr:" + lift.getCurrentPosition());
             lift.setPower(1);
             lift_assist.setPower(1);
 
@@ -701,13 +707,13 @@ public class Teleop2020 extends LinearOpMode {
         extend.setPower(0);
     }
     public void grabCollection() {
-        grab_front.setPosition(0.8);
-        grab_back.setPosition(0.5);
+        grab_right.setPosition(0.8);
+        grab_left.setPosition(0.5);
     }
 
     public void closeGrabber() {
-        grab_front.setPosition(0.2);
-        grab_back.setPosition(0.5);
+        grab_right.setPosition(0.2);
+        grab_left.setPosition(0.5);
     }
 
     public void captureFrame(CVUtil cvUtil) {
@@ -877,6 +883,12 @@ public class Teleop2020 extends LinearOpMode {
                 //Multiply by 2/3 to not completely reduce the power
             }
 
+
+
+
+
+
+
                 if (gamepad1.left_bumper && Math.abs(forward) > 0.1) {
                     //right turn
                     motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);  //changed
@@ -897,9 +909,19 @@ public class Teleop2020 extends LinearOpMode {
                     motorRightBack.setPower(forward * power_multiplier);
                     motorLeftFront.setPower(forward * power_multiplier);
                     motorLeftBack.setPower(forward * power_multiplier);
-                } else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component)>0.1)) {
+                }
+
+                else if (gamepad1.left_trigger > 0.1 && Math.abs(x_component) > 0.1){
+                    vectorCombineSimple(0.5*(x_component/Math.abs(x_component)), 0, 0);
+                }
+                else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1){
+                    vectorCombineSimple(0, 0.5*(y_component/Math.abs(y_component)), 0);
+                }
+
+                else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component)>0.1)) {
                     vectorCombine(x_component, y_component, turn_component*(y_component/Math.abs(y_component)));
                 }
+
                 else {
                     motorRightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                     motorRightFront.setPower(0);
@@ -978,18 +1000,17 @@ public class Teleop2020 extends LinearOpMode {
 
 
 //            if (gamepad1.y) {
-//                 grab_front.setPosition(1);
-//                 grab_back.setPosition(1);
+//                 grab_right.setPosition(1);
+//                 grab_left.setPosition(1);
 //            }
 
-                if (gamepad1.right_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
-                        sideArmSetStateRight(SideArmState.HOME);
-                }
-                if (gamepad1.left_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
-                    sideArmSetStateLeft(SideArmState.HOME);
-
-                }
-
+//                if (gamepad1.right_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
+//                        sideArmSetStateRight(SideArmState.HOME);
+//                }
+//                if (gamepad1.left_bumper) { //GRABBER OPEN FOR COLLECTION or Home with left trigger
+//                    sideArmSetStateLeft(SideArmState.HOME);
+//
+//                }
                 if(gamepad1.right_trigger > 0.5) {
                     if (gamepad1.dpad_down) {  //BLOCK GRAB
                         sideArmSetStateRight(SideArmState.GRAB);
@@ -1027,26 +1048,26 @@ public class Teleop2020 extends LinearOpMode {
 
 
 
-                if (gamepad2.dpad_down) {               //GRABBED POSITION
-                    grab_front.setPosition(0.4); //More than 90 degrees to add pressure
-                    grab_back.setPosition(0.6);
+                if (gamepad2.dpad_up) {               //GRABBED POSITION
+                    grab_right.setPosition(0.7); //More than 90 degrees to add pressure
+                    grab_left.setPosition(0.3);
                 }
-                if (gamepad2.dpad_up) {               //OPEN FOR COLLECTION POSITION
-                    grab_front.setPosition(0.8);
-                    grab_back.setPosition(0.55);
+                if (gamepad2.dpad_down) {               //OPEN FOR COLLECTION POSITION
+                    grab_right.setPosition(0.9);
+                    grab_left.setPosition(0.15);
                 }
-                if (gamepad2.dpad_left) {               //Dropping
-                    grab_front.setPosition(1);
-                    grab_back.setPosition(0.52);
-                }
+//                if (gamepad2.dpad_left) {               //Dropping
+//                    grab_right.setPosition(1);
+//                    grab_left.setPosition(0.52);
+//                }
+//
+//                if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
+//                    grab_right.setPosition(0.7);           //AND LIFT TO NOT HIT BLOCK
+//                    grab_left.setPosition(0.52);
 
-                if (gamepad2.dpad_right) {               //OPEN FOR COLLECTION POSITION
-                    grab_front.setPosition(0.7);           //AND LIFT TO NOT HIT BLOCK
-                    grab_back.setPosition(0.52);
-
-                    liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);
-
-                }
+//                    liftTarget = liftTarget + (0.5 * REV_CORE_HEX_TICKS_PER_INCH);
+//
+//                }
 
                 if (liftTarget > (0.5 * REV_CORE_HEX_TICKS_PER_INCH) ) {
                     powerReductionFactor = 0.3;
@@ -1055,15 +1076,15 @@ public class Teleop2020 extends LinearOpMode {
 
                 if (gamepad2.right_bumper) {
 
-                    grab_back.setPosition(0);
-                    grab_front.setPosition(0.5);
+                    grab_left.setPosition(0);
+                    grab_right.setPosition(0.5);
 
                 }
 
                 if (gamepad2.left_bumper) {
 
-                    grab_back.setPosition(1);
-                    grab_front.setPosition(1);
+                    grab_left.setPosition(1);
+                    grab_right.setPosition(1);
 
                 }
 
