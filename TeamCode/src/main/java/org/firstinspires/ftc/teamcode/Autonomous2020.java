@@ -374,17 +374,17 @@ public class Autonomous2020 extends Teleop2020  {
             target_encoder = (distance * TICKS_PER_INCH_STRAFE);
         }
 
-        double prev_pos = motorLeftFront.getCurrentPosition();
+        double prev_pos = motorRightBack.getCurrentPosition();
 
         //first pass at high speed (if going large dist)
         int stall_counter = 0;
         if((Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) || (strafe)){
             while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe, gyroCorrection, turnFactor)) {
-                if (prev_pos == motorLeftFront.getCurrentPosition()) {
+                if (prev_pos == motorRightBack.getCurrentPosition()) {
                     stall_counter++;
                 } else {
                     stall_counter = 0;
-                    prev_pos = motorLeftFront.getCurrentPosition();
+                    prev_pos = motorRightBack.getCurrentPosition();
                 }
                 if (stall_counter > 10)
                     break;
@@ -396,12 +396,12 @@ public class Autonomous2020 extends Teleop2020  {
 
         //second pass at low speed for fine granined distance
         while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF/2, TICKS_PER_INCH_STRAIGHT/4, strafe, gyroCorrection, turnFactor)) {
-            if (prev_pos == motorLeftFront.getCurrentPosition()) {
+            if (prev_pos == motorRightBack.getCurrentPosition()) {
                 stall_counter++;
             }
             else {
                 stall_counter = 0;
-                prev_pos = motorLeftFront.getCurrentPosition();
+                prev_pos = motorRightBack.getCurrentPosition();
             }
             if(stall_counter > 10)
                 break;
@@ -431,7 +431,6 @@ public class Autonomous2020 extends Teleop2020  {
 
             steer = getSteerDist(error, PCoeff);
             power = speed * steer;
-            if(DEBUG) System.out.println("14564dbg " + " steer " + steer + " power " + power);
         }
 
         double weightConstant = 0.98;//this constant will depend on the robot. you need to test experimentally to see which is best
@@ -475,6 +474,9 @@ public class Autonomous2020 extends Teleop2020  {
             vectorCombineSimple( weightConstant * power, 0, turn_pwr);
         }
 
+        if(DEBUG) System.out.println("14564dbg " + " steer " + steer + " error " + error + " power " + power*weightConstant);
+
+
         telemetry.addData("Target dist", "%5.2f", distance);
         telemetry.addData("Error/Steer", "%5.2f/%5.2f", error, steer);
         telemetry.addData("speed", "%5.2f", speed);
@@ -489,9 +491,9 @@ public class Autonomous2020 extends Teleop2020  {
         double err;
         double curr_encoder = 0;
         if(!strafe)
-             curr_encoder = motorLeftFront.getCurrentPosition();
+             curr_encoder = motorRightBack.getCurrentPosition();
         else
-            curr_encoder = 1 * motorLeftFront.getCurrentPosition();
+            curr_encoder = 1 * motorRightBack.getCurrentPosition();
 
         robotError = targetDist - curr_encoder;
 
@@ -504,7 +506,7 @@ public class Autonomous2020 extends Teleop2020  {
             err = Math.min(robotError, robotError2);
         }
 
-         if(DEBUG) System.out.println("14564dbg getError curr_enc=" + curr_encoder + " err=" + err + " distThr=" + distThr);
+         if(DEBUG) System.out.println("14564dbg getError curr_enc= " + curr_encoder + " err= " + err + " distThr= " + distThr);
         telemetry.addData("Robot Error", "%5.2f", robotError);
         telemetry.update();
 
@@ -584,14 +586,14 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
         double fd1 = DSRead(ff1);
-        double sd1 = DSRead(ds1);
-        double sd2 = DSRead(ds2);
+        double sd1 = DSReadAvg(ds1);
+        double sd2 = DSReadAvg(ds2);
 
 
         double counter = 0;
 
         int stall_counter = 0;
-        double prev_pos = motorLeftFront.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
+        double prev_pos = motorRightBack.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
         double curr_pos = prev_pos;
         double target_pos = curr_pos - (fwd_dist);
 
@@ -671,11 +673,11 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (DEBUG) System.out.println("14564dbg DSMove: fd1  " + fd1);
 
-            sd1 = DSRead(ds1);
+            sd1 = DSReadAvg(ds1);
             if((counter%3) == 1)
-                sd2 = DSRead(ds2);
+                sd2 = DSReadAvg(ds2);
 
-            curr_pos = motorLeftFront.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
+            curr_pos = motorRightBack.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
             if (prev_pos == curr_pos) {
                 stall_counter++;
             } else {
@@ -964,7 +966,7 @@ public class Autonomous2020 extends Teleop2020  {
     double averageff1 = 0;
     double averageffr = 0;
     double averagebbr = 0;
-    int numberOfTimesRead = 30;
+    int numberOfTimesRead = 1;
     //making the movingAverage of the last x values a hash define
     double getMovingAverage(Rev2mDistanceSensor ds){
         if(opModeIsActive() && !isStopRequested()) {
@@ -979,8 +981,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averagerf = dist;
                 }
                 averagerf = (((averagerf*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("RF " + averagerf);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg RF " + averagerf);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -996,8 +998,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averagerb = dist;
                 }
                 averagerb = (((averagerb*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("RB " + averagerb);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg RB " + averagerb);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1014,8 +1016,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averagelf = dist;
                 }
                 averagelf = (((averagelf*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("LF " + averagelf);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg LF " + averagelf);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1032,8 +1034,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averagelb = dist;
                 }
                 averagelb = (((averagelb*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("LB " + averagelb);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg LB " + averagelb);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1050,8 +1052,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averageff1 = dist;
                 }
                 averageff1 = (((averageff1*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("FFL " + averageff1);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg FFL " + averageff1);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1068,8 +1070,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averageffr = dist;
                 }
                 averageffr = (((averageffr*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("FFR " + averageffr);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg FFR " + averageffr);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1086,8 +1088,8 @@ public class Autonomous2020 extends Teleop2020  {
                     averagebbr = dist;
                 }
                 averagebbr = (((averagebbr*(numberOfTimesRead-1)) + dist)/numberOfTimesRead);
-                if(DEBUG) System.out.print("BBR " + averagebbr);
-                if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+                if(DEBUG) System.out.print("14564dbg BBR " + averagebbr);
+                if(DEBUG) System.out.println(" DSRead " + dist);
 
 
 
@@ -1099,12 +1101,28 @@ public class Autonomous2020 extends Teleop2020  {
         return 0;
     }
 
+    double DSReadAvg(Rev2mDistanceSensor ds) {
+        //return getMovingAverage(ds);
+        return DSRead(ds);
+
+    }
+
     double DSRead(Rev2mDistanceSensor ds) {
-        return getMovingAverage(ds);
+
+        if(opModeIsActive() && !isStopRequested()) {
+            double dist = ds.getDistance(DistanceUnit.INCH);
+            if(DEBUG) System.out.println("14564dbg DSRead " + dist);
+            if (dist > 300) {
+                dist = ds.getDistance(DistanceUnit.INCH);
+                if (DEBUG) System.out.println("14564dbg DSRead again " + dist);
+            }
+            return dist ;
+        } else
+            return 0 ;
     }
 
     public void makeParallelLeft(double distance_from_wall) {
-        double sensor_gap = 16.5;
+        double sensor_gap = 11.3;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double dis1 = DSRead(distanceSensor_lb);
         double dis2 = DSRead(distanceSensor_lf);
@@ -1172,7 +1190,7 @@ public class Autonomous2020 extends Teleop2020  {
 
     public void makeParallelRight(double distance_from_wall) {
 
-        double sensor_gap = 14.5;
+        double sensor_gap = 11.3;
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double dis1 = DSRead(distanceSensor_rb);
         double dis2 = DSRead(distanceSensor_rf);

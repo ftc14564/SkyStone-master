@@ -63,11 +63,20 @@ public class UnitTest extends Autonomous2020 {
         //final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
 
+
+
         waitForStart();
 
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() && !isStopRequested()) {
+
+
+            telemetry.addData("rb:", motorRightBack.getCurrentPosition());
+            telemetry.addData("rf:", motorRightFront.getCurrentPosition());
+            telemetry.addData("lb:", motorLeftBack.getCurrentPosition());
+            telemetry.addData("lf:", motorLeftFront.getCurrentPosition());
+            telemetry.update();
 
             idle();
             powerReductionFactor = 1;
@@ -76,10 +85,13 @@ public class UnitTest extends Autonomous2020 {
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
             boolean foundationTest = false;
-            boolean dsMoverTest = false;
+            boolean dsMoverTest = true;
             boolean encoderMove_test = false;
             boolean encoderMoveStrafe_test = false;
-            boolean avgTest = true;
+            boolean avgTest = false;
+            boolean encoderRead = false;
+
+
 
 
 
@@ -132,8 +144,9 @@ public class UnitTest extends Autonomous2020 {
                 where_head = FldDirection.Face_Fld_Foundation;
 
 
+                telemetry.update();
 
-                EncoderMoveDist(1, -25,false, true, 0.35);
+                //EncoderMoveDist(1, -25,false, true, 0.35);
 
 
 //
@@ -155,29 +168,30 @@ public class UnitTest extends Autonomous2020 {
 
 
 
+                sleep(1000);
+                if(DEBUG) System.out.println(" 14564dbg Startig 5 fwd !!!!");
+                EncoderStraight(5);
+                if(DEBUG) System.out.println(" 14564dbg Startig 5 bwd !!!!");
+                EncoderStraight(-5);
 
-//                sleep(1000);
-//                if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
-//
-//                EncoderStraight(10);
-//                if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
-//
-//                EncoderStraight(-10);
-//                sleep(1000);
-//
-//                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
-//
-//                EncoderStraight(25);
-//                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
-//
-//                EncoderStraight(-25);
-//                sleep(1000);
-//
-//                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
-//                EncoderStraight(75);
-//                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
-//
-//                EncoderStraight(-75);
+
+                sleep(1000);
+                if(DEBUG) System.out.println(" 14564dbg Startig 10 fwd !!!!");
+                EncoderStraight(10);
+                if(DEBUG) System.out.println(" 14564dbg Startig 10 bwd !!!!");
+                EncoderStraight(-10);
+
+                sleep(1000);
+                if(DEBUG) System.out.println(" 14564dbg Startig 25 fwd !!!!");
+                EncoderStraight(25);
+                if(DEBUG) System.out.println(" 14564dbg Startig 25 bwd !!!!");
+                EncoderStraight(-25);
+
+                sleep(1000);
+                if(DEBUG) System.out.println(" 14564dbg Startig 75 fwd !!!!");
+                EncoderStraight(75);
+                if(DEBUG) System.out.println(" 14564dbg Startig 75 bwd !!!!");
+                EncoderStraight(-75);
 
                 break;
             }
@@ -209,12 +223,12 @@ public class UnitTest extends Autonomous2020 {
 
             if (makeparalleltest){
 
-               makeParallelRight(20);
+              // makeParallelRight(20);
 //                makeParallelFront(10);
-//                makeParallelLeft(20);
+                makeParallelLeft(20);
 //                makeParallelFront(10);
                // sleep(2000);
-                    break;
+               //     break;
 
             }
 
