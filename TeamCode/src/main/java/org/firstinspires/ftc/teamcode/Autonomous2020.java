@@ -378,7 +378,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         //first pass at high speed (if going large dist)
         int stall_counter = 0;
-        if((Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) || (strafe)){
+//        if((Math.abs(target_encoder) > TICKS_PER_INCH_STRAIGHT*10) || (strafe)){
             while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF, TICKS_PER_INCH_STRAIGHT, strafe, gyroCorrection, turnFactor)) {
                 if (prev_pos == motorRightBack.getCurrentPosition()) {
                     stall_counter++;
@@ -391,23 +391,23 @@ public class Autonomous2020 extends Teleop2020  {
 
                 idle();
             }
-        }
+        //}
 
 
         //second pass at low speed for fine granined distance
-        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF/2, TICKS_PER_INCH_STRAIGHT/4, strafe, gyroCorrection, turnFactor)) {
-            if (prev_pos == motorRightBack.getCurrentPosition()) {
-                stall_counter++;
-            }
-            else {
-                stall_counter = 0;
-                prev_pos = motorRightBack.getCurrentPosition();
-            }
-            if(stall_counter > 10)
-                break;
-
-            idle();
-        }
+//        while (opModeIsActive() && !isStopRequested() && !onTargetDist(speed, target_encoder, P_FWD_COEFF , TICKS_PER_INCH_STRAIGHT/4, strafe, gyroCorrection, turnFactor)) {
+//            if (prev_pos == motorRightBack.getCurrentPosition()) {
+//                stall_counter++;
+//            }
+//            else {
+//                stall_counter = 0;
+//                prev_pos = motorRightBack.getCurrentPosition();
+//            }
+//            if(stall_counter > 10)
+//                break;
+//
+//            idle();
+//        }
 
     }
 
@@ -456,7 +456,7 @@ public class Autonomous2020 extends Teleop2020  {
         }
 
         if(strafe) {
-            while (Math.abs(weightConstant * power) < 0.5)
+            while (Math.abs(weightConstant * power) < 0.7)
                 weightConstant *= 1.2;
             turn_pwr = turn_pwr * 2;
 
@@ -1860,7 +1860,7 @@ public class Autonomous2020 extends Teleop2020  {
 
     }
 
-    public void grabAndDropBlock_SideArm() {
+    public void grab_SideArm() {
 
 
        // makeParallelRight(32);
@@ -1872,10 +1872,13 @@ public class Autonomous2020 extends Teleop2020  {
         sleep(400);
 
         EncoderStrafe(12);
-        makeParallelRight(21);
+        gyroTurnDirection(FldDirection.Face_Fld_Foundation);
+        //makeParallelRight(21);
 
 
+    }
 
+    public void drop_SideArm_Foundation(){
         if(isBlueSide) {
             EncoderMoveDist(1, -84,false, true, 0);
 
@@ -1894,7 +1897,6 @@ public class Autonomous2020 extends Teleop2020  {
 
         EncoderStrafe(8);
         sideArmSetStateLeft(SideArmState.HOME);
-
     }
 
 
@@ -1957,7 +1959,8 @@ public class Autonomous2020 extends Teleop2020  {
        //TEST
         double firstSkyStone_X = where_cam_x;
 
-        grabAndDropBlock_SideArm();
+        grab_SideArm();
+        drop_SideArm_Foundation();
 
         if (doFoundation) {
             DS_MoveFoundation();
@@ -1981,7 +1984,8 @@ public class Autonomous2020 extends Teleop2020  {
                 if (DEBUG)
                     System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
 
-                grabAndJustDrop_SideArm();
+                grab_SideArm();
+                drop_SideArm_Foundation();
 
             }
 

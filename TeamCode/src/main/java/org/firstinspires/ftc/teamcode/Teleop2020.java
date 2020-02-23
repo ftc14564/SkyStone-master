@@ -74,6 +74,7 @@ public class Teleop2020 extends LinearOpMode {
     boolean strafing;
     boolean initDone = false;
     double power_multiplier;
+
     double armPosition;
     double angleToTurn;
     double liftPosition;
@@ -85,7 +86,7 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double SIDE_ARM_WHEEL_OPEN_RIGHT = 0.5;
     protected static final double SIDE_ARM_WHEEL_OPEN_LEFT = 0.5;
     protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.4;
-    protected static final double SIDE_ARM_WHEEL_UP_LEFT = 0.4;
+    protected static final double SIDE_ARM_WHEEL_UP_LEFT = 0.53;
 
     protected static final double SIDE_ARM_MAIN_UP_RIGHT = 0.9;
     protected static final double SIDE_ARM_MAIN_UP_LEFT = 0.45;
@@ -178,7 +179,7 @@ public class Teleop2020 extends LinearOpMode {
     // to amplify/attentuate the measured values.
     final double SCALE_FACTOR = 255;
 
-    final double TICKS_PER_INCH_STRAFE = 174/3;
+    final double TICKS_PER_INCH_STRAFE = 140/3;
     final double TICKS_PER_INCH_STRAIGHT = 88/3;
 
     enum FldDirection{
@@ -912,14 +913,36 @@ public class Teleop2020 extends LinearOpMode {
                 }
 
                 else if (gamepad1.left_trigger > 0.1 && Math.abs(x_component) > 0.1){
-                    vectorCombineSimple(0.5*(x_component/Math.abs(x_component)), 0, 0);
+                    motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                    motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                    motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
+                    motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
+
+                    motorRightFront.setPower(-0.5 *(x_component/Math.abs(x_component))* power_multiplier);
+                    motorRightBack.setPower(0.5 *(x_component/Math.abs(x_component))* power_multiplier);
+                    motorLeftFront.setPower(0.5 *(x_component/Math.abs(x_component))* power_multiplier);
+                    motorLeftBack.setPower(-0.5 *(x_component/Math.abs(x_component)) * power_multiplier);
+
                 }
                 else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1){
-                    vectorCombineSimple(0, 0.5*(y_component/Math.abs(y_component)), 0);
+                    motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                    motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                    motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
+                    motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
+
+                    motorRightFront.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
+                    motorRightBack.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
+                    motorLeftFront.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
+                    motorLeftBack.setPower(0.3 *(y_component/Math.abs(y_component)) * power_multiplier);
+
                 }
+//                else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1){
+//                    vectorCombineSimple(0, 0.5*(y_component/Math.abs(y_component)), 0);
+//                }
+
 
                 else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component)>0.1)) {
-                    vectorCombine(x_component, y_component, turn_component*(y_component/Math.abs(y_component)));
+                    vectorCombine(x_component , y_component , turn_component*(y_component/Math.abs(y_component)));
                 }
 
                 else {

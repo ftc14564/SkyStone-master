@@ -85,8 +85,8 @@ public class UnitTest extends Autonomous2020 {
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
             boolean foundationTest = false;
-            boolean dsMoverTest = true;
-            boolean encoderMove_test = false;
+            boolean dsMoverTest = false;
+            boolean encoderMove_test = true;
             boolean encoderMoveStrafe_test = false;
             boolean avgTest = false;
             boolean encoderRead = false;
@@ -100,10 +100,10 @@ public class UnitTest extends Autonomous2020 {
                 isBlueSide = false;
                 where_head = FldDirection.Face_Fld_Foundation;
 
-                sideArmSetStateLeft(SideArmState.GRAB);
-                sleep(2000);
-                sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-                sleep(2000);
+//                sideArmSetStateLeft(SideArmState.GRAB);
+//                sleep(2000);
+//                sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
+//                sleep(2000);
                 if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
                 EncoderStrafe(5);
                 if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
