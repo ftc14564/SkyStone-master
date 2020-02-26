@@ -80,16 +80,20 @@ public class UnitTest extends Autonomous2020 {
 
             idle();
             powerReductionFactor = 1;
+            isBlueSide = false;
+            where_head = FldDirection.Face_Fld_Foundation;
+
 
 
             boolean makeparalleltest = false;
             boolean gyroDirectionTest = false;
             boolean foundationTest = false;
             boolean dsMoverTest = false;
-            boolean encoderMove_test = true;
-            boolean encoderMoveStrafe_test = false;
+            boolean encoderMove_test = false;
+            boolean encoderMoveStrafe_test = true;
             boolean avgTest = false;
             boolean encoderRead = false;
+            boolean triagleStright = false;
 
 
 
@@ -105,42 +109,50 @@ public class UnitTest extends Autonomous2020 {
 //                sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
 //                sleep(2000);
                 if(DEBUG) System.out.println(" Startig 5 fwd !!!!");
-                EncoderStrafe(5);
+                EncoderStrafeGyro(5);
                 if(DEBUG) System.out.println(" Startig 5 bwd !!!!");
 
 
-                EncoderStrafe(-5);
+                EncoderStrafeGyro(-5);
 
 
                 sleep(1000);
                 if(DEBUG) System.out.println(" Startig 10 fwd !!!!");
 
-                EncoderStrafe(10);
+                EncoderStrafeGyro(10);
                 if(DEBUG) System.out.println(" Startig 10 bwd !!!!");
 
-                EncoderStrafe(-10);
+                EncoderStrafeGyro(-10);
                 sleep(1000);
 
-//                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
-//
-//                EncoderStrafe(25);
-//                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
-//
-//                EncoderStrafe(-25);
-//                sleep(1000);
-//
-//                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
-//                EncoderStrafe(75);
-//                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
-//
-//                EncoderStrafe(-75);
+                if(DEBUG) System.out.println(" Startig 25 fwd !!!!");
 
+                EncoderStrafeGyro(25);
+                if(DEBUG) System.out.println(" Startig 25 bwd !!!!");
+
+                EncoderStrafeGyro(-25);
+                sleep(1000);
+
+                if(DEBUG) System.out.println(" Startig 75 fwd !!!!");
+                EncoderStrafeGyro(75);
+                if(DEBUG) System.out.println(" Startig 75 bwd !!!!");
+
+                EncoderStrafeGyro(-75);
+
+                break;
+            }
+
+            if(triagleStright)
+            {
+
+                EncoderMoveDist(1,75,false, false, 1);
+                sleep(5000);
                 break;
             }
 
             if(encoderMove_test) {
 
-                isBlueSide = true;
+                isBlueSide = false;
                 where_head = FldDirection.Face_Fld_Foundation;
 
 
@@ -170,28 +182,28 @@ public class UnitTest extends Autonomous2020 {
 
                 sleep(1000);
                 if(DEBUG) System.out.println(" 14564dbg Startig 5 fwd !!!!");
-                EncoderStraight(5);
+                EncoderStraightGyro(5);
                 if(DEBUG) System.out.println(" 14564dbg Startig 5 bwd !!!!");
-                EncoderStraight(-5);
+                EncoderStraightGyro(-5);
 
 
                 sleep(1000);
                 if(DEBUG) System.out.println(" 14564dbg Startig 10 fwd !!!!");
-                EncoderStraight(10);
+                EncoderStraightGyro(10);
                 if(DEBUG) System.out.println(" 14564dbg Startig 10 bwd !!!!");
-                EncoderStraight(-10);
+                EncoderStraightGyro(-10);
 
                 sleep(1000);
                 if(DEBUG) System.out.println(" 14564dbg Startig 25 fwd !!!!");
-                EncoderStraight(25);
+                EncoderStraightGyro(25);
                 if(DEBUG) System.out.println(" 14564dbg Startig 25 bwd !!!!");
-                EncoderStraight(-25);
+                EncoderStraightGyro(-25);
 
                 sleep(1000);
                 if(DEBUG) System.out.println(" 14564dbg Startig 75 fwd !!!!");
-                EncoderStraight(75);
+                EncoderStraightGyro(75);
                 if(DEBUG) System.out.println(" 14564dbg Startig 75 bwd !!!!");
-                EncoderStraight(-75);
+                EncoderStraightGyro(-75);
 
                 break;
             }
