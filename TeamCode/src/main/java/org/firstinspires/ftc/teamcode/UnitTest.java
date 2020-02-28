@@ -336,14 +336,7 @@ public class UnitTest extends Autonomous2020 {
 
             telemetry.update();
 
-            if (gamepad1.left_stick_button) {
-                intakeLeft.setPosition(0.5);
-                intakeRight.setPosition(0.5);
-            }
-            if (!(gamepad1.left_stick_x == 0)){
-                intakeLeft.setPosition(0.5+(gamepad1.left_stick_x * 0.5));
-                intakeRight.setPosition(0.5+(gamepad1.left_stick_x * -0.5));
-            }
+
             if (gamepad2.x) {
 //                armExtended(10);
                 grabCollection();

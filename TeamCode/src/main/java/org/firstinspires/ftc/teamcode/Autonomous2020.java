@@ -207,16 +207,16 @@ public class Autonomous2020 extends Teleop2020  {
                 angle = 135;
         }
         else {
-            if(head == FldDirection.Face_Fld_Foundation)
-                angle = 0;
-            if(head == FldDirection.Face_Fld_Drivers)
-                angle = 270;
-            if(head == FldDirection.Face_Fld_Center)
-                angle = 90;
             if(head == FldDirection.Face_Fld_Audience)
+                angle = 0;
+            if(head == FldDirection.Face_Fld_Center)
+                angle = 270;
+            if(head == FldDirection.Face_Fld_Drivers)
+                angle = 90;
+            if(head == FldDirection.Face_Fld_Foundation)
                 angle = 180;
             if(head == FldDirection.Face_Fld_Center_Foundation)
-                angle = 45;
+                angle = 225;
         }
 
         return angle;
@@ -717,10 +717,10 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         if(isBlueSide) {
-            gyroTurnREV(1,get_where_angle(where_head)+10);
+            gyroTurnREV(1,get_where_angle(where_head)+15);
         }
         else {
-            gyroTurnREV(1,get_where_angle(where_head)-10);
+            gyroTurnREV(1,get_where_angle(where_head)-15);
 
         }
         EncoderMoveDist(1, -25,false, false, 0);
@@ -734,9 +734,6 @@ public class Autonomous2020 extends Teleop2020  {
         foundation.setPosition(FOUNDATION_UP);
 
         //DSMove(0.75, 10, 26, useLeftSide, true, true);
-
-
-
 
     }
 
@@ -1750,15 +1747,15 @@ public class Autonomous2020 extends Teleop2020  {
                 if(DEBUG) System.out.println("14564dbg vu vx_x " + vu_x + " blockDist: " + blockDist);
                 if(vu_x > 0){
                     if(isBlueSide)
-                        where_cam_x = 36 - CAM_SIDE_ARM_OFFSET ;
+                        where_cam_x = 36 - CAM_SIDE_ARM_OFFSET;
                     else
-                        where_cam_x = 44 + CAM_SIDE_ARM_OFFSET ;
+                        where_cam_x = 44 - CAM_SIDE_ARM_OFFSET;
                 }
                 else{
                     if(isBlueSide)
                         where_cam_x = 44 - CAM_SIDE_ARM_OFFSET;
                     else
-                        where_cam_x = 36 + CAM_SIDE_ARM_OFFSET;
+                        where_cam_x = 36 - CAM_SIDE_ARM_OFFSET;
                 }
 //                where_cam_x += blockDist;
 //                where_cam_y += vu_y-1;
@@ -1788,7 +1785,7 @@ public class Autonomous2020 extends Teleop2020  {
             }
             else {
                 //assume third default block
-                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET ;
+                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
 
                  break;
             }
@@ -1800,168 +1797,69 @@ public class Autonomous2020 extends Teleop2020  {
         return blockSeen;
     }
 
-    public void dropOnFloorLeft(){
-        sideArmSetStateLeft(SideArmState.GRAB);
-        sleep(400);
-        sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-        sleep(400);
-
-        double dist = 72 + CAM_TO_FF - where_cam_x + 2;
-        EncoderStrafe(12);
-        makeParallelRight(21);
-
-        if(isBlueSide) {
-            EncoderMoveDist(1, -dist ,false, true, 0);
-
-        }
-        else {
-            EncoderMoveDist(1, dist,false, true, 0);
-
-        }
-
-
-        sideArmSetStateLeft(SideArmState.GRAB);
-        sleep(200);
-        sideArmSetStateLeft(SideArmState.PRE_GRAB);
-        sleep(200);
-        sideArmSetStateLeft(SideArmState.HOME);
-
-
-
-
-        if(isBlueSide) {
-            EncoderMoveDist(1, dist + 24 ,false, true, 0);
-
-        }
-        else {
-            EncoderMoveDist(1, -dist - 8,false, true, 0);
-
-
-        }
-
-
+    public void dropOnFloor(){
+        double dist = 96  - where_cam_x;
+        EncoderStraightGyro(-dist);
+        if(isBlueSide)
+            sideArmSetStateLeft(SideArmState.HOME);
+        else
+            sideArmSetStateRight(SideArmState.HOME);
     }
-    public void dropOnFloorRight(){
-        sideArmSetStateRight(SideArmState.GRAB);
-        sleep(400);
-        sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-        sleep(400);
 
-        double dist = 72 + CAM_TO_FF - where_cam_x + 2;
-        EncoderStrafe(12);
-        makeParallelLeft(21);
-
-        if(isBlueSide) {
-            EncoderMoveDist(1, -dist ,false, true, 0);
-
-        }
-        else {
-            EncoderMoveDist(1, dist,false, true, 0);
-
-        }
-
-
-        sideArmSetStateRight(SideArmState.GRAB);
-        sleep(200);
-        sideArmSetStateRight(SideArmState.PRE_GRAB);
-        sleep(200);
-        sideArmSetStateRight(SideArmState.HOME);
-
-
-        if(isBlueSide) {
-            EncoderMoveDist(1, dist + 24 ,false, true, 0);
-
-        }
-        else {
-            EncoderMoveDist(1, -dist - 8,false, true, 0);
-
-
-        }
-
-
-    }
 
     public void grab_SideArmLeft() {
 
 
-       // makeParallelRight(32);
-
-
         sideArmSetStateLeft(SideArmState.GRAB);
         sleep(400);
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         sleep(400);
-
-        EncoderStrafe(12);
-        //makeParallelRight(21);
 
     }
 
     public void grab_SideArmRight() {
 
-
-        // makeParallelRight(32);
-
-
         sideArmSetStateRight(SideArmState.GRAB);
         sleep(400);
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
         sleep(400);
-
-        EncoderStrafe(-12);
-
     }
 
-    public void drop_SideArm_FoundationLeft(){
+    public void drop_SideArm_Foundation(){
+        double dist = 120 - where_cam_x;
+
+        EncoderStraightGyro(-dist);
+
         if(isBlueSide) {
-            EncoderMoveDist(1, -84,false, true, 0);
-
-            DSMove(0.5, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
-
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
+            sideArmSetStateLeft(SideArmState.THROW);
+            sleep(200);
+            EncoderStrafeGyro(8);
+            sideArmSetStateLeft(SideArmState.HOME);
         }
         else {
-            EncoderMoveDist(1, 84,false, true, 0);
-            DSMove(0.8, 24-FF_DS_TO_SIDE_ARM, 32, false, false, true, 0, false);
-
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, true, true, true, 0, false);
+            sideArmSetStateRight(SideArmState.THROW);
+            sleep(200);
+            EncoderStrafeGyro(-8);
+            sideArmSetStateRight(SideArmState.HOME);
         }
-
-
-        sideArmSetStateLeft(SideArmState.THROW);
-        sleep(200);
-
-        EncoderStrafe(8);
-        sideArmSetStateLeft(SideArmState.HOME);
-    }
-    public void drop_SideArm_FoundationRight(){
-        if(isBlueSide) {
-            EncoderMoveDist(1, -84,false, true, 0);
-
-            DSMove(0.5, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
-
-        }
-        else {
-            EncoderMoveDist(1, 84,false, true, 0);
-            DSMove(0.8, 24-FF_DS_TO_SIDE_ARM, 32, false, false, true, 0, false);
-
-        }
-
-
-        sideArmSetStateRight(SideArmState.THROW);
-        sleep(200);
-
-        EncoderStrafe(8);
-        sideArmSetStateRight(SideArmState.HOME);
     }
 
 
     public void runAutonomousDS(Boolean isBlue, Boolean doFoundation, Boolean dropOnFloor) {
 
+        isBlueSide = isBlue;
+
+        if (isBlueSide)
+            CAM_SIDE_ARM_OFFSET = CAM_SIDE_ARM_OFFSET_LEFT;
+        else
+            CAM_SIDE_ARM_OFFSET = CAM_SIDE_ARM_OFFSET_RIGHT;
 
         USE_VUFORIA = true;
 
-        isBlueSide = isBlue;
 
-        powerReductionFactor = 1;
+        powerReductionFactor = 0.8;
 
         where_head = FldDirection.Face_Fld_Audience;
 
@@ -1973,7 +1871,7 @@ public class Autonomous2020 extends Teleop2020  {
         initFn();
 
         waitForStart();
-
+        if(DEBUG) System.out.println("14564trace Started");
 
         if (isBlueSide) {
             sideArmSetStateLeft(SideArmState.PRE_GRAB);
@@ -1989,8 +1887,10 @@ public class Autonomous2020 extends Teleop2020  {
         } else {
             where_cam_y = 15;
             where_cam_x = 40;
-            DSMove(1, where_cam_x - CAM_TO_BB, where_cam_y, true, true, true, 0, false);
+            DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
         }
+
+        if(DEBUG) System.out.println("14564trace before vuFind");
 
         //sleep(200);
         vuFindBlockSideCam(isBlueSide);
@@ -1998,13 +1898,13 @@ public class Autonomous2020 extends Teleop2020  {
         where_cam_y = 30.5;
         double firstSkyStone_X = where_cam_x;
 
-        if(DEBUG) System.out.println("FirstSS_X " + firstSkyStone_X);
+        if(DEBUG) System.out.println("14564dbg FirstSS_X " + firstSkyStone_X);
 
         if(isBlueSide) {
-            DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+            DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
         }
         else {
-            DSMove(0.6, where_cam_x - CAM_TO_BB, where_cam_y, false, true, true, 0, false);
+            DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
 
         }
 
@@ -2012,49 +1912,40 @@ public class Autonomous2020 extends Teleop2020  {
         //TEST
         //sleep(30000);
        //TEST
-        if(dropOnFloor){
-            if(isBlue){
-                grab_SideArmLeft();
-                dropOnFloorLeft();
-                EncoderStrafeGyro(6);
-            }
-            else{
-                grab_SideArmRight();
-                dropOnFloorRight();
-                EncoderStrafeGyro(6);
-            }
+        if(DEBUG) System.out.println("14564trace before first Grab");
+
+        if(isBlue) {
+            grab_SideArmLeft();
+            EncoderStrafeGyro(8);
         }
         else {
-            if (isBlue) {
-                grab_SideArmLeft();
-                drop_SideArm_FoundationLeft();
-                EncoderStrafeGyro(6);
-            }
-            else {
-                grab_SideArmRight();
-                drop_SideArm_FoundationRight();
-                EncoderStrafeGyro(6);
-            }
+            grab_SideArmRight();
+            EncoderStrafeGyro(-8);
+        }
+        if(dropOnFloor){
+            if(DEBUG) System.out.println("14564trace before first drop to floor");
+            dropOnFloor();
+        }
+        else {
+            if(DEBUG) System.out.println("14564trace before first drop to Foundation");
+            drop_SideArm_Foundation();
         }
 
-
-
-
         if (doFoundation) {
+            if(DEBUG) System.out.println("14564trace before move Foundation");
             DS_MoveFoundation();
 
         } else {
             if (returnForSecond) {
 
-                EncoderStraightGyro(96);
+                if(DEBUG) System.out.println("14564trace  returning for second");
+
+                EncoderStraightGyro(where_cam_x - firstSkyStone_X + 24);
 
                 if (isBlueSide) {
 
                     where_cam_y = 30.5;
                     where_cam_x = firstSkyStone_X - 24;
-
-                    if(DEBUG) System.out.println("FirstSS_X on return" + firstSkyStone_X);
-                    if(DEBUG) System.out.println("where_x on return" + where_cam_x);
 
                     sideArmSetStateLeft(SideArmState.PRE_GRAB);
                     DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
@@ -2066,49 +1957,52 @@ public class Autonomous2020 extends Teleop2020  {
 
                     sideArmSetStateRight(SideArmState.PRE_GRAB);
 
-                    DSMove(0.6, where_cam_x - CAM_TO_BB, where_cam_y, true, false, true, 0, false);
+                    DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
                 }
                 if (DEBUG)
                     System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
 
-                if(isBlueSide && dropOnFloor) {
+                if(DEBUG) System.out.println("14564trace before second grab");
+                if(isBlue) {
                     grab_SideArmLeft();
-                    dropOnFloorLeft();
+                    EncoderStrafeGyro(8);
                 }
-                else{
-                    grab_SideArmLeft();
-                    drop_SideArm_FoundationLeft();
-                }
-                if (!isBlueSide && dropOnFloor) {
+                else {
                     grab_SideArmRight();
-                    dropOnFloorRight();
+                    EncoderStrafeGyro(-8);
+
                 }
-
-                else{
-                    grab_SideArmRight();
-                    drop_SideArm_FoundationRight();
+                if(dropOnFloor){
+                    if(DEBUG) System.out.println("14564trace before second drop on floor");
+                    dropOnFloor();
                 }
-
-
-
-
-
+                else {
+                    if(DEBUG) System.out.println("14564trace before second drop on Foundation");
+                    drop_SideArm_Foundation();
+                }
             }
-
-
         }
         //park
 
-        if (isBlueSide) {
-            makeParallelLeft(23);
-        } else {
-            makeParallelRight(23);
+
+        if(DEBUG) System.out.println("14564trace before park");
+        if(dropOnFloor) {
+            EncoderStraightGyro(40);
         }
+        else if(doFoundation) {
+            if (isBlueSide) {
+                makeParallelLeft(23);
+            } else {
+                makeParallelRight(23);
+            }
+            EncoderStraightGyro(-60);
+        }
+        else {
+            EncoderStraightGyro(65);
+        }
+        if(DEBUG) System.out.println("14564trace All Done");
 
-
-        EncoderMoveDist(1, -60, false, true, 0);
     }
-
 
 
 }

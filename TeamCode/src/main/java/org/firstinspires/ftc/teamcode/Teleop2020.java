@@ -53,8 +53,8 @@ public class Teleop2020 extends LinearOpMode {
     DcMotor lift;
     DcMotor lift_assist;
     DcMotor extend;
-    Servo intakeLeft;
-    Servo intakeRight;
+    DcMotor tape_extend;
+    Servo capstone;
     Servo grab_left;
     Servo grab_right;
     Servo foundation;
@@ -98,6 +98,8 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double SIDE_ARM_DROP = 0.1;
     protected static final double SIDE_ARM_MAIN_DOWN_RIGHT = 0.6;
     protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 0.8;
+    protected static final double SIDE_ARM_MAIN_PRE_RIGHT = 0.7;
+
 
     protected static final double SIDE_ARM_WHEEL_GRAB_RIGHT = 0;
     protected static final double SIDE_ARM_WHEEL_GRAB_LEFT = 0;
@@ -125,7 +127,12 @@ public class Teleop2020 extends LinearOpMode {
 
     protected static final double LIFT_MAX_INCH = 16.5;
 
-    protected static final double CAM_SIDE_ARM_OFFSET = -5;
+    protected static final double CAM_SIDE_ARM_OFFSET_LEFT = -5;
+    protected static final double CAM_SIDE_ARM_OFFSET_RIGHT = -5.5;
+    protected  double CAM_SIDE_ARM_OFFSET = CAM_SIDE_ARM_OFFSET_LEFT;
+
+
+
     protected static final double CAM_TO_FF = 7.5;
     protected static final double CAM_TO_BB = 10.5;
 
@@ -302,10 +309,8 @@ public class Teleop2020 extends LinearOpMode {
         lift = hardwareMap.dcMotor.get("lift");
         lift_assist = hardwareMap.dcMotor.get("lift_assist");
         lift.setMode(STOP_AND_RESET_ENCODER);
-        //TEMP
-        intakeLeft = hardwareMap.servo.get("intakeLeft");
-        intakeRight= hardwareMap.servo.get("intakeRight");
-        //TEMP
+        tape_extend= hardwareMap.dcMotor.get("tape_extend");
+        tape_extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
         motorRightFront = hardwareMap.dcMotor.get("right_front");
@@ -321,6 +326,7 @@ public class Teleop2020 extends LinearOpMode {
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD); // changed for 2020 config
         //        extend.setDirection(CRServo.Direction.REVERSE);
+        capstone = hardwareMap.servo.get("capstone");
         grab_right = hardwareMap.servo.get("grab_right");
         grab_left = hardwareMap.servo.get("grab_left");
         foundation = hardwareMap.servo.get("foundation");
@@ -807,7 +813,7 @@ public class Teleop2020 extends LinearOpMode {
 
         if (state == SideArmState.PRE_GRAB) { //GRABBER OPEN FOR COLLECTION
             sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
-            sideArmMainRight.setPosition(SIDE_ARM_MAIN_DOWN_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_PRE_RIGHT);
         }
 
         if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND
@@ -869,13 +875,13 @@ public class Teleop2020 extends LinearOpMode {
             //captureFrame(cvUtil);
 
             float forward = -1 * gamepad1.right_stick_y;
-            double turn_component = gamepad1.left_stick_x*turnPowerFactor;
+            double turn_component = gamepad1.left_stick_x * turnPowerFactor;
             double x_component = gamepad1.right_stick_x;
             double y_component = -1 * gamepad1.right_stick_y;
 
-            if(y_component == 0)
+            if (y_component == 0)
                 y_component = 0.001;
-            if(x_component == 0)
+            if (x_component == 0)
                 x_component = 0.001;
 
             if (gamepad1.right_trigger > 0) {
@@ -885,76 +891,66 @@ public class Teleop2020 extends LinearOpMode {
             }
 
 
+            if (gamepad1.left_bumper && Math.abs(forward) > 0.1) {
+                //right turn
+                motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);  //changed
+                motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);   //changed
+                motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
+                motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
+                motorRightFront.setPower(forward * power_multiplier);
+                motorRightBack.setPower(forward * power_multiplier);
+                motorLeftFront.setPower(forward * power_multiplier);
+                motorLeftBack.setPower(forward * power_multiplier);
+            } else if (gamepad1.right_bumper && Math.abs(forward) > 0.1) {
+                //left turn
+                motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD); //changed
+                motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);  //changed
+                motorRightFront.setPower(forward * power_multiplier);
+                motorRightBack.setPower(forward * power_multiplier);
+                motorLeftFront.setPower(forward * power_multiplier);
+                motorLeftBack.setPower(forward * power_multiplier);
+            } else if (gamepad1.left_trigger > 0.1 && Math.abs(x_component) > 0.1) {
+                motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
+                motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
 
+                motorRightFront.setPower(-0.5 * (x_component / Math.abs(x_component)) * power_multiplier);
+                motorRightBack.setPower(0.5 * (x_component / Math.abs(x_component)) * power_multiplier);
+                motorLeftFront.setPower(0.5 * (x_component / Math.abs(x_component)) * power_multiplier);
+                motorLeftBack.setPower(-0.5 * (x_component / Math.abs(x_component)) * power_multiplier);
 
+            } else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1) {
+                motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
+                motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
+                motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
 
+                motorRightFront.setPower(0.3 * (y_component / Math.abs(y_component)) * power_multiplier);
+                motorRightBack.setPower(0.3 * (y_component / Math.abs(y_component)) * power_multiplier);
+                motorLeftFront.setPower(0.3 * (y_component / Math.abs(y_component)) * power_multiplier);
+                motorLeftBack.setPower(0.3 * (y_component / Math.abs(y_component)) * power_multiplier);
 
-
-                if (gamepad1.left_bumper && Math.abs(forward) > 0.1) {
-                    //right turn
-                    motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);  //changed
-                    motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);   //changed
-                    motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
-                    motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
-                    motorRightFront.setPower(forward * power_multiplier);
-                    motorRightBack.setPower(forward * power_multiplier);
-                    motorLeftFront.setPower(forward * power_multiplier);
-                    motorLeftBack.setPower(forward * power_multiplier);
-                } else if (gamepad1.right_bumper && Math.abs(forward) > 0.1) {
-                    //left turn
-                    motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD); //changed
-                    motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);  //changed
-                    motorRightFront.setPower(forward * power_multiplier);
-                    motorRightBack.setPower(forward * power_multiplier);
-                    motorLeftFront.setPower(forward * power_multiplier);
-                    motorLeftBack.setPower(forward * power_multiplier);
-                }
-
-                else if (gamepad1.left_trigger > 0.1 && Math.abs(x_component) > 0.1){
-                    motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
-                    motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
-
-                    motorRightFront.setPower(-0.5 *(x_component/Math.abs(x_component))* power_multiplier);
-                    motorRightBack.setPower(0.5 *(x_component/Math.abs(x_component))* power_multiplier);
-                    motorLeftFront.setPower(0.5 *(x_component/Math.abs(x_component))* power_multiplier);
-                    motorLeftBack.setPower(-0.5 *(x_component/Math.abs(x_component)) * power_multiplier);
-
-                }
-                else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1){
-                    motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);  //default
-                    motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE); //default
-                    motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);  //default
-
-                    motorRightFront.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
-                    motorRightBack.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
-                    motorLeftFront.setPower(0.3 *(y_component/Math.abs(y_component))* power_multiplier);
-                    motorLeftBack.setPower(0.3 *(y_component/Math.abs(y_component)) * power_multiplier);
-
-                }
+            }
 //                else if (gamepad1.left_trigger > 0.1 && Math.abs(y_component) > 0.1){
 //                    vectorCombineSimple(0, 0.5*(y_component/Math.abs(y_component)), 0);
 //                }
 
 
-                else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component)>0.1)) {
-                    vectorCombine(x_component , y_component , turn_component*(y_component/Math.abs(y_component)));
-                }
-
-                else {
-                    motorRightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    motorRightFront.setPower(0);
-                    motorRightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    motorRightBack.setPower(0);
-                    motorLeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    motorLeftFront.setPower(0);
-                    motorLeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                    motorLeftBack.setPower(0);
-                }
+            else if ((Math.abs(x_component) > 0.1) || (Math.abs(y_component) > 0.1)) {
+                vectorCombine(x_component, y_component, turn_component * (y_component / Math.abs(y_component)));
+            } else {
+                motorRightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                motorRightFront.setPower(0);
+                motorRightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                motorRightBack.setPower(0);
+                motorLeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                motorLeftFront.setPower(0);
+                motorLeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                motorLeftBack.setPower(0);
+            }
 
 //            else
 
@@ -976,15 +972,13 @@ public class Teleop2020 extends LinearOpMode {
 //            }
 
 
-
-
-                if (gamepad1.b) {
-                    if (powerReductionFactor == 0.8)
-                        powerReductionFactor = 0.4;
-                    else if (powerReductionFactor == 0.4)
-                        powerReductionFactor = 0.8;
-                    sleep(200);
-                }
+            if (gamepad1.b) {
+                if (powerReductionFactor == 0.8)
+                    powerReductionFactor = 0.4;
+                else if (powerReductionFactor == 0.4)
+                    powerReductionFactor = 0.8;
+                sleep(200);
+            }
 //                if (lift.getCurrentPosition() >= 0 && gamepad2.left_stick_y > 0.1) {
 //                    lift.setPower(-1);
 //                    lift_assist.setPower(-1);
@@ -999,27 +993,27 @@ public class Teleop2020 extends LinearOpMode {
 //
 //                }
 
-                if (gamepad2.a){
-                    liftStallPower = LIFT_NON_SLIP_POWER;
-                    stopWheels();
-                    setLiftPosition(Math.abs(0));
-                    liftTarget = 0;
-                    powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
+            if (gamepad2.a) {
+                liftStallPower = LIFT_NON_SLIP_POWER;
+                stopWheels();
+                setLiftPosition(Math.abs(0));
+                liftTarget = 0;
+                powerReductionFactor = DEFAULT_POWER_REDUCTION_FACTOR;
 
-                }
-                if (gamepad2.b){
+            }
+            if (gamepad2.b) {
 
-                    liftTarget = 0.5*REV_CORE_HEX_TICKS_PER_INCH;
-                }
+                liftTarget = 0.5 * REV_CORE_HEX_TICKS_PER_INCH;
+            }
 
-                if (gamepad2.right_trigger > 0.1) {
+            if (gamepad2.right_trigger > 0.1) {
 
-                    extend.setPower(1);
-                } else if (gamepad2.left_trigger > 0.1) {
-                    extend.setPower(-1);
-                } else {
-                    extend.setPower(0);
-                }
+                extend.setPower(1);
+            } else if (gamepad2.left_trigger > 0.1) {
+                extend.setPower(-1);
+            } else {
+                extend.setPower(0);
+            }
 
 
 //            if (gamepad1.y) {
@@ -1034,52 +1028,62 @@ public class Teleop2020 extends LinearOpMode {
 //                    sideArmSetStateLeft(SideArmState.HOME);
 //
 //                }
-                if(gamepad1.right_trigger > 0.5) {
-                    if (gamepad1.dpad_down) {  //BLOCK GRAB
-                        sideArmSetStateRight(SideArmState.GRAB);
-                    }
-                    if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
-                        sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-                    }
-
-                    if (gamepad1.dpad_right) {  //BLOCK THROW
-                        sideArmSetStateRight(SideArmState.THROW);
-                    }
-                    if (gamepad1.dpad_left) {  //BLOCK THROW
-                        sideArmSetStateRight(SideArmState.PRE_GRAB);
-                    }
+            if (gamepad1.right_trigger > 0.5) {
+                if (gamepad1.dpad_down) {  //BLOCK GRAB
+                    sideArmSetStateRight(SideArmState.GRAB);
                 }
-                if(gamepad1.left_trigger > 0.5) {
-                    if (gamepad1.dpad_down) {  //BLOCK GRAB
-                        sideArmSetStateLeft(SideArmState.GRAB);
-                    }
-                    if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
-                        sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-                    }
-
-                    if (gamepad1.dpad_right) {  //BLOCK THROW
-                        sideArmSetStateLeft(SideArmState.THROW);
-                    }
-                    if (gamepad1.dpad_left) {  //BLOCK THROW
-                        sideArmSetStateLeft(SideArmState.PRE_GRAB);
-                    }
+                if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
+                    sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
                 }
 
-
-
-
-
-
-
-                if (gamepad2.dpad_up) {               //GRABBED POSITION
-                    grab_right.setPosition(0.7); //More than 90 degrees to add pressure
-                    grab_left.setPosition(0.3);
+                if (gamepad1.dpad_right) {  //BLOCK THROW
+                    sideArmSetStateRight(SideArmState.THROW);
                 }
-                if (gamepad2.dpad_down) {               //OPEN FOR COLLECTION POSITION
-                    grab_right.setPosition(0.9);
-                    grab_left.setPosition(0.15);
+                if (gamepad1.dpad_left) {  //BLOCK THROW
+                    sideArmSetStateRight(SideArmState.PRE_GRAB);
                 }
-//                if (gamepad2.dpad_left) {               //Dropping
+            }
+            if (gamepad1.left_trigger > 0.5) {
+                if (gamepad1.dpad_down) {  //BLOCK GRAB
+                    sideArmSetStateLeft(SideArmState.GRAB);
+                }
+                if (gamepad1.dpad_up) {  //BLOCK HOLD HIGH
+                    sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
+                }
+
+                if (gamepad1.dpad_right) {  //BLOCK THROW
+                    sideArmSetStateLeft(SideArmState.THROW);
+                }
+                if (gamepad1.dpad_left) {  //BLOCK THROW
+                    sideArmSetStateLeft(SideArmState.PRE_GRAB);
+                }
+            }
+
+
+            if (gamepad2.dpad_up) {               //GRABBED POSITION
+                grab_right.setPosition(0.7); //More than 90 degrees to add pressure
+                grab_left.setPosition(0.3);
+            }
+            if (gamepad2.dpad_down) {               //OPEN FOR COLLECTION POSITION
+                grab_right.setPosition(0.9);
+                grab_left.setPosition(0.15);
+            }
+            if (gamepad2.dpad_left){
+                if (gamepad2.left_bumper) {
+                    tape_extend.setPower(1);
+                } else if (gamepad2.right_bumper) {
+                    tape_extend.setPower(-1);
+                } else {
+                    tape_extend.setPower(0);
+                }
+            } else if (gamepad2.dpad_right){
+                if (gamepad2.left_bumper){
+                    capstone.setPosition(0);
+                } else if (gamepad2.right_bumper){
+                    capstone.setPosition(1);
+                }
+            }
+//               if (gamepad2.dpad_left) {               //Dropping
 //                    grab_right.setPosition(1);
 //                    grab_left.setPosition(0.52);
 //                }
@@ -1092,24 +1096,10 @@ public class Teleop2020 extends LinearOpMode {
 //
 //                }
 
-                if (liftTarget > (0.5 * REV_CORE_HEX_TICKS_PER_INCH) ) {
-                    powerReductionFactor = 0.3;
-                }
+            if (liftTarget > (0.5 * REV_CORE_HEX_TICKS_PER_INCH)) {
+                powerReductionFactor = 0.3;
+            }
 
-
-                if (gamepad2.right_bumper) {
-
-                    grab_left.setPosition(0);
-                    grab_right.setPosition(0.5);
-
-                }
-
-                if (gamepad2.left_bumper) {
-
-                    grab_left.setPosition(1);
-                    grab_right.setPosition(1);
-
-                }
 
 
 //            if (gamepad2.dpad_up){
