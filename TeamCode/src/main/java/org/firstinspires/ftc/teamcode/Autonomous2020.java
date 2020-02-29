@@ -1726,6 +1726,10 @@ public class Autonomous2020 extends Teleop2020  {
             // Provide feedback as to where the robot is located (if we know).
             if (targetVisible) {
                 // express position (translation) of robot in inches.
+
+                if(DEBUG)  System.out.println("14564trace vu seen: " + retryCount);
+
+
                 VectorF translation = lastLocation.getTranslation();
                 telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
 
@@ -1785,7 +1789,9 @@ public class Autonomous2020 extends Teleop2020  {
             }
             else {
                 //assume third default block
-                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
+                if(DEBUG)  System.out.println("14564trace vu not seen: " + retryCount);
+
+                where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
 
                  break;
             }
@@ -1811,34 +1817,34 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetStateLeft(SideArmState.GRAB);
-        sleep(400);
+        sleep(600);
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-        sleep(400);
+        sleep(200);
 
     }
 
     public void grab_SideArmRight() {
 
         sideArmSetStateRight(SideArmState.GRAB);
-        sleep(400);
+        sleep(600);
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-        sleep(400);
+        sleep(200);
     }
 
     public void drop_SideArm_Foundation(){
-        double dist = 120 - where_cam_x;
+        double dist = 90 - where_cam_x;
 
         EncoderStraightGyro(-dist);
 
         if(isBlueSide) {
-            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
+            DSMove(0.7, 30-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
             sideArmSetStateLeft(SideArmState.THROW);
             sleep(200);
             EncoderStrafeGyro(8);
             sideArmSetStateLeft(SideArmState.HOME);
         }
         else {
-            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, true, true, true, 0, false);
+            DSMove(0.7, 30-BB_DS_TO_SIDE_ARM, 32, true, true, true, 0, false);
             sideArmSetStateRight(SideArmState.THROW);
             sleep(200);
             EncoderStrafeGyro(-8);
@@ -1859,7 +1865,7 @@ public class Autonomous2020 extends Teleop2020  {
         USE_VUFORIA = true;
 
 
-        powerReductionFactor = 0.8;
+        powerReductionFactor = 1;
 
         where_head = FldDirection.Face_Fld_Audience;
 
@@ -1901,10 +1907,10 @@ public class Autonomous2020 extends Teleop2020  {
         if(DEBUG) System.out.println("14564dbg FirstSS_X " + firstSkyStone_X);
 
         if(isBlueSide) {
-            DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+            DSMove(0.7, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
         }
         else {
-            DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+            DSMove(0.7, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
 
         }
 
@@ -1916,11 +1922,11 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(isBlue) {
             grab_SideArmLeft();
-            EncoderStrafeGyro(8);
+            EncoderStrafeGyro(10);
         }
         else {
             grab_SideArmRight();
-            EncoderStrafeGyro(-8);
+            EncoderStrafeGyro(-10);
         }
         if(dropOnFloor){
             if(DEBUG) System.out.println("14564trace before first drop to floor");
@@ -1987,15 +1993,15 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(DEBUG) System.out.println("14564trace before park");
         if(dropOnFloor) {
-            EncoderStraightGyro(40);
+            EncoderStraightGyro(20);
         }
         else if(doFoundation) {
             if (isBlueSide) {
-                makeParallelLeft(23);
+                makeParallelLeft(25);
             } else {
-                makeParallelRight(23);
+                makeParallelRight(25);
             }
-            EncoderStraightGyro(-60);
+            EncoderStraightGyro(-50);
         }
         else {
             EncoderStraightGyro(65);

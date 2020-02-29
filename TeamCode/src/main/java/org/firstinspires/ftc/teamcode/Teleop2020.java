@@ -83,9 +83,9 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double LIFT_JUMP_RESOLUTION_UP = 3;
     protected static final double FOUNDATION_UP = 0.1;
     protected static final double FOUNDATION_DOWN = 0.67;
-    protected static final double SIDE_ARM_WHEEL_OPEN_RIGHT = 0.5;
+    protected static final double SIDE_ARM_WHEEL_OPEN_RIGHT = 0.6;
     protected static final double SIDE_ARM_WHEEL_OPEN_LEFT = 0.5;
-    protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.4;
+    protected static final double SIDE_ARM_WHEEL_UP_RIGHT = 0.55;
     protected static final double SIDE_ARM_WHEEL_UP_LEFT = 0.53;
 
     protected static final double SIDE_ARM_MAIN_UP_RIGHT = 0.9;
@@ -96,9 +96,9 @@ public class Teleop2020 extends LinearOpMode {
     protected static final double SIDE_ARM_LIFTED = 0.2;
     protected static final double SIDE_ARM_BASE_LIFTED = 0.7;
     protected static final double SIDE_ARM_DROP = 0.1;
-    protected static final double SIDE_ARM_MAIN_DOWN_RIGHT = 0.6;
-    protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 0.8;
-    protected static final double SIDE_ARM_MAIN_PRE_RIGHT = 0.7;
+    protected static final double SIDE_ARM_MAIN_DOWN_RIGHT = 0.55;
+    protected static final double SIDE_ARM_MAIN_DOWN_LEFT = 0.85;
+    protected static final double SIDE_ARM_MAIN_PRE_RIGHT = 0.65;
 
 
     protected static final double SIDE_ARM_WHEEL_GRAB_RIGHT = 0;
@@ -1076,13 +1076,14 @@ public class Teleop2020 extends LinearOpMode {
                 } else {
                     tape_extend.setPower(0);
                 }
-            } else if (gamepad2.dpad_right){
-                if (gamepad2.left_bumper){
-                    capstone.setPosition(0);
-                } else if (gamepad2.right_bumper){
+            }
+            if (gamepad2.dpad_right && gamepad2.left_bumper){
+                    capstone.setPosition(0.0);
+                }
+            if (gamepad2.dpad_right && gamepad2.right_bumper){
                     capstone.setPosition(1);
                 }
-            }
+
 //               if (gamepad2.dpad_left) {               //Dropping
 //                    grab_right.setPosition(1);
 //                    grab_left.setPosition(0.52);
