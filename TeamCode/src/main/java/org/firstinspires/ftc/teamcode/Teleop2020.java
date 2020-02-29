@@ -128,8 +128,8 @@ public class Teleop2020 extends LinearOpMode {
 
     protected static final double LIFT_MAX_INCH = 16.5;
 
-    protected static final double CAM_SIDE_ARM_OFFSET_LEFT = -5.5;
-    protected static final double CAM_SIDE_ARM_OFFSET_RIGHT = -5.7;
+    protected static final double CAM_SIDE_ARM_OFFSET_LEFT = -4.5;
+    protected static final double CAM_SIDE_ARM_OFFSET_RIGHT = -4.7;
     protected  double CAM_SIDE_ARM_OFFSET = CAM_SIDE_ARM_OFFSET_LEFT;
 
 

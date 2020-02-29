@@ -556,6 +556,7 @@ public class Autonomous2020 extends Teleop2020  {
         Rev2mDistanceSensor ds1;
         Rev2mDistanceSensor ds2;
         Rev2mDistanceSensor ff1;
+        Rev2mDistanceSensor ff2;
 
         motorLeftFront.setDirection(DcMotorSimple.Direction.FORWARD);
         motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -574,14 +575,18 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(driveReverse) {
             ff1 = distanceSensor_bbr;
+            ff2 = distanceSensor_bbr; //only one sensor in back
+
         }
         else {
             ff1 = distanceSensor_ffr;
+            ff2 = distanceSensor_ffl;
+
         }
 
-        double fd1 = DSRead(ff1);
-        double sd1 = DSReadAvg(ds1);
-        double sd2 = DSReadAvg(ds2);
+        double fd1 = DSReadReliable(ff1,ff2);
+        double sd1 = DSReadReliable(ds1,ds2);
+        double sd2 = DSReadReliable(ds2,ds1);
 
 
         double counter = 0;
@@ -663,13 +668,13 @@ public class Autonomous2020 extends Teleop2020  {
 
             vectorCombineSimple(side_pwr, fwd_pwr, turn_pwr);
 
-            fd1 = DSRead(ff1);
+            fd1 = DSReadReliable(ff1,ff2);
 
             if (DEBUG) System.out.println("14564dbg DSMove: fd1  " + fd1);
 
-            sd1 = DSReadAvg(ds1);
+            sd1 = DSReadReliable(ds1, ds2);
             if((counter%3) == 1)
-                sd2 = DSReadAvg(ds2);
+                sd2 = DSReadReliable(ds2, ds1);
 
             curr_pos = motorRightBack.getCurrentPosition() / TICKS_PER_INCH_STRAIGHT;
             if (prev_pos == curr_pos) {
@@ -1096,6 +1101,20 @@ public class Autonomous2020 extends Teleop2020  {
         //return getMovingAverage(ds);
         return DSRead(ds);
 
+    }
+
+    double DSReadReliable(Rev2mDistanceSensor ds1, Rev2mDistanceSensor ds2) {
+
+        if(opModeIsActive() && !isStopRequested()) {
+            double dist = ds1.getDistance(DistanceUnit.INCH);
+            if(DEBUG) System.out.println("14564dbg DSReadReliable ds1 " + dist);
+            if (dist > 300) {
+                dist = ds2.getDistance(DistanceUnit.INCH);
+                if (DEBUG) System.out.println("14564dbg DSReadReliable ds2 " + dist);
+            }
+            return dist ;
+        } else
+            return 0 ;
     }
 
     double DSRead(Rev2mDistanceSensor ds) {
@@ -1811,56 +1830,67 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void dropOnFloor(){
-        double dist = 110  - where_cam_x;
+        double dist = 98  - where_cam_x;
         EncoderStraightGyro(-dist);
-        if(isBlueSide)
-            sideArmSetStateLeft(SideArmState.HOME);
-        else
-            sideArmSetStateRight(SideArmState.HOME);
+        if(isBlueSide) {
+            sideArmSetStateLeft(SideArmState.THROW);
+            sleep(200);
+            sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
+
+        }
+        else{
+            sideArmSetStateRight(SideArmState.THROW);
+            sleep(200);
+            sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
+
+        }
     }
 
 
     public void grab_SideArmLeft() {
 
-
+        sideArmSetStateLeft(SideArmState.PRE_GRAB_LOW);
+        //simpleStrafe(-0.5);
+        sleep(200);
+        //stopWheels();
         sideArmSetStateLeft(SideArmState.GRAB);
-        simpleStrafe(-0.4);
         sleep(200);
-        stopWheels();
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-        sleep(200);
+        //sleep(200);
 
     }
 
     public void grab_SideArmRight() {
-
+        sideArmSetStateRight(SideArmState.PRE_GRAB_LOW);
+        //simpleStrafe(0.5);
+        sleep(200);
+        //stopWheels();
         sideArmSetStateRight(SideArmState.GRAB);
-        simpleStrafe(0.4);
         sleep(200);
-        stopWheels();
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-        sleep(200);
+        //sleep(200);
     }
 
-    public void drop_SideArm_Foundation(){
-        double dist = 90 - where_cam_x;
+    public void drop_SideArm_Foundation(int count){
+        double dist = 120 - where_cam_x + count*8;
 
         EncoderStraightGyro(-dist);
 
         if(isBlueSide) {
-            DSMove(0.7, 30-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, false, true, true, 0, false);
             sideArmSetStateLeft(SideArmState.THROW);
             sleep(200);
-            EncoderStrafeGyro(8);
-            sideArmSetStateLeft(SideArmState.HOME);
+            EncoderStrafeGyro(10);
+            sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         }
         else {
-            DSMove(0.7, 30-BB_DS_TO_SIDE_ARM, 32, true, true, true, 0, false);
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM, 32, true, true, true, 0, false);
             sideArmSetStateRight(SideArmState.THROW);
             sleep(200);
-            EncoderStrafeGyro(-8);
-            sideArmSetStateRight(SideArmState.HOME);
+            EncoderStrafeGyro(-10);
+            sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
         }
+        where_cam_x = 134 + count*8;
     }
 
 
@@ -1881,12 +1911,12 @@ public class Autonomous2020 extends Teleop2020  {
         where_head = FldDirection.Face_Fld_Audience;
 
         Boolean returnForSecond = true;
-        Boolean returnForThird = true;
-        Boolean returnForFourth = true;
+        Boolean returnForThird = false;
+        Boolean returnForFourth = false;
 
 
-        if (doFoundation)
-            returnForSecond = false;
+//        if (doFoundation)
+//            returnForSecond = false;
 
 
         initFn();
@@ -1943,13 +1973,14 @@ public class Autonomous2020 extends Teleop2020  {
             grab_SideArmRight();
             EncoderStrafeGyro(-10);
         }
+
         if(dropOnFloor){
             if(DEBUG) System.out.println("14564trace before first drop to floor");
             dropOnFloor();
         }
         else {
             if(DEBUG) System.out.println("14564trace before first drop to Foundation");
-            drop_SideArm_Foundation();
+            drop_SideArm_Foundation(0);
         }
 
 
@@ -1965,7 +1996,7 @@ public class Autonomous2020 extends Teleop2020  {
                 where_cam_x = firstSkyStone_X - 24;
 
                 sideArmSetStateLeft(SideArmState.PRE_GRAB);
-                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+                DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
 
             } else {
                 where_cam_y = 30.5;
@@ -1973,10 +2004,10 @@ public class Autonomous2020 extends Teleop2020  {
 
                 sideArmSetStateRight(SideArmState.PRE_GRAB);
 
-                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+                DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
             }
             if (DEBUG)
-                System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
+                System.out.println("14564dbg second wherex " + where_cam_x + " wherey " + where_cam_y);
 
             if (DEBUG) System.out.println("14564trace before second grab");
             if (isBlue) {
@@ -1992,7 +2023,7 @@ public class Autonomous2020 extends Teleop2020  {
                 dropOnFloor();
             } else {
                 if (DEBUG) System.out.println("14564trace before second drop on Foundation");
-                drop_SideArm_Foundation();
+                drop_SideArm_Foundation(1);
             }
         }
 
@@ -2043,7 +2074,7 @@ public class Autonomous2020 extends Teleop2020  {
                 dropOnFloor();
             } else {
                 if (DEBUG) System.out.println("14564trace before third drop on Foundation");
-                drop_SideArm_Foundation();
+                //drop_SideArm_Foundation();
             }
         }
 
@@ -2094,7 +2125,7 @@ public class Autonomous2020 extends Teleop2020  {
                 dropOnFloor();
             } else {
                 if (DEBUG) System.out.println("14564trace before fourth drop on Foundation");
-                drop_SideArm_Foundation();
+                //drop_SideArm_Foundation();
             }
         }
 
