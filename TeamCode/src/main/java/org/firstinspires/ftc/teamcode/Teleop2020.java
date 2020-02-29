@@ -111,6 +111,7 @@ public class Teleop2020 extends LinearOpMode {
     enum SideArmState {
         HOME,
         PRE_GRAB,
+        PRE_GRAB_LOW,
         GRAB,
         GRAB_HOLD_LOW,
         GRAB_HOLD_HIGH,
@@ -127,8 +128,8 @@ public class Teleop2020 extends LinearOpMode {
 
     protected static final double LIFT_MAX_INCH = 16.5;
 
-    protected static final double CAM_SIDE_ARM_OFFSET_LEFT = -5;
-    protected static final double CAM_SIDE_ARM_OFFSET_RIGHT = -5.5;
+    protected static final double CAM_SIDE_ARM_OFFSET_LEFT = -5.5;
+    protected static final double CAM_SIDE_ARM_OFFSET_RIGHT = -5.7;
     protected  double CAM_SIDE_ARM_OFFSET = CAM_SIDE_ARM_OFFSET_LEFT;
 
 
@@ -200,6 +201,8 @@ public class Teleop2020 extends LinearOpMode {
     boolean vuInitDone = false;
     double vu_y = 0;
     double vu_x = 0;
+
+    int ss_position=3;
 
     double where_cam_x = 0;
     double where_cam_y = 0;
@@ -776,6 +779,11 @@ public class Teleop2020 extends LinearOpMode {
             sideArmMainLeft.setPosition(SIDE_ARM_MAIN_PRE_LEFT);
         }
 
+        if (state == SideArmState.PRE_GRAB_LOW) { //GRABBER OPEN FOR COLLECTION
+            sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_UP_LEFT);
+            sideArmMainLeft.setPosition(SIDE_ARM_MAIN_DOWN_LEFT);
+        }
+
         if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND
             sideArmWheelLeft.setPosition(SIDE_ARM_WHEEL_GRAB_LEFT);
             sideArmMainLeft.setPosition(SIDE_ARM_MAIN_DOWN_LEFT);
@@ -814,6 +822,11 @@ public class Teleop2020 extends LinearOpMode {
         if (state == SideArmState.PRE_GRAB) { //GRABBER OPEN FOR COLLECTION
             sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
             sideArmMainRight.setPosition(SIDE_ARM_MAIN_PRE_RIGHT);
+        }
+
+        if (state == SideArmState.PRE_GRAB_LOW) { //GRABBER OPEN FOR COLLECTION
+            sideArmWheelRight.setPosition(SIDE_ARM_WHEEL_UP_RIGHT);
+            sideArmMainRight.setPosition(SIDE_ARM_MAIN_DOWN_RIGHT);
         }
 
         if(state == SideArmState.GRAB){  //BLOCK GRABBED BUT ON GROUND

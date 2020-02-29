@@ -1383,7 +1383,7 @@ public class Autonomous2020 extends Teleop2020  {
             else if (retryCount < 5) {
                 retryCount++;
                 if(DEBUG)  System.out.println("14564dbg retry count: " + retryCount);
-                sleep(200);
+                sleep(100);
                 continue;
             }
             else {
@@ -1750,16 +1750,22 @@ public class Autonomous2020 extends Teleop2020  {
 
                 if(DEBUG) System.out.println("14564dbg vu vx_x " + vu_x + " blockDist: " + blockDist);
                 if(vu_x > 0){
-                    if(isBlueSide)
+                    if(isBlueSide) {
                         where_cam_x = 36 - CAM_SIDE_ARM_OFFSET;
-                    else
+                        ss_position = 2;
+                    } else {
                         where_cam_x = 44 - CAM_SIDE_ARM_OFFSET;
+                        ss_position = 1;
+                    }
                 }
                 else{
-                    if(isBlueSide)
+                    if(isBlueSide) {
                         where_cam_x = 44 - CAM_SIDE_ARM_OFFSET;
-                    else
+                        ss_position = 1;
+                    } else {
                         where_cam_x = 36 - CAM_SIDE_ARM_OFFSET;
+                        ss_position = 2;
+                    }
                 }
 //                where_cam_x += blockDist;
 //                where_cam_y += vu_y-1;
@@ -1792,8 +1798,9 @@ public class Autonomous2020 extends Teleop2020  {
                 if(DEBUG)  System.out.println("14564trace vu not seen: " + retryCount);
 
                 where_cam_x = 28 - CAM_SIDE_ARM_OFFSET;
+                ss_position = 3;
 
-                 break;
+                break;
             }
 
         }
@@ -1804,7 +1811,7 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void dropOnFloor(){
-        double dist = 96  - where_cam_x;
+        double dist = 110  - where_cam_x;
         EncoderStraightGyro(-dist);
         if(isBlueSide)
             sideArmSetStateLeft(SideArmState.HOME);
@@ -1817,7 +1824,9 @@ public class Autonomous2020 extends Teleop2020  {
 
 
         sideArmSetStateLeft(SideArmState.GRAB);
-        sleep(600);
+        simpleStrafe(-0.4);
+        sleep(200);
+        stopWheels();
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         sleep(200);
 
@@ -1826,7 +1835,9 @@ public class Autonomous2020 extends Teleop2020  {
     public void grab_SideArmRight() {
 
         sideArmSetStateRight(SideArmState.GRAB);
-        sleep(600);
+        simpleStrafe(0.4);
+        sleep(200);
+        stopWheels();
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
         sleep(200);
     }
@@ -1870,6 +1881,10 @@ public class Autonomous2020 extends Teleop2020  {
         where_head = FldDirection.Face_Fld_Audience;
 
         Boolean returnForSecond = true;
+        Boolean returnForThird = true;
+        Boolean returnForFourth = true;
+
+
         if (doFoundation)
             returnForSecond = false;
 
@@ -1907,10 +1922,10 @@ public class Autonomous2020 extends Teleop2020  {
         if(DEBUG) System.out.println("14564dbg FirstSS_X " + firstSkyStone_X);
 
         if(isBlueSide) {
-            DSMove(0.7, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+            DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
         }
         else {
-            DSMove(0.7, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+            DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
 
         }
 
@@ -1937,57 +1952,158 @@ public class Autonomous2020 extends Teleop2020  {
             drop_SideArm_Foundation();
         }
 
+
+        if (returnForSecond) {
+
+            if (DEBUG) System.out.println("14564trace  returning for second");
+
+            EncoderStraightGyro(where_cam_x - firstSkyStone_X + 20);
+
+            if (isBlueSide) {
+
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - 24;
+
+                sideArmSetStateLeft(SideArmState.PRE_GRAB);
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+
+            } else {
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - 24;
+
+                sideArmSetStateRight(SideArmState.PRE_GRAB);
+
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+            }
+            if (DEBUG)
+                System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
+
+            if (DEBUG) System.out.println("14564trace before second grab");
+            if (isBlue) {
+                grab_SideArmLeft();
+                EncoderStrafeGyro(10);
+            } else {
+                grab_SideArmRight();
+                EncoderStrafeGyro(-10);
+
+            }
+            if (dropOnFloor) {
+                if (DEBUG) System.out.println("14564trace before second drop on floor");
+                dropOnFloor();
+            } else {
+                if (DEBUG) System.out.println("14564trace before second drop on Foundation");
+                drop_SideArm_Foundation();
+            }
+        }
+
+        if (returnForThird) {
+
+            if (DEBUG) System.out.println("14564trace  returning for third");
+
+            int pos;
+            if(ss_position == 1)
+                pos = 8;
+            else if (ss_position == 2)
+                pos = -8;
+            else
+                pos = -16;
+
+            EncoderStraightGyro(where_cam_x - firstSkyStone_X + pos);
+
+            if (isBlueSide) {
+
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - pos;
+
+                sideArmSetStateLeft(SideArmState.PRE_GRAB);
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+
+            } else {
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - pos;
+
+                sideArmSetStateRight(SideArmState.PRE_GRAB);
+
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+            }
+            if (DEBUG)
+                System.out.println("14564dbg third wherex " + where_cam_x + " where " + where_cam_y);
+
+            if (DEBUG) System.out.println("14564trace before third grab");
+            if (isBlue) {
+                grab_SideArmLeft();
+                EncoderStrafeGyro(10);
+            } else {
+                grab_SideArmRight();
+                EncoderStrafeGyro(-10);
+
+            }
+            if (dropOnFloor) {
+                if (DEBUG) System.out.println("14564trace before third drop on floor");
+                dropOnFloor();
+            } else {
+                if (DEBUG) System.out.println("14564trace before third drop on Foundation");
+                drop_SideArm_Foundation();
+            }
+        }
+
+        if (returnForFourth) {
+
+            if (DEBUG) System.out.println("14564trace  returning for fourth");
+
+            int pos;
+            if(ss_position == 1)
+                pos = 16;
+            else if (ss_position == 2)
+                pos = 8;
+            else
+                pos = -8;
+
+            EncoderStraightGyro(where_cam_x - firstSkyStone_X + pos);
+
+            if (isBlueSide) {
+
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - pos;
+
+                sideArmSetStateLeft(SideArmState.PRE_GRAB);
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
+
+            } else {
+                where_cam_y = 30.5;
+                where_cam_x = firstSkyStone_X - pos;
+
+                sideArmSetStateRight(SideArmState.PRE_GRAB);
+
+                DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
+            }
+            if (DEBUG)
+                System.out.println("14564dbg fourth wherex " + where_cam_x + " where " + where_cam_y);
+
+            if (DEBUG) System.out.println("14564trace before fourth grab");
+            if (isBlue) {
+                grab_SideArmLeft();
+                EncoderStrafeGyro(10);
+            } else {
+                grab_SideArmRight();
+                EncoderStrafeGyro(-10);
+
+            }
+            if (dropOnFloor) {
+                if (DEBUG) System.out.println("14564trace before fourth drop on floor");
+                dropOnFloor();
+            } else {
+                if (DEBUG) System.out.println("14564trace before fourth drop on Foundation");
+                drop_SideArm_Foundation();
+            }
+        }
+
         if (doFoundation) {
             if(DEBUG) System.out.println("14564trace before move Foundation");
             DS_MoveFoundation();
 
-        } else {
-            if (returnForSecond) {
-
-                if(DEBUG) System.out.println("14564trace  returning for second");
-
-                EncoderStraightGyro(where_cam_x - firstSkyStone_X + 24);
-
-                if (isBlueSide) {
-
-                    where_cam_y = 30.5;
-                    where_cam_x = firstSkyStone_X - 24;
-
-                    sideArmSetStateLeft(SideArmState.PRE_GRAB);
-                    DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
-
-                }
-                else {
-                    where_cam_y = 30.5;
-                    where_cam_x = firstSkyStone_X - 24;
-
-                    sideArmSetStateRight(SideArmState.PRE_GRAB);
-
-                    DSMove(0.6, where_cam_x - CAM_TO_FF, where_cam_y, true, false, true, 0, false);
-                }
-                if (DEBUG)
-                    System.out.println("14564dbg second wherex " + where_cam_x + " where " + where_cam_y);
-
-                if(DEBUG) System.out.println("14564trace before second grab");
-                if(isBlue) {
-                    grab_SideArmLeft();
-                    EncoderStrafeGyro(8);
-                }
-                else {
-                    grab_SideArmRight();
-                    EncoderStrafeGyro(-8);
-
-                }
-                if(dropOnFloor){
-                    if(DEBUG) System.out.println("14564trace before second drop on floor");
-                    dropOnFloor();
-                }
-                else {
-                    if(DEBUG) System.out.println("14564trace before second drop on Foundation");
-                    drop_SideArm_Foundation();
-                }
-            }
         }
+
         //park
 
 
@@ -2004,7 +2120,7 @@ public class Autonomous2020 extends Teleop2020  {
             EncoderStraightGyro(-50);
         }
         else {
-            EncoderStraightGyro(65);
+            EncoderStraightGyro(60);
         }
         if(DEBUG) System.out.println("14564trace All Done");
 
