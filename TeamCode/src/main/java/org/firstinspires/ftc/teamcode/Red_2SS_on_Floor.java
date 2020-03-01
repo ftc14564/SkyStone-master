@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Red_2SS_on_Floor")
+@Autonomous(name = "RED_4Stone_on_Floor")
 public class Red_2SS_on_Floor extends Autonomous2020 {
 
     @Override

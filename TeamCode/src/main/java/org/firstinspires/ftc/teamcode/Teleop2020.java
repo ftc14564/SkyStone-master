@@ -145,7 +145,7 @@ public class Teleop2020 extends LinearOpMode {
     protected static boolean USE_VUFORIA = false;
 
 
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = false;
 
 
     protected static final double LIFT_NON_SLIP_POWER = 0.2;
@@ -591,7 +591,6 @@ public class Teleop2020 extends LinearOpMode {
         motorRightBack.setPower(d + turn);
 
         if(DEBUG) System.out.println("14564dbg vectorCombine a " + a + " b " + b + " c " + c + " d " + d );
-
 //        telemetry.addData("x:", x);
 //        telemetry.addData("y:", y);
 //
@@ -601,6 +600,7 @@ public class Teleop2020 extends LinearOpMode {
 //        telemetry.addData("d:", d);
 //
 //        telemetry.update();
+
     }
 
     public void setLiftPosition(double position){

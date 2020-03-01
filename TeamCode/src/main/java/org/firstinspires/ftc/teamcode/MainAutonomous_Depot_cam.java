@@ -41,7 +41,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 
-@Autonomous(name = "Auto_Depot_cam")
+//@Autonomous(name = "Auto_Depot_cam")
 public class MainAutonomous_Depot_cam extends LinearOpMode {
 
     DcMotor motorRightFront;

@@ -90,7 +90,7 @@ public class UnitTest extends Autonomous2020 {
             boolean foundationTest = false;
             boolean dsMoverTest = false;
             boolean encoderMove_test = false;
-            boolean encoderMoveStrafe_test = true;
+            boolean encoderMoveStrafe_test = false;
             boolean avgTest = false;
             boolean encoderRead = false;
             boolean triagleStright = false;

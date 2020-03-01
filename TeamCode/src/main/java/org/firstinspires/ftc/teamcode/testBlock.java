@@ -70,7 +70,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
 
-@Autonomous(name = "testblock")
+//@Autonomous(name = "testblock")
 public class testBlock extends LinearOpMode {
 
     DcMotor motorRightFront;

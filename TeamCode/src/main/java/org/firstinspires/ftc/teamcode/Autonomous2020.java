@@ -25,7 +25,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
 
-@Autonomous(name = "Autonomous2020")
+//@Autonomous(name = "Autonomous2020")
 public class Autonomous2020 extends Teleop2020  {
 
 
@@ -721,18 +721,26 @@ public class Autonomous2020 extends Teleop2020  {
         //TO DO : CALL AGAIN IF MISSED
 
 
-        if(isBlueSide) {
-            gyroTurnREV(1,get_where_angle(where_head)+15);
-        }
-        else {
-            gyroTurnREV(1,get_where_angle(where_head)-15);
+//        if(isBlueSide) {
+//            gyroTurnREV(1,get_where_angle(where_head)+15);
+//        }
+//        else {
+//            gyroTurnREV(1,get_where_angle(where_head)-15);
+//
+//        }
+//        EncoderMoveDist(1, -25,false, false, 0);
+//
+//
+//        gyroTurnDirection(FldDirection.Face_Fld_Center_Foundation);
+//        EncoderMoveDist(1, -20,false, false, 0);
 
-        }
-        EncoderMoveDist(1, -25,false, false, 0);
+        if(isBlueSide)
+            vectorCombineSimple(0,-1,-1);
+        else
+            vectorCombineSimple(0,-1,1);
 
-
-        gyroTurnDirection(FldDirection.Face_Fld_Center_Foundation);
-        EncoderMoveDist(1, -20,false, false, 0);
+        sleep(1500);
+        stopWheels();
 
         gyroTurnDirection(FldDirection.Face_Fld_Foundation);
         EncoderMoveDist(0.8, 20,false, false, 0);
@@ -1861,25 +1869,25 @@ public class Autonomous2020 extends Teleop2020  {
     }
 
     public void drop_SideArm_Foundation(int count){
-        double dist = 120 - where_cam_x + count*8;
+        double dist = 120 - where_cam_x + count*10;
 
         EncoderStraightGyro(-dist);
 
         if(isBlueSide) {
-            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM + (count*8), 32, false, true, true, 0, false);
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM + (count*10), 32, false, true, true, 0, false);
             sideArmSetStateLeft(SideArmState.THROW);
             sleep(200);
             EncoderStrafeGyro(10);
             sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
         }
         else {
-            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM + (count*8), 32, true, true, true, 0, false);
+            DSMove(0.7, 24-BB_DS_TO_SIDE_ARM + (count*10), 32, true, true, true, 0, false);
             sideArmSetStateRight(SideArmState.THROW);
             sleep(200);
             EncoderStrafeGyro(-10);
             sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
         }
-        where_cam_x = 134 + count*8;
+        where_cam_x = 134 + count*10;
     }
 
 
@@ -2137,11 +2145,11 @@ public class Autonomous2020 extends Teleop2020  {
         }
         else if(doFoundation) {
             if (isBlueSide) {
-                makeParallelLeft(25);
+                makeParallelLeft(27);
             } else {
-                makeParallelRight(25);
+                makeParallelRight(27);
             }
-            EncoderStraightGyro(-50);
+            EncoderStraightGyro(-45);
         }
         else {
             EncoderStraightGyro(60);
