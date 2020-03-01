@@ -1084,8 +1084,8 @@ public class Teleop2020 extends LinearOpMode {
             if (gamepad2.dpad_left){
                 if (gamepad2.left_bumper) {
                     tape_extend.setPower(1);
-                } else if (gamepad2.right_bumper) {
-                    tape_extend.setPower(-1);
+//                } else if (gamepad2.right_bumper) {
+//                    tape_extend.setPower(-1);
                 } else {
                     tape_extend.setPower(0);
                 }
