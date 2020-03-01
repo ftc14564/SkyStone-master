@@ -1840,24 +1840,24 @@ public class Autonomous2020 extends Teleop2020  {
 
         sideArmSetStateLeft(SideArmState.PRE_GRAB_LOW);
         //simpleStrafe(-0.5);
-        sleep(200);
+        sleep(100);
         //stopWheels();
         sideArmSetStateLeft(SideArmState.GRAB);
-        sleep(200);
+        sleep(300);
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-        //sleep(200);
+        sleep(100);
 
     }
 
     public void grab_SideArmRight() {
         sideArmSetStateRight(SideArmState.PRE_GRAB_LOW);
         //simpleStrafe(0.5);
-        sleep(200);
+        sleep(100);
         //stopWheels();
         sideArmSetStateRight(SideArmState.GRAB);
-        sleep(200);
+        sleep(300);
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-        //sleep(200);
+        sleep(100);
     }
 
     public void drop_SideArm_Foundation(int count){

@@ -862,6 +862,8 @@ public class Teleop2020 extends LinearOpMode {
 
         if(DEBUG) System.out.println(" 14564dbg : Opmode start ");
 
+        USE_VUFORIA = false;
+
         teleopInitFn();
         if(DEBUG) System.out.println(" 14564dbg : Init done ");
 
