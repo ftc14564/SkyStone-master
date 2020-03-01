@@ -1537,7 +1537,7 @@ public class Autonomous2020 extends Teleop2020  {
             makeParallelRight(6);
         }
 
-        EncoderMoveDist(1, -55,false, true, 0);
+        EncoderMoveDist(1, -45,false, true, 0);
 
         if(isBlueSide) {
             makeParallelLeft(1);
@@ -1818,8 +1818,8 @@ public class Autonomous2020 extends Teleop2020  {
         return blockSeen;
     }
 
-    public void dropOnFloor(){
-        double dist = 98  - where_cam_x;
+    public void dropOnFloor(int count){
+        double dist = 100 + (count*4)  - where_cam_x;
         EncoderStraightGyro(-dist);
         if(isBlueSide) {
             sideArmSetStateLeft(SideArmState.THROW);
@@ -1845,7 +1845,7 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetStateLeft(SideArmState.GRAB);
         sleep(200);
         sideArmSetStateLeft(SideArmState.GRAB_HOLD_HIGH);
-        sleep(200);
+        //sleep(200);
 
     }
 
@@ -1857,7 +1857,7 @@ public class Autonomous2020 extends Teleop2020  {
         sideArmSetStateRight(SideArmState.GRAB);
         sleep(200);
         sideArmSetStateRight(SideArmState.GRAB_HOLD_HIGH);
-        sleep(200);
+        //sleep(200);
     }
 
     public void drop_SideArm_Foundation(int count){
@@ -1969,7 +1969,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(dropOnFloor){
             if(DEBUG) System.out.println("14564trace before first drop to floor");
-            dropOnFloor();
+            dropOnFloor(0);
         }
         else {
             if(DEBUG) System.out.println("14564trace before first drop to Foundation");
@@ -1985,14 +1985,14 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (isBlueSide) {
 
-                where_cam_y = 31;
+                where_cam_y = 30.7;
                 where_cam_x = firstSkyStone_X - 24;
 
                 sideArmSetStateLeft(SideArmState.PRE_GRAB);
                 DSMove(0.8, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
 
             } else {
-                where_cam_y = 31;
+                where_cam_y = 30.7;
                 where_cam_x = firstSkyStone_X - 24;
 
                 sideArmSetStateRight(SideArmState.PRE_GRAB);
@@ -2013,7 +2013,7 @@ public class Autonomous2020 extends Teleop2020  {
             }
             if (dropOnFloor) {
                 if (DEBUG) System.out.println("14564trace before second drop on floor");
-                dropOnFloor();
+                dropOnFloor(1);
             } else {
                 if (DEBUG) System.out.println("14564trace before second drop on Foundation");
                 drop_SideArm_Foundation(1);
@@ -2036,7 +2036,7 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (isBlueSide) {
 
-                where_cam_y = 31;
+                where_cam_y = 30.7;
                 where_cam_x = firstSkyStone_X - pos;
 
                 sideArmSetStateLeft(SideArmState.PRE_GRAB);
@@ -2064,7 +2064,7 @@ public class Autonomous2020 extends Teleop2020  {
             }
             if (dropOnFloor) {
                 if (DEBUG) System.out.println("14564trace before third drop on floor");
-                dropOnFloor();
+                dropOnFloor(2);
             } else {
                 if (DEBUG) System.out.println("14564trace before third drop on Foundation");
                 //drop_SideArm_Foundation();
@@ -2087,14 +2087,14 @@ public class Autonomous2020 extends Teleop2020  {
 
             if (isBlueSide) {
 
-                where_cam_y = 31;
+                where_cam_y = 30.7;
                 where_cam_x = firstSkyStone_X - pos;
 
                 sideArmSetStateLeft(SideArmState.PRE_GRAB);
                 DSMove(1, where_cam_x - CAM_TO_FF, where_cam_y, false, false, true, 0, false);
 
             } else {
-                where_cam_y = 31;
+                where_cam_y = 30.7;
                 where_cam_x = firstSkyStone_X - pos;
 
                 sideArmSetStateRight(SideArmState.PRE_GRAB);
@@ -2115,7 +2115,7 @@ public class Autonomous2020 extends Teleop2020  {
             }
             if (dropOnFloor) {
                 if (DEBUG) System.out.println("14564trace before fourth drop on floor");
-                dropOnFloor();
+                dropOnFloor(3);
             } else {
                 if (DEBUG) System.out.println("14564trace before fourth drop on Foundation");
                 //drop_SideArm_Foundation();
@@ -2133,7 +2133,7 @@ public class Autonomous2020 extends Teleop2020  {
 
         if(DEBUG) System.out.println("14564trace before park");
         if(dropOnFloor) {
-            EncoderStraightGyro(20);
+            EncoderStraightGyro(30);
         }
         else if(doFoundation) {
             if (isBlueSide) {
