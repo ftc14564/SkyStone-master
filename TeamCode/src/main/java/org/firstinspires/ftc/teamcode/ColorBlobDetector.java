@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +15,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-public class ColorBlobDetector {
+public class ColorBlobDetector extends Autonomous2020{
     // Lower and Upper bounds for range checking in HSV color space
     private Scalar mLowerBound = new Scalar(12, 100, 100);
     private Scalar mUpperBound = new Scalar(36, 255, 255);
@@ -25,6 +27,11 @@ public class ColorBlobDetector {
     Mat mMask = new Mat();
     Mat mDilatedMask = new Mat();
     Mat mHierarchy = new Mat();
+
+    DcMotor motorRightFront;
+    DcMotor motorLeftFront;
+    DcMotor motorRightBack;
+    DcMotor motorLeftBack;
 
     public char process(Mat rgbaImage) {
         Imgproc.pyrDown(rgbaImage, mPyrDownMat);
@@ -63,6 +70,7 @@ public class ColorBlobDetector {
             if (ratio <= 2){
                 return 'C';
             } else {
+                motorLeftBack.setPower(1);
                 return 'B';
             }
         } else
