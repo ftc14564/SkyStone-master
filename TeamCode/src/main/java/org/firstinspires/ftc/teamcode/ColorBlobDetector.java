@@ -68,9 +68,16 @@ public class ColorBlobDetector extends Autonomous2020{
                     new Scalar(33,137,255), 2);
             double ratio = (double) (rectBounding.width / rectBounding.height);
             if (ratio <= 2){
+                //strafe(1,-1, 6);
+                motorLeftFront.setPower(1);
+                sleep(500);
+                motorLeftFront.setPower(0);
                 return 'C';
             } else {
-                motorLeftBack.setPower(1);
+                //strafe(1, 1, 6);
+                motorLeftFront.setPower(-1);
+                sleep(500);
+                motorLeftFront.setPower(0);
                 return 'B';
             }
         } else
