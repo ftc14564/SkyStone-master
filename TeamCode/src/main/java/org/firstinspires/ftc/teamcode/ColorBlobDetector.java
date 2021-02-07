@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+@Autonomous(name = "Ring_Detector")
 public class ColorBlobDetector extends Autonomous2020{
     // Lower and Upper bounds for range checking in HSV color space
     private Scalar mLowerBound = new Scalar(12, 100, 100);
